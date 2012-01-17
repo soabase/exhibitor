@@ -6,10 +6,16 @@ import com.netflix.curator.framework.CuratorFrameworkFactory;
 import com.netflix.curator.retry.ExponentialBackoffRetry;
 import com.netflix.exhibitor.activity.ActivityLog;
 import com.netflix.exhibitor.activity.ActivityQueue;
+import com.netflix.exhibitor.maintenance.BackupManager;
+import com.netflix.exhibitor.maintenance.BackupSource;
+import com.netflix.exhibitor.maintenance.CleanupManager;
+import com.netflix.exhibitor.spi.ExhibitorConfig;
+import com.netflix.exhibitor.spi.ProcessOperations;
 import com.netflix.exhibitor.state.InstanceStateManager;
 import com.netflix.exhibitor.state.MonitorRunningInstance;
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Exhibitor implements Closeable
 {
@@ -19,15 +25,20 @@ public class Exhibitor implements Closeable
     private final InstanceStateManager      instanceStateManager;
     private final ExhibitorConfig           exhibitorConfig;
     private final ProcessOperations         processOperations;
+    private final CleanupManager            cleanupManager;
+    private final BackupManager             backupManager;
+    private final AtomicBoolean             restartsEnabled = new AtomicBoolean(true);
 
     private CuratorFramework    localConnection;    // protected by synchronization
 
-    public Exhibitor(ExhibitorConfig exhibitorConfig, ProcessOperations processOperations)
+    public Exhibitor(ExhibitorConfig exhibitorConfig, ProcessOperations processOperations, BackupSource backupSource)
     {
         this.exhibitorConfig = exhibitorConfig;
         this.processOperations = processOperations;
         instanceStateManager = new InstanceStateManager(this);
         monitorRunningInstance = new MonitorRunningInstance(this);
+        cleanupManager = new CleanupManager(this);
+        backupManager = new BackupManager(this, backupSource);
     }
 
     public ActivityLog getLog()
@@ -40,6 +51,8 @@ public class Exhibitor implements Closeable
         activityQueue.start();
         instanceStateManager.start();
         monitorRunningInstance.start();
+        cleanupManager.start();
+        backupManager.start();
     }
 
     public ExhibitorConfig getConfig()
@@ -72,13 +85,25 @@ public class Exhibitor implements Closeable
         return localConnection;
     }
 
+    public boolean restartsAreEnabled()
+    {
+        return restartsEnabled.get();
+    }
+    
+    public void         setRestartsEnabled(boolean newValue)
+    {
+        restartsEnabled.set(newValue);
+    }
+
     @Override
     public void close() throws IOException
     {
-        closeLocalConnection();
+        Closeables.closeQuietly(backupManager);
+        Closeables.closeQuietly(cleanupManager);
         Closeables.closeQuietly(monitorRunningInstance);
         Closeables.closeQuietly(instanceStateManager);
         Closeables.closeQuietly(activityQueue);
+        closeLocalConnection();
     }
 
     private synchronized void closeLocalConnection()

@@ -16,7 +16,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.netflix.curator.RetryPolicy;
-import com.netflix.exhibitor.ExhibitorConfig;
+import com.netflix.exhibitor.spi.ExhibitorConfig;
 import com.netflix.exhibitor.activity.ActivityLog;
 import com.netflix.exhibitor.maintenance.BackupSource;
 import com.netflix.exhibitor.maintenance.RestoreInstance;

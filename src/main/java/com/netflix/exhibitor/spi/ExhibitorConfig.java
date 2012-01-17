@@ -1,4 +1,6 @@
-package com.netflix.exhibitor;
+package com.netflix.exhibitor.spi;
+
+import java.util.Collection;
 
 public interface ExhibitorConfig
 {
@@ -23,4 +25,6 @@ public interface ExhibitorConfig
     public int      getCleanupPeriodMs();
 
     public int      getMaxBackups();
+
+    public Collection<UITab>    getAdditionalUITabs();
 }

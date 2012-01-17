@@ -2,46 +2,46 @@ package com.netflix.exhibitor.ui;
 
 import com.google.common.collect.Sets;
 import com.netflix.exhibitor.Exhibitor;
-import com.netflix.exhibitor.ProcessOperations;
 import com.netflix.exhibitor.UIContext;
 import com.netflix.exhibitor.UIResource;
+import com.netflix.exhibitor.imps.StandardProcessOperations;
 import com.netflix.exhibitor.maintenance.BackupSource;
-import com.netflix.exhibitor.state.InstanceState;
+import com.netflix.exhibitor.maintenance.RestoreInstance;
+import com.netflix.exhibitor.spi.ExhibitorConfig;
+import com.netflix.exhibitor.spi.ProcessOperations;
 import com.sun.jersey.api.core.DefaultResourceConfig;
 import com.sun.jersey.spi.container.servlet.ServletContainer;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.Context;
 import org.mortbay.jetty.servlet.ServletHolder;
 import javax.ws.rs.core.Application;
+import java.io.InputStream;
 import java.util.Set;
 
 public class UIIntegrationTest
 {
     public static void main(String[] args) throws Exception
     {
-        ProcessOperations processOperations = new ProcessOperations()
+        ProcessOperations processOperations = new StandardProcessOperations("/Users/jzimmerman/Netflix/dev/zookeeper-3.3.3", "/Users/jzimmerman/zkdir");
+        BackupSource      backupSource = new BackupSource()
         {
             @Override
-            public void startInstance(Exhibitor exhibitor, InstanceState instanceState) throws Exception
+            public void backup(ExhibitorConfig backupConfig, String name, InputStream stream) throws Exception
             {
             }
 
             @Override
-            public void killInstance(Exhibitor exhibitor) throws Exception
+            public void checkRotation(ExhibitorConfig backupConfig) throws Exception
             {
             }
 
             @Override
-            public void backupInstance(Exhibitor exhibitor, BackupSource source) throws Exception
+            public RestoreInstance newRestoreInstance(ExhibitorConfig backupConfig) throws Exception
             {
-            }
-
-            @Override
-            public void cleanupInstance(Exhibitor exhibitor) throws Exception
-            {
+                return null;
             }
         };
-        Exhibitor         exhibitor = new Exhibitor(new MockExhibitorConfig(), processOperations);
+        Exhibitor         exhibitor = new Exhibitor(new MockExhibitorConfig(), processOperations, backupSource);
         exhibitor.start();
 
         final UIContext   context = new UIContext(exhibitor);

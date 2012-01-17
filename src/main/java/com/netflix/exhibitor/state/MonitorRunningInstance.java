@@ -97,6 +97,11 @@ public class MonitorRunningInstance implements Closeable
 
     private void restartZooKeeper(final InstanceState instanceState)
     {
+        if ( !exhibitor.restartsAreEnabled() )
+        {
+            return;
+        }
+
         exhibitor.getActivityQueue().add
         (
             QueueGroups.MAIN,

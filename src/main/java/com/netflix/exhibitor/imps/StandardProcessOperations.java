@@ -3,7 +3,7 @@ package com.netflix.exhibitor.imps;
 import com.google.common.io.Closeables;
 import com.google.common.io.Files;
 import com.netflix.exhibitor.Exhibitor;
-import com.netflix.exhibitor.ProcessOperations;
+import com.netflix.exhibitor.spi.ProcessOperations;
 import com.netflix.exhibitor.activity.ActivityLog;
 import com.netflix.exhibitor.maintenance.BackupSource;
 import com.netflix.exhibitor.state.InstanceState;

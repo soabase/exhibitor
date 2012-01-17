@@ -4,7 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.CharStreams;
-import com.netflix.exhibitor.ExhibitorConfig;
+import com.netflix.exhibitor.spi.ExhibitorConfig;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;

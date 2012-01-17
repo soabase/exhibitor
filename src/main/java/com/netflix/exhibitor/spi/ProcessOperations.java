@@ -1,5 +1,6 @@
-package com.netflix.exhibitor;
+package com.netflix.exhibitor.spi;
 
+import com.netflix.exhibitor.Exhibitor;
 import com.netflix.exhibitor.maintenance.BackupSource;
 import com.netflix.exhibitor.state.InstanceState;
 

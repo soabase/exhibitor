@@ -1,6 +1,6 @@
 package com.netflix.exhibitor.maintenance;
 
-import com.netflix.exhibitor.ExhibitorConfig;
+import com.netflix.exhibitor.spi.ExhibitorConfig;
 import java.io.InputStream;
 
 public interface BackupSource

@@ -16,6 +16,8 @@ public abstract class KillRunningInstance implements Activity
     @Override
     public void run()
     {
+        exhibitor.getLog().add(ActivityLog.Type.INFO, "Attempting to stop instance");
+
         boolean     success = false;
         try
         {

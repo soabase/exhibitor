@@ -20,89 +20,100 @@
                 $('#zkstats').load("zkstats");
             }
 
-            function updateForTab()
+            function messageDialog(title, message)
             {
-                var selectedIndex = $("#tabs").tabs("option", "selected");
-                switch ( selectedIndex )
-                {
-                    case 0:
+                $('#message-dialog-text').html(message);
+                $("#message-dialog").dialog("option", "title", title);
+                $("#message-dialog").dialog("option", "buttons",
                     {
-                        $("#refresh-button-container").hide();
-                        break;
+                        "OK": function() {
+                            $(this).dialog("close");
+                        }
                     }
-
-                    case 1:
-                    {
-                        loadLog();
-                        $("#refresh-button-container").show();
-                        break;
-                    }
-
-                    case 2:
-                    {
-                        loadZKStats();
-                        $("#refresh-button-container").show();
-                        break;
-                    }
-                }
+                );
+                $("#message-dialog").dialog("open");
             }
 
-			$(function(){
-                $('#tabs').tabs({
-                    show: function(event, ui) {
-                        updateForTab();
+            function okCancelDialog(title, message, okFunction)
+            {
+                $('#message-dialog-text').html(message);
+                $("#message-dialog").dialog("option", "title", title);
+                $("#message-dialog").dialog("option", "buttons",
+                    {
+                        "Cancel": function() {
+                            $(this).dialog("close");
+                        },
+
+                        "OK": function() {
+                            $(this).dialog("close");
+                            okFunction();
+                        }
+                    }
+                );
+                $("#message-dialog").dialog("open");
+            }
+
+            function checkRunning()
+            {
+                $.getJSON('running', function(data)
+                {
+                    if ( data.running )
+                    {
+                        $('#tabs-main-running').show();
+                        $('#tabs-main-not-running').hide();
+                    }
+                    else
+                    {
+                        $('#tabs-main-running').hide();
+                        $('#tabs-main-not-running').show();
                     }
                 });
+            }
 
-                $("#refresh-button").button( {
-                    icons: {
-                        primary: "ui-icon-refresh"
-                    }
-                }).click(function() {
-                    updateForTab();
-                    return false;
-                });
+            function initMainTab()
+            {
+            }
 
-                $("#refresh-button-container").hide();
-
+            function initExplorer()
+            {
                 $("#tree").dynatree({
                     onActivate: function(node)
                     {
                         $.ajax
-                        (
-                            {
-                                url: "node-data",
-                                data: {"key": node.data.key},
-                                cache: false,
-                                dataType: 'json',
-                                success: function(data)
+                            (
                                 {
-                                  $("#path").text(node.data.key);
-                                  $("#stat").text(data.stat);
-                                  $("#data-bytes").text(data.bytes);
-                                  $("#data-str").text(data.str);
+                                    url: "node-data",
+                                    data: {"key": node.data.key},
+                                    cache: false,
+                                    dataType: 'json',
+                                    success: function(data)
+                                    {
+                                        $("#path").text(node.data.key);
+                                        $("#stat").text(data.stat);
+                                        $("#data-bytes").text(data.bytes);
+                                        $("#data-str").text(data.str);
+                                    }
                                 }
-                            }
-                        );
+                            );
                     },
 
                     selectMode: 1,
 
                     children:
-                    [
-                        {title: "/", isFolder: true, isLazy: true, key: "/", expand: false, noLink: true}
-                    ],
+                        [
+                            {title: "/", isFolder: true, isLazy: true, key: "/", expand: false, noLink: true}
+                        ],
 
                     onLazyRead: function(node)
                     {
                         node.appendAjax
-                        (
-                            {
-                                url: "node",
-                                data: {"key": node.data.key},
-                                cache: false
-                            }
-                        );
+                            (
+                                {
+                                    url: "node",
+                                    data: {"key": node.data.key},
+                                    cache: false
+                                }
+                            );
                     },
 
                     onClick: function(node, event)
@@ -113,9 +124,103 @@
                         }
                         return true;
                     },
-                    
+
                     persist: false
                 });
+            }
+
+			$(function(){
+                $.getJSON('tabs', function(data) {
+                    for ( var i = 0; i < data.uiTabSpec.length; ++i )
+                    {
+                        $('#tabs-list').append('<li><a href="' + data.uiTabSpec[i].url  + '">' + data.uiTabSpec[i].name + '</a></li>');
+                    }
+                    $('#tabs').tabs({
+                        panelTemplate: '<li class="text"></li>',
+
+                        show: function(event, ui)
+                        {
+                            var selected = $("#tabs").tabs("option", "selected");
+                            if ( selected < 2 )
+                            {
+                                $("#refresh-button-container").hide();
+                            }
+                            else
+                            {
+                                $("#refresh-button-container").show();
+                            }
+
+                            if ( selected == 0 )
+                            {
+                                initMainTab();
+                            }
+                        },
+
+                        create: function(event, ui)
+                        {
+                            initExplorer();
+                        }
+                    });
+                });
+
+                $("#refresh-button").button( {
+                    icons: {
+                        primary: "ui-icon-refresh"
+                    }
+                }).click(function() {
+                    var selected = $("#tabs").tabs("option", "selected");
+                    $("#tabs").tabs("load", selected);
+                    return false;
+                });
+
+                $("#stop-button").button( {
+                    icons: {
+                        primary: "ui-icon-alert"
+                    }
+                }).click(function() {
+                    okCancelDialog("Restart ZooKeeper", "Are you sure you want to restart ZooKeeper?", function() {
+                        $.get("stop");
+                        messageDialog("Restart ZooKeeper", "Stop request sent. Check the log for details.");
+                    });
+                    return false;
+                });
+
+                $("#start-button").button().click(function() {
+                    var selected = $("#tabs").tabs("option", "selected");
+                    $("#tabs").tabs("load", selected);
+                    return false;
+                });
+
+                $("#message-dialog").dialog({
+                    modal: true,
+                    autoOpen: false
+                });
+
+                $("#instance-restarts").buttonset({
+                    create: function(event, ui)
+                    {
+                        $.getJSON('restarts', function(data) {
+//                            $('input:radio[name=instance-restarts][value=enabled]').click();
+                            //$('input:radio[id=instance-restarts-enabled]').attr('checked', data.restarts);
+//                            $('input:radio[id=instance-restarts-disabled]').attr('checked', !data.restarts);
+                            $('#instance-restarts-enabled')[0].checked = data.restarts;
+                            $('#instance-restarts-disabled')[0].checked = !data.restarts;
+                            $('#instance-restarts-enabled').button("refresh");
+                            $('#instance-restarts-disabled').button("refresh");
+                        });
+                        $("#instance-restarts-enabled").button().click(function() {
+                            $.get("set-restarts/true");
+                            return false;
+                        });
+                        $("#instance-restarts-disabled").button().click(function() {
+                            $.get("set-restarts/false");
+                            return false;
+                        });
+                    }
+                });
+
+                window.setInterval("checkRunning()", 2500);
+                checkRunning();
 			});
 		</script>
 		<style type="text/css">
@@ -148,10 +253,9 @@
             .text
             {
                 font-family: monospace;
-                font-size: 100%;
-                border: 1px solid black;
+                font-size: 80%;
                 padding: 2px;
-                width: 100%;
+                width: 97%;
                 height: 75%;
                 overflow: scroll;
                 white-space: pre;
@@ -175,9 +279,19 @@
             {
                 font-size: 200%;
                 font-weight: bold;
-                font-style: italic;
                 padding: 3px;
-                text-shadow: 0.1em 0.1em #AAA;
+                text-shadow: 2px 2px #888;
+                color: #cc0000;
+            }
+
+            #version
+            {
+                font-size: 50%;
+                font-weight: normal;
+                font-style: italic;
+                position: relative;
+                left: 98%;
+                top: -1.5em;
             }
 
             #tree
@@ -193,25 +307,58 @@
                 font-family: monospace;
                 font-size: 125%;
             }
+
+            #instance-restarts
+            {
+                margin-bottom: 5px;
+            }
 		</style>
 	</head>
 
 	<body>
-        <div id="tabs">
-            <div id="title">Exhibitor</div>
+        <div id="tabs" class="ui-tabs ui-tabs-hide">
+            <div id="title">
+                ZooKeeper Exhibitor
+                <div id="version">v0.1</div>
+            </div>
 
-            <ul>
-                <li><a href="#tabs-main">Explorer</a></li>
-                <li><a href="#tabs-log">Log</a></li>
-                <li><a href="#tabs-zkstats">4LTR</a></li>
+            <ul id="tabs-list">
+                <li><a href="#tabs-main">Control Panel</a></li>
+                <li><a href="#tabs-explorer">Explorer</a></li>
             </ul>
 
-            <div id="refresh-button-container" class="button">
+            <div id="refresh-button-container" class="button ui-helper-hidden">
                 <button id="refresh-button">Refresh</button>
                 <span class="refresh-help">Refresh for latest content</span>
             </div>
 
-            <div id="tabs-main">
+            <div id="tabs-main" class="ui-helper-hidden">
+                <div id="instance-restarts">
+                    <strong>Auto-restart instance: </strong>
+                    <input type="radio" id="instance-restarts-enabled" name="instance-restarts" value="enabled"/><label for="instance-restarts-enabled">Enabled</label>
+                    <input type="radio" id="instance-restarts-disabled" name="instance-restarts" value="disabled"/><label for="instance-restarts-disabled">Disabled</label>
+                </div>
+
+                <div class="ui-widget">
+                    <div class="ui-state-highlight ui-corner-all" style="padding: 10px;">
+                        <div id="tabs-main-running" class="ui-helper-hidden">
+                            ZooKeeper appears to be running
+                            <div id="stop-button-container" class="button">
+                                <button id="stop-button">Stop ZooKeeper...</button>
+                            </div>
+                        </div>
+                        <div id="tabs-main-not-running" class="ui-helper-hidden">
+                            ZooKeeper appears to be <strong>not</strong> running
+                            <div id="start-button-container" class="button">
+                                <button id="start-button">Start ZooKeeper</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div id="tabs-explorer" class="ui-helper-hidden">
                 <div id="tree"></div>
 
                 <div class="info">
@@ -231,16 +378,12 @@
                     </table>
                 </div>
             </div>
-
-            <div id="tabs-log">
-                <div class="text" id="log"></div>
-            </div>
-
-            <div id="tabs-zkstats">
-                <div class="text" id="zkstats"></div>
-            </div>
         </div>
-	</body>
+
+        <div id="message-dialog">
+            <div id="message-dialog-text"></div>
+        </div>
+    </body>
 </html>
 
 

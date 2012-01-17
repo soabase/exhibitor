@@ -1,6 +1,9 @@
 package com.netflix.exhibitor.ui;
 
-import com.netflix.exhibitor.ExhibitorConfig;
+import com.netflix.exhibitor.spi.ExhibitorConfig;
+import com.netflix.exhibitor.spi.UITab;
+import com.netflix.exhibitor.spi.UITabSpec;
+import java.util.Collection;
 
 public class MockExhibitorConfig implements ExhibitorConfig
 {
@@ -55,18 +58,24 @@ public class MockExhibitorConfig implements ExhibitorConfig
     @Override
     public int getBackupPeriodMs()
     {
-        return 0;
+        return 100000;
     }
 
     @Override
     public int getCleanupPeriodMs()
     {
-        return 0;
+        return 100000;
     }
 
     @Override
     public int getMaxBackups()
     {
         return 0;
+    }
+
+    @Override
+    public Collection<UITab> getAdditionalUITabs()
+    {
+        return null;
     }
 }
