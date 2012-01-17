@@ -122,7 +122,11 @@
 			/*demo page css*/
 			body
             {
-                font: 100% "Trebuchet MS", sans-serif; margin: 5px;
+                font-family: "Arial", "Helvetica", "Verdana", sans-serif;
+                margin: 5px;
+                padding: 5px;
+                font-size: 14px;
+                background-color: #777;
             }
 
             td
@@ -148,7 +152,7 @@
                 border: 1px solid black;
                 padding: 2px;
                 width: 100%;
-                height: 400px;
+                height: 75%;
                 overflow: scroll;
                 white-space: pre;
             }
@@ -165,6 +169,15 @@
             {
                 font-size: 75%;
                 font-style: italic;
+            }
+
+            #title
+            {
+                font-size: 200%;
+                font-weight: bold;
+                font-style: italic;
+                padding: 3px;
+                text-shadow: 0.1em 0.1em #AAA;
             }
 
             #tree
@@ -184,8 +197,9 @@
 	</head>
 
 	<body>
-        <h3>Exhibitor</h3>
         <div id="tabs">
+            <div id="title">Exhibitor</div>
+
             <ul>
                 <li><a href="#tabs-main">Explorer</a></li>
                 <li><a href="#tabs-log">Log</a></li>
