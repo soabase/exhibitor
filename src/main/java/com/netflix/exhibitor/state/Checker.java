@@ -1,65 +1,55 @@
 package com.netflix.exhibitor.state;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.netflix.exhibitor.Exhibitor;
+import com.netflix.exhibitor.activity.Activity;
+import com.netflix.exhibitor.activity.QueueGroups;
+import com.netflix.exhibitor.activity.RepeatingActivity;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-class Checker implements Closeable
+public class Checker implements Closeable
 {
-    private final InstanceStateManager      manager;
-    private final ExecutorService           service = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setDaemon(true).build());
+    private final Exhibitor                 exhibitor;
     private final AtomicReference<InstanceStateTypes> state = new AtomicReference<InstanceStateTypes>(InstanceStateTypes.LATENT);
+    private final RepeatingActivity         repeatingActivity;
 
-    Checker(InstanceStateManager manager)
+    public Checker(Exhibitor exhibitor, InstanceStateManager manager)
     {
-        this.manager = manager;
+        this.exhibitor = exhibitor;
+        Activity activity = new Activity()
+        {
+            @Override
+            public void completed(boolean wasSuccessful)
+            {
+                // NOP
+            }
+
+            @Override
+            public void run()
+            {
+                setState();
+            }
+        };
+        repeatingActivity = new RepeatingActivity(exhibitor, QueueGroups.MAIN, activity, TimeUnit.MILLISECONDS.convert(exhibitor.getConfig().getCheckSeconds(), TimeUnit.SECONDS));
     }
 
     public void     start()
     {
-        service.submit
-        (
-            new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    doChecking();
-                }
-            }
-        );
+        repeatingActivity.start();
     }
 
     @Override
     public void close() throws IOException
     {
-        service.shutdownNow();
+        repeatingActivity.close();
     }
-    
+
     public InstanceStateTypes   getState()
     {
         return state.get();
-    }
-
-    private void doChecking()
-    {
-        try
-        {
-            while ( !Thread.currentThread().isInterrupted() )
-            {
-                Thread.sleep(manager.getConfig().getCheckSeconds() * 1000);
-
-                setState();
-            }
-        }
-        catch ( InterruptedException dummy )
-        {
-            Thread.currentThread().interrupt();
-        }
     }
 
     private void setState()
@@ -67,13 +57,13 @@ class Checker implements Closeable
         InstanceStateTypes      currentState = state.get();
         InstanceStateTypes      newState = InstanceStateTypes.UNKNOWN;
 
-        String      ruok = new FourLetterWord(FourLetterWord.Word.RUOK, manager.getConfig()).getResponse();
+        String      ruok = new FourLetterWord(FourLetterWord.Word.RUOK, exhibitor.getConfig()).getResponse();
         if ( "imok".equals(ruok) )
         {
             // The following code depends on inside knowledge of the "stat" response. If they change it
             // this code might break
 
-            List<String> lines = new FourLetterWord(FourLetterWord.Word.STAT, manager.getConfig()).getResponseLines();
+            List<String> lines = new FourLetterWord(FourLetterWord.Word.STAT, exhibitor.getConfig()).getResponseLines();
             for ( String line : lines )
             {
                 if ( line.contains("not currently serving") )
@@ -93,7 +83,6 @@ class Checker implements Closeable
         if ( newState != currentState )
         {
             state.set(newState);
-            manager.incrementVersion();
         }
     }
 }

@@ -8,17 +8,17 @@ public class InstanceState
 {
     private final List<ServerInfo>      servers;
     private final int                   connectPort;
-    private final int                   electPort;
+    private final int                   electionPort;
     private final int                   serverId;
     private final InstanceStateTypes    state;
     private final InstanceStateTypes    rawState;
 
-    InstanceState(Collection<ServerInfo> servers, int connectPort, int electPort, int serverId, InstanceStateTypes state, InstanceStateTypes rawState)
+    public InstanceState(Collection<ServerInfo> servers, int connectPort, int electionPort, int serverId, InstanceStateTypes state, InstanceStateTypes rawState)
     {
         this.rawState = rawState;
         this.servers = ImmutableList.copyOf(servers);
         this.connectPort = connectPort;
-        this.electPort = electPort;
+        this.electionPort = electionPort;
         this.serverId = serverId;
         this.state = state;
     }
@@ -33,9 +33,9 @@ public class InstanceState
         return connectPort;
     }
 
-    public int getElectPort()
+    public int getElectionPort()
     {
-        return electPort;
+        return electionPort;
     }
 
     public int getServerId()
@@ -76,7 +76,7 @@ public class InstanceState
         {
             return false;
         }
-        if ( electPort != that.electPort )
+        if ( electionPort != that.electionPort )
         {
             return false;
         }
@@ -102,7 +102,7 @@ public class InstanceState
     {
         int result = servers.hashCode();
         result = 31 * result + connectPort;
-        result = 31 * result + electPort;
+        result = 31 * result + electionPort;
         result = 31 * result + serverId;
         result = 31 * result + state.hashCode();
         return result;

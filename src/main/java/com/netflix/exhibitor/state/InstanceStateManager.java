@@ -4,28 +4,21 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.netflix.exhibitor.config.InstanceConfig;
+import com.netflix.exhibitor.Exhibitor;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 
 public class InstanceStateManager implements Closeable
 {
-    private final AtomicLong                        currentVersion = new AtomicLong(0);
-    private final Checker                           checker;
-    private final InstanceConfig                    config;
+    private final Exhibitor         exhibitor;
+    private final Checker           checker;
 
-    public InstanceStateManager(InstanceConfig config)
+    public InstanceStateManager(Exhibitor exhibitor)
     {
-        this.config = config;
-        checker = new Checker(this);
-    }
-
-    void incrementVersion()
-    {
-        currentVersion.incrementAndGet();
+        this.exhibitor = exhibitor;
+        checker = new Checker(exhibitor, this);
     }
 
     public void start()
@@ -39,9 +32,9 @@ public class InstanceStateManager implements Closeable
         checker.close();
     }
 
-    public InstanceState        getInstanceState()
+    public InstanceState getInstanceState()
     {
-        String[]                servers = config.getServers().split(",");
+        String[]                servers = exhibitor.getConfig().getServers().split(",");
         Iterable<ServerInfo>    cleanedServers = Iterables.transform
         (
             Arrays.asList(servers),
@@ -51,7 +44,7 @@ public class InstanceStateManager implements Closeable
                 public ServerInfo apply(String str)
                 {
                     String hostname = str.toLowerCase().trim();
-                    return new ServerInfo(hostname, config.getServerIdForHostname(hostname));
+                    return new ServerInfo(hostname, exhibitor.getConfig().getServerIdForHostname(hostname));
                 }
             }
         );
@@ -65,26 +58,21 @@ public class InstanceStateManager implements Closeable
                 @Override
                 public boolean apply(ServerInfo info)
                 {
-                    return info.getHostname().equals(config.getThisHostname());
+                    return info.getHostname().equals(exhibitor.getConfig().getThisHostname());
                 }
             }
         );
 
-        int                 ourId = config.getServerIdForHostname(config.getThisHostname());
-        InstanceStateTypes  state = (weAreInList && (ourId > 0)) ? checker.getState() : InstanceStateTypes.WAITING;
+        int                 ourId = exhibitor.getConfig().getServerIdForHostname(exhibitor.getConfig().getThisHostname());
+        InstanceStateTypes state = (weAreInList && (ourId > 0)) ? checker.getState() : InstanceStateTypes.WAITING;
         return new InstanceState
         (
             cleanedServersList,
-            config.getConnectPort(),
-            config.getElectionPort(),
+            exhibitor.getConfig().getConnectPort(),
+            exhibitor.getConfig().getElectionPort(),
             ourId,
             state,
             checker.getState()
         );
-    }
-
-    public InstanceConfig getConfig()
-    {
-        return config;
     }
 }

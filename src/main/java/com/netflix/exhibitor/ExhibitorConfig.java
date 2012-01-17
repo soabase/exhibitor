@@ -1,6 +1,6 @@
-package com.netflix.exhibitor.config;
+package com.netflix.exhibitor;
 
-public interface InstanceConfig
+public interface ExhibitorConfig
 {
     public String   getServers();
 
@@ -17,4 +17,10 @@ public interface InstanceConfig
     public int      getClientPort();
 
     public int      getConnectionTimeoutMs();
+
+    public int      getBackupPeriodMs();
+
+    public int      getCleanupPeriodMs();
+
+    public int      getMaxBackups();
 }

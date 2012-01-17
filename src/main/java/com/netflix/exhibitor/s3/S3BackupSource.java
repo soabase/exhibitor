@@ -16,8 +16,8 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.netflix.curator.RetryPolicy;
-import com.netflix.exhibitor.ActivityLog;
-import com.netflix.exhibitor.config.BackupConfig;
+import com.netflix.exhibitor.ExhibitorConfig;
+import com.netflix.exhibitor.activity.ActivityLog;
 import com.netflix.exhibitor.maintenance.BackupSource;
 import com.netflix.exhibitor.maintenance.RestoreInstance;
 import com.netflix.exhibitor.maintenance.Throttle;
@@ -66,13 +66,13 @@ public class S3BackupSource implements BackupSource
     }
 
     @Override
-    public RestoreInstance newRestoreInstance(BackupConfig backupConfig) throws Exception
+    public RestoreInstance newRestoreInstance(ExhibitorConfig backupConfig) throws Exception
     {
         return new S3RestoreInstance(s3Client, config);
     }
 
     @Override
-    public void backup(BackupConfig backupConfig, String name, InputStream stream) throws Exception
+    public void backup(ExhibitorConfig backupConfig, String name, InputStream stream) throws Exception
     {
         RetryPolicy retryPolicy = config.getRetryPolicy();
         
@@ -101,7 +101,7 @@ public class S3BackupSource implements BackupSource
     }
 
     @Override
-    public void     checkRotation(BackupConfig backupConfig) throws Exception
+    public void     checkRotation(ExhibitorConfig backupConfig) throws Exception
     {
         ListObjectsRequest request = new ListObjectsRequest();
         request.setBucketName(config.getS3BucketName());

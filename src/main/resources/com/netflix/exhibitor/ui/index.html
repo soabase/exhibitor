@@ -1,0 +1,233 @@
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+		<title>Exhibitor</title>
+
+		<link rel="stylesheet" type="text/css" href="css/blitzer/jquery-ui-1.8.16.custom.css" />
+        <link rel="stylesheet" type="text/css" href="dynatree/skin/ui.dynatree.css">
+
+		<script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
+		<script type="text/javascript" src="js/jquery-ui-1.8.16.custom.min.js"></script>
+        <script type="text/javascript" src="dynatree/jquery.dynatree.min.js"></script>
+		<script type="text/javascript">
+            function loadLog()
+            {
+                $('#log').load("log");
+            }
+
+            function loadZKStats()
+            {
+                $('#zkstats').load("zkstats");
+            }
+
+            function updateForTab()
+            {
+                var selectedIndex = $("#tabs").tabs("option", "selected");
+                switch ( selectedIndex )
+                {
+                    case 0:
+                    {
+                        $("#refresh-button-container").hide();
+                        break;
+                    }
+
+                    case 1:
+                    {
+                        loadLog();
+                        $("#refresh-button-container").show();
+                        break;
+                    }
+
+                    case 2:
+                    {
+                        loadZKStats();
+                        $("#refresh-button-container").show();
+                        break;
+                    }
+                }
+            }
+
+			$(function(){
+                $('#tabs').tabs({
+                    show: function(event, ui) {
+                        updateForTab();
+                    }
+                });
+
+                $("#refresh-button").button( {
+                    icons: {
+                        primary: "ui-icon-refresh"
+                    }
+                }).click(function() {
+                    updateForTab();
+                    return false;
+                });
+
+                $("#refresh-button-container").hide();
+
+                $("#tree").dynatree({
+                    onActivate: function(node)
+                    {
+                        $.ajax
+                        (
+                            {
+                                url: "node-data",
+                                data: {"key": node.data.key},
+                                cache: false,
+                                dataType: 'json',
+                                success: function(data)
+                                {
+                                  $("#path").text(node.data.key);
+                                  $("#stat").text(data.stat);
+                                  $("#data-bytes").text(data.bytes);
+                                  $("#data-str").text(data.str);
+                                }
+                            }
+                        );
+                    },
+
+                    selectMode: 1,
+
+                    children:
+                    [
+                        {title: "/", isFolder: true, isLazy: true, key: "/", expand: false, noLink: true}
+                    ],
+
+                    onLazyRead: function(node)
+                    {
+                        node.appendAjax
+                        (
+                            {
+                                url: "node",
+                                data: {"key": node.data.key},
+                                cache: false
+                            }
+                        );
+                    },
+
+                    onClick: function(node, event)
+                    {
+                        if ( node.getEventTargetType(event) == "expander" )
+                        {
+                            node.reloadChildren(function(node, isOk){});
+                        }
+                        return true;
+                    },
+                    
+                    persist: false
+                });
+			});
+		</script>
+		<style type="text/css">
+			/*demo page css*/
+			body
+            {
+                font: 100% "Trebuchet MS", sans-serif; margin: 5px;
+            }
+
+            td
+            {
+                overflow: scroll;
+                padding:  5px;
+            }
+
+            td, .info
+            {
+                font-size: 75%;
+            }
+
+            .info
+            {
+                padding: 5px;
+            }
+
+            .text
+            {
+                font-family: monospace;
+                font-size: 100%;
+                border: 1px solid black;
+                padding: 2px;
+                width: 100%;
+                height: 400px;
+                overflow: scroll;
+                white-space: pre;
+            }
+
+            .button
+            {
+                margin-top: 12px;
+                font-family: sans-serif;
+                font-size: 75%;
+                user-select: none;
+            }
+
+            .refresh-help
+            {
+                font-size: 75%;
+                font-style: italic;
+            }
+
+            #tree
+            {
+                width: 100%;
+                height: 60%;
+                overflow: scroll;
+                border: 1px solid gray;
+            }
+
+            #path, #stat, #data-bytes, #data-str
+            {
+                font-family: monospace;
+                font-size: 125%;
+            }
+		</style>
+	</head>
+
+	<body>
+        <h3>Exhibitor</h3>
+        <div id="tabs">
+            <ul>
+                <li><a href="#tabs-main">Explorer</a></li>
+                <li><a href="#tabs-log">Log</a></li>
+                <li><a href="#tabs-zkstats">4LTR</a></li>
+            </ul>
+
+            <div id="refresh-button-container" class="button">
+                <button id="refresh-button">Refresh</button>
+                <span class="refresh-help">Refresh for latest content</span>
+            </div>
+
+            <div id="tabs-main">
+                <div id="tree"></div>
+
+                <div class="info">
+                    <table>
+                        <tr valign="top">
+                            <td nowrap><strong>Path</strong></td> <td><span id="path"></span></td>
+                        </tr>
+                        <tr valign="top">
+                            <td nowrap><strong>Stat</strong></td> <td><span id="stat"></span></td>
+                        </tr>
+                        <tr valign="top">
+                            <td nowrap><strong>Data Bytes</strong></td> <td><span id="data-bytes"></span></td>
+                        </tr>
+                        <tr valign="top">
+                            <td nowrap><strong>Data as String</strong></td> <td><span id="data-str"></span></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div id="tabs-log">
+                <div class="text" id="log"></div>
+            </div>
+
+            <div id="tabs-zkstats">
+                <div class="text" id="zkstats"></div>
+            </div>
+        </div>
+	</body>
+</html>
+
+
+

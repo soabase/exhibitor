@@ -1,13 +1,13 @@
 package com.netflix.exhibitor.maintenance;
 
-import com.netflix.exhibitor.config.BackupConfig;
+import com.netflix.exhibitor.ExhibitorConfig;
 import java.io.InputStream;
 
 public interface BackupSource
 {
-    public void     backup(BackupConfig backupConfig, String name, InputStream stream) throws Exception;
+    public void     backup(ExhibitorConfig backupConfig, String name, InputStream stream) throws Exception;
 
-    public void     checkRotation(BackupConfig backupConfig) throws Exception;
+    public void     checkRotation(ExhibitorConfig backupConfig) throws Exception;
 
-    public RestoreInstance  newRestoreInstance(BackupConfig backupConfig) throws Exception;
+    public RestoreInstance  newRestoreInstance(ExhibitorConfig backupConfig) throws Exception;
 }

@@ -1,6 +1,6 @@
 package com.netflix.exhibitor.maintenance;
 
-import com.netflix.exhibitor.ActivityLog;
+import com.netflix.exhibitor.activity.ActivityLog;
 
 // copied from https://github.com/Netflix/priam
 public class Throttle
