@@ -31,6 +31,7 @@ import javax.ws.rs.ext.ContextResolver;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -81,7 +82,16 @@ public class UIResource
         {
             contentType = MimetypesFileTypeMap.getDefaultFileTypeMap().getContentType(resourceFile);
         }
-        return Response.ok(Resources.toByteArray(resource)).type(contentType).build();
+        Object entity;
+        if ( contentType.startsWith("text/") )
+        {
+            entity = Resources.toString(resource, Charset.forName("UTF-8"));
+        }
+        else
+        {
+            entity = Resources.toByteArray(resource);
+        }
+        return Response.ok(entity).type(contentType).build();
     }
 
     @Path("tabs")
