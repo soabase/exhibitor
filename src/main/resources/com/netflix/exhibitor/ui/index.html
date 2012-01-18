@@ -7,20 +7,12 @@
         <link rel="stylesheet" type="text/css" href="dynatree/skin/ui.dynatree.css">
 
 		<script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
+		<script type="text/javascript" src="js/jquery.cookie.js"></script>
 		<script type="text/javascript" src="js/jquery-ui-1.8.16.custom.min.js"></script>
         <script type="text/javascript" src="dynatree/jquery.dynatree.min.js"></script>
 		<script type="text/javascript">
             var BUILTIN_TAB_QTY = 2;
-
-            function loadLog()
-            {
-                $('#log').load("log");
-            }
-
-            function loadZKStats()
-            {
-                $('#zkstats').load("zkstats");
-            }
+            var AUTO_REFRESH_PERIOD = 10000;
 
             function messageDialog(title, message)
             {
@@ -55,11 +47,25 @@
                 $("#message-dialog").dialog("open");
             }
 
-            function checkRunning()
+            var systemState =
             {
-                $.getJSON('running', function(data)
+                "running": false,
+                "restartsEnabled": true,
+                "version": ""
+            };
+            var connectedToExhibitor = true;
+            function updateState()
+            {
+                $.getJSON('state', function(data)
                 {
-                    if ( data.running )
+                    if ( !connectedToExhibitor )
+                    {
+                        connectedToExhibitor = true;
+                        messageDialog("", "Connection with the Exhibitor server re-established.");
+                    }
+
+                    systemState = data;
+                    if ( systemState.running )
                     {
                         $('#tabs-main-running').show();
                         $('#tabs-main-not-running').hide();
@@ -69,6 +75,19 @@
                         $('#tabs-main-running').hide();
                         $('#tabs-main-not-running').show();
                     }
+
+                    $('#instance-restarts-enabled')[0].checked = systemState.restartsEnabled;
+                    $('#instance-restarts-disabled')[0].checked = !systemState.restartsEnabled;
+                    $('#instance-restarts-enabled').button("refresh");
+                    $('#instance-restarts-disabled').button("refresh");
+
+                    $('#version').html(systemState.version);
+                }).error(function() {
+                  if ( connectedToExhibitor )
+                  {
+                      connectedToExhibitor = false;
+                      messageDialog("Error", "The browser lost connection with the Exhibitor server.");
+                  }
                 });
             }
 
@@ -188,18 +207,12 @@
                 $("#instance-restarts").buttonset({
                     create: function(event, ui)
                     {
-                        $.getJSON('restarts', function(data) {
-                            $('#instance-restarts-enabled')[0].checked = data.restarts;
-                            $('#instance-restarts-disabled')[0].checked = !data.restarts;
-                            $('#instance-restarts-enabled').button("refresh");
-                            $('#instance-restarts-disabled').button("refresh");
-                        });
                         $("#instance-restarts-enabled").button().click(function() {
-                            $.get("set-restarts/true");
+                            $.get("set/restarts/true");
                             return false;
                         });
                         $("#instance-restarts-disabled").button().click(function() {
-                            $.get("set-restarts/false");
+                            $.get("set/restarts/false");
                             return false;
                         });
                     }
@@ -210,8 +223,9 @@
                 $("#refresh-state-auto").button().click(function() {
                     if ( !refreshInterval )
                     {
-                        refreshInterval = window.setInterval("refreshCurrentTab()", 10000);
+                        refreshInterval = window.setInterval("refreshCurrentTab()", AUTO_REFRESH_PERIOD);
                     }
+                    $.cookie("refresh-state-auto", "1");
                     return false;
                 });
                 $("#refresh-state-manual").button().click(function() {
@@ -220,11 +234,21 @@
                         window.clearInterval(refreshInterval);
                         refreshInterval = null;
                     }
+                    $.cookie("refresh-state-auto", "0");
                     return false;
                 });
 
-                window.setInterval("checkRunning()", 2500);
-                checkRunning();
+                if ( $.cookie("refresh-state-auto") )
+                {
+                    refreshInterval = window.setInterval("refreshCurrentTab()", AUTO_REFRESH_PERIOD);
+                }
+                $('#refresh-state-auto')[0].checked = $.cookie("refresh-state-auto");
+                $('#refresh-state-manual')[0].checked = !$.cookie("refresh-state-auto");
+                $('#refresh-state-auto').button("refresh");
+                $('#refresh-state-manual').button("refresh");
+
+                window.setInterval("updateState()", 2500);
+                updateState();
 			});
 		</script>
 		<style type="text/css">
@@ -325,7 +349,7 @@
         <div id="tabs" class="ui-tabs">
             <div id="title">
                 ZooKeeper Exhibitor
-                <div id="version">v0.0.1</div>
+                <div id="version"></div>
             </div>
 
             <ul id="tabs-list">
@@ -384,7 +408,7 @@
 
         <div id="refresh-state-container">
             <input type="radio" id="refresh-state-auto" name="refresh-state" value="auto"/><label for="refresh-state-auto">Auto Reload</label>
-            <input type="radio" id="refresh-state-manual" name="refresh-state" value="manual" checked/><label for="refresh-state-manual">Manual Reload</label>
+            <input type="radio" id="refresh-state-manual" name="refresh-state" value="manual"/><label for="refresh-state-manual">Manual Reload</label>
         </div>
 
         <div id="message-dialog">

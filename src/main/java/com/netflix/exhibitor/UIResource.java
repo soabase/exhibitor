@@ -7,8 +7,9 @@ import com.google.common.io.Resources;
 import com.netflix.curator.utils.ZKPaths;
 import com.netflix.exhibitor.activity.ActivityLog;
 import com.netflix.exhibitor.activity.QueueGroups;
+import com.netflix.exhibitor.entities.SystemState;
+import com.netflix.exhibitor.entities.UITabSpec;
 import com.netflix.exhibitor.spi.UITab;
-import com.netflix.exhibitor.spi.UITabSpec;
 import com.netflix.exhibitor.state.FourLetterWord;
 import com.netflix.exhibitor.state.KillRunningInstance;
 import org.apache.zookeeper.KeeperException;
@@ -118,28 +119,17 @@ public class UIResource
         return Response.ok(tabs.get(index).getContent()).build();
     }
 
-    @Path("running")
+    @Path("state")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getIsRunning() throws Exception
+    public Response getSystemState() throws Exception
     {
         String      response = new FourLetterWord(FourLetterWord.Word.RUOK, context.getExhibitor().getConfig()).getResponse();
-        ObjectNode  node = JsonNodeFactory.instance.objectNode();
-        node.put("running", "imok".equals(response));
-        return Response.ok(node.toString()).build();
+        SystemState state = new SystemState("imok".equals(response), context.getExhibitor().restartsAreEnabled(), "v0.0.1"); // TODO - correct version
+        return Response.ok(state).build();
     }
 
-    @Path("restarts")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getRestartsState() throws Exception
-    {
-        ObjectNode  node = JsonNodeFactory.instance.objectNode();
-        node.put("restarts", context.getExhibitor().restartsAreEnabled());
-        return Response.ok(node.toString()).build();
-    }
-
-    @Path("set-restarts/{value}")
+    @Path("set/restarts/{value}")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public Response setRestartsState(@PathParam("value") boolean newValue) throws Exception

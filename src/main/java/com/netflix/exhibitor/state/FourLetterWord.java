@@ -21,7 +21,6 @@ public class FourLetterWord
     {
         STAT,
         RUOK,
-        ENVI,
         REQS,
         DUMP,
         CONF,

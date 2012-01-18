@@ -1,4 +1,4 @@
-package com.netflix.exhibitor.spi;
+package com.netflix.exhibitor.entities;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
