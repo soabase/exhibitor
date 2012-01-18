@@ -1,6 +1,8 @@
 package com.netflix.exhibitor.activity;
 
 import com.google.common.collect.ImmutableMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Map;
@@ -12,6 +14,8 @@ import java.util.concurrent.TimeUnit;
 
 public class ActivityQueue implements Closeable
 {
+    private static final Logger log = LoggerFactory.getLogger(ActivityQueue.class);
+
     private final ExecutorService               service = Executors.newCachedThreadPool();
     private final Map<QueueGroups, DelayQueue<ActivityHolder>> queues;
 
@@ -94,7 +98,14 @@ public class ActivityQueue implements Closeable
                             while ( !Thread.currentThread().isInterrupted() )
                             {
                                 ActivityHolder holder = thisQueue.take();
-                                holder.activity.run();
+                                try
+                                {
+                                    holder.activity.run();
+                                }
+                                catch ( Throwable e )
+                                {
+                                    log.error("Unhandled exception in background task", e);
+                                }
                             }
                         }
                         catch ( InterruptedException dummy )

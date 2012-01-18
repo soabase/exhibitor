@@ -61,7 +61,7 @@ public class MonitorRunningInstance implements Closeable
         }
 
         InstanceState localCurrentInstanceState = currentInstanceState.get();
-        if ( !instanceState.equals(localCurrentInstanceState) )
+        if ( !instanceState.equals(localCurrentInstanceState) || (instanceState.getState() == InstanceStateTypes.UNKNOWN) )
         {
             boolean         serverListChange = (localCurrentInstanceState != null) && !localCurrentInstanceState.getServers().equals(instanceState.getServers());
             currentInstanceState.set(instanceState);

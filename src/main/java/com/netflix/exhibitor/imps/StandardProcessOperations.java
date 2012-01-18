@@ -3,9 +3,9 @@ package com.netflix.exhibitor.imps;
 import com.google.common.io.Closeables;
 import com.google.common.io.Files;
 import com.netflix.exhibitor.Exhibitor;
-import com.netflix.exhibitor.spi.ProcessOperations;
 import com.netflix.exhibitor.activity.ActivityLog;
 import com.netflix.exhibitor.maintenance.BackupSource;
+import com.netflix.exhibitor.spi.ProcessOperations;
 import com.netflix.exhibitor.state.InstanceState;
 import com.netflix.exhibitor.state.ServerInfo;
 import java.io.*;
@@ -20,7 +20,8 @@ public class StandardProcessOperations implements ProcessOperations
     private final File zooKeeperDirectory;
     private final File dataDirectory;
     private final File configDirectory;
-    private final File log4jPath;
+    private final File log4jJarPath;
+    private final File zooKeeperJarPath;
     private final Properties properties;
 
     private static final String     MODIFIED_CONFIG_NAME = "exhibitor.cfg";
@@ -34,24 +35,9 @@ public class StandardProcessOperations implements ProcessOperations
         this.dataDirectory = new File(dataDirectory);
 
         configDirectory = new File(zooKeeperDirectory, "conf");
+        log4jJarPath = findJar(new File(zooKeeperDirectory, "lib"), "log4j");
+        zooKeeperJarPath = findJar(this.zooKeeperDirectory, "zookeeper");
 
-        File[]          snapshots = new File(zooKeeperDirectory, "lib").listFiles
-        (
-            new FileFilter()
-            {
-                @Override
-                public boolean accept(File f)
-                {
-                    return f.getName().startsWith("log4j") && f.getName().endsWith(".jar");
-                }
-            }
-        );
-        if ( snapshots.length == 0 )
-        {
-            throw new IOException("Could not find log4j jar");
-        }
-        log4jPath = snapshots[0];
-        
         properties = new Properties();
         InputStream     in = new BufferedInputStream(new FileInputStream(new File(configDirectory, "zoo.cfg")));
         try
@@ -73,7 +59,7 @@ public class StandardProcessOperations implements ProcessOperations
         (
             "java",
             "-cp",
-            String.format("%s:%s:%s", zooKeeperDirectory.getPath(), log4jPath.getPath(), configDirectory.getPath()),
+            String.format("%s:%s:%s", zooKeeperJarPath.getPath(), log4jJarPath.getPath(), configDirectory.getPath()),
             "org.apache.zookeeper.server.PurgeTxnLog",
             dataDirectory.getPath(),
             dataDirectory.getPath(),
@@ -115,6 +101,10 @@ public class StandardProcessOperations implements ProcessOperations
             if ( errorStr.length() > 0 )
             {
                 exhibitor.getLog().add(ActivityLog.Type.ERROR, "Cleanup task reported errors: " + errorStr);
+            }
+            else
+            {
+                exhibitor.getLog().add(ActivityLog.Type.INFO, "Cleanup task ran successfully");
             }
         }
         finally
@@ -220,7 +210,7 @@ public class StandardProcessOperations implements ProcessOperations
     @Override
     public void startInstance(Exhibitor exhibitor, InstanceState instanceState) throws Exception
     {
-        File            configFile = prepConfigFile(exhibitor, instanceState);
+        File configFile = prepConfigFile(exhibitor, instanceState);
         File            binDirectory = new File(zooKeeperDirectory, "bin");
         File            startScript = new File(binDirectory, "zkServer.sh");
         ProcessBuilder  builder = new ProcessBuilder(startScript.getPath(), "start").directory(binDirectory.getParentFile());
@@ -228,6 +218,26 @@ public class StandardProcessOperations implements ProcessOperations
         builder.start();
 
         exhibitor.getLog().add(ActivityLog.Type.INFO, "Process started via: " + startScript.getPath());
+    }
+
+    private File findJar(File dir, final String name) throws IOException
+    {
+        File[]          snapshots = dir.listFiles
+            (
+                new FileFilter()
+                {
+                    @Override
+                    public boolean accept(File f)
+                    {
+                        return f.getName().startsWith(name) && f.getName().endsWith(".jar");
+                    }
+            }
+        );
+        if ( snapshots.length == 0 )
+        {
+            throw new IOException("Could not find " + name + " jar");
+        }
+        return snapshots[0];
     }
 
     private File prepConfigFile(Exhibitor exhibitor, InstanceState instanceState) throws IOException

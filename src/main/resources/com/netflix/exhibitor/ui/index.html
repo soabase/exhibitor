@@ -10,6 +10,8 @@
 		<script type="text/javascript" src="js/jquery-ui-1.8.16.custom.min.js"></script>
         <script type="text/javascript" src="dynatree/jquery.dynatree.min.js"></script>
 		<script type="text/javascript">
+            var BUILTIN_TAB_QTY = 2;
+
             function loadLog()
             {
                 $('#log').load("log");
@@ -70,8 +72,10 @@
                 });
             }
 
-            function initMainTab()
+            function refreshCurrentTab()
             {
+                var selected = $("#tabs").tabs("option", "selected");
+                $("#tabs").tabs("load", selected);
             }
 
             function initExplorer()
@@ -136,24 +140,25 @@
                         $('#tabs-list').append('<li><a href="' + data.uiTabSpec[i].url  + '">' + data.uiTabSpec[i].name + '</a></li>');
                     }
                     $('#tabs').tabs({
-                        panelTemplate: '<li class="text"></li>',
-
                         show: function(event, ui)
                         {
                             var selected = $("#tabs").tabs("option", "selected");
-                            if ( selected < 2 )
+                            if ( selected < BUILTIN_TAB_QTY )
                             {
-                                $("#refresh-button-container").hide();
+                                $("#refresh-state-container").hide();
                             }
                             else
                             {
-                                $("#refresh-button-container").show();
+                                $("#refresh-state-container").show();
                             }
+                        },
 
-                            if ( selected == 0 )
-                            {
-                                initMainTab();
-                            }
+                        load: function(event, ui)
+                        {
+                            var selected = $("#tabs").tabs("option", "selected");
+                            var tabIndex = selected - BUILTIN_TAB_QTY + 1;
+                            var contents = $('#ui-tabs-' + tabIndex).html();
+                            $('#ui-tabs-' + tabIndex).html('<div class="text">' + contents + '</div>');
                         },
 
                         create: function(event, ui)
@@ -161,16 +166,6 @@
                             initExplorer();
                         }
                     });
-                });
-
-                $("#refresh-button").button( {
-                    icons: {
-                        primary: "ui-icon-refresh"
-                    }
-                }).click(function() {
-                    var selected = $("#tabs").tabs("option", "selected");
-                    $("#tabs").tabs("load", selected);
-                    return false;
                 });
 
                 $("#stop-button").button( {
@@ -200,9 +195,6 @@
                     create: function(event, ui)
                     {
                         $.getJSON('restarts', function(data) {
-//                            $('input:radio[name=instance-restarts][value=enabled]').click();
-                            //$('input:radio[id=instance-restarts-enabled]').attr('checked', data.restarts);
-//                            $('input:radio[id=instance-restarts-disabled]').attr('checked', !data.restarts);
                             $('#instance-restarts-enabled')[0].checked = data.restarts;
                             $('#instance-restarts-disabled')[0].checked = !data.restarts;
                             $('#instance-restarts-enabled').button("refresh");
@@ -217,6 +209,24 @@
                             return false;
                         });
                     }
+                });
+
+                var refreshInterval = null;
+                $('#refresh-state-container').buttonset();
+                $("#refresh-state-auto").button().click(function() {
+                    if ( !refreshInterval )
+                    {
+                        refreshInterval = window.setInterval("refreshCurrentTab()", 10000);
+                    }
+                    return false;
+                });
+                $("#refresh-state-manual").button().click(function() {
+                    if ( refreshInterval )
+                    {
+                        window.clearInterval(refreshInterval);
+                        refreshInterval = null;
+                    }
+                    return false;
                 });
 
                 window.setInterval("checkRunning()", 2500);
@@ -254,11 +264,12 @@
             {
                 font-family: monospace;
                 font-size: 80%;
-                padding: 2px;
-                width: 97%;
+                padding: 3px;
+                width: 100%;
                 height: 75%;
                 overflow: scroll;
                 white-space: pre;
+                border: 1px solid black;
             }
 
             .button
@@ -312,14 +323,21 @@
             {
                 margin-bottom: 5px;
             }
+
+            #refresh-state-container
+            {
+                margin-top: 5px;
+                margin-bottom: 5px;
+                text-align: right;
+            }
 		</style>
 	</head>
 
 	<body>
-        <div id="tabs" class="ui-tabs ui-tabs-hide">
+        <div id="tabs" class="ui-tabs">
             <div id="title">
                 ZooKeeper Exhibitor
-                <div id="version">v0.1</div>
+                <div id="version">v0.0.1</div>
             </div>
 
             <ul id="tabs-list">
@@ -327,10 +345,6 @@
                 <li><a href="#tabs-explorer">Explorer</a></li>
             </ul>
 
-            <div id="refresh-button-container" class="button ui-helper-hidden">
-                <button id="refresh-button">Refresh</button>
-                <span class="refresh-help">Refresh for latest content</span>
-            </div>
 
             <div id="tabs-main" class="ui-helper-hidden">
                 <div id="instance-restarts">
@@ -378,6 +392,11 @@
                     </table>
                 </div>
             </div>
+        </div>
+
+        <div id="refresh-state-container">
+            <input type="radio" id="refresh-state-auto" name="refresh-state" value="auto"/><label for="refresh-state-auto">Auto Reload</label>
+            <input type="radio" id="refresh-state-manual" name="refresh-state" value="manual" checked/><label for="refresh-state-manual">Manual Reload</label>
         </div>
 
         <div id="message-dialog">

@@ -22,7 +22,13 @@ public class UIIntegrationTest
 {
     public static void main(String[] args) throws Exception
     {
-        ProcessOperations processOperations = new StandardProcessOperations("/Users/jzimmerman/Netflix/dev/zookeeper-3.3.3", "/Users/jzimmerman/zkdir");
+        if ( args.length != 2 )
+        {
+            System.err.println("UIIntegrationTest [path to ZooKeeper root] [path to data directory]");
+            return;
+        }
+
+        ProcessOperations processOperations = new StandardProcessOperations(args[0], args[1]);
         BackupSource      backupSource = new BackupSource()
         {
             @Override

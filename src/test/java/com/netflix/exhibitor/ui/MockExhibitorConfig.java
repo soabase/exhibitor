@@ -2,7 +2,6 @@ package com.netflix.exhibitor.ui;
 
 import com.netflix.exhibitor.spi.ExhibitorConfig;
 import com.netflix.exhibitor.spi.UITab;
-import com.netflix.exhibitor.spi.UITabSpec;
 import java.util.Collection;
 
 public class MockExhibitorConfig implements ExhibitorConfig
