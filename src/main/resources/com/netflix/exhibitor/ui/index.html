@@ -140,6 +140,8 @@
                         $('#tabs-list').append('<li><a href="' + data.uiTabSpec[i].url  + '">' + data.uiTabSpec[i].name + '</a></li>');
                     }
                     $('#tabs').tabs({
+                        panelTemplate: '<div class="text"></div>',
+
                         show: function(event, ui)
                         {
                             var selected = $("#tabs").tabs("option", "selected");
@@ -151,14 +153,6 @@
                             {
                                 $("#refresh-state-container").show();
                             }
-                        },
-
-                        load: function(event, ui)
-                        {
-                            var selected = $("#tabs").tabs("option", "selected");
-                            var tabIndex = selected - BUILTIN_TAB_QTY + 1;
-                            var contents = $('#ui-tabs-' + tabIndex).html();
-                            $('#ui-tabs-' + tabIndex).html('<div class="text">' + contents + '</div>');
                         },
 
                         create: function(event, ui)
@@ -280,12 +274,6 @@
                 user-select: none;
             }
 
-            .refresh-help
-            {
-                font-size: 75%;
-                font-style: italic;
-            }
-
             #title
             {
                 font-size: 200%;
@@ -301,7 +289,7 @@
                 font-weight: normal;
                 font-style: italic;
                 position: relative;
-                left: 98%;
+                left: 97%;
                 top: -1.5em;
             }
 
