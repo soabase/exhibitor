@@ -23,4 +23,6 @@ public interface ExhibitorConfig
     public int      getMaxBackups();
 
     public Collection<UITab>        getAdditionalUITabs();
+    
+    public Collection<String>       getBackupPaths();
 }

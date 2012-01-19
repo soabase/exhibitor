@@ -13,20 +13,22 @@ public class ConfigPojo
     private int                     backupPeriodMs;
     private int                     cleanupPeriodMs;
     private int                     maxBackups;
+    private Collection<String>      backupPaths;
 
     public ConfigPojo()
     {
-        this(Lists.<ServerPojo>newArrayList(), -1, 0, 0, 0, 0);
+        this(null, -1, 0, 0, 0, 0, null);
     }
 
-    public ConfigPojo(Collection<ServerPojo> servers, int thisServerId, int checkSeconds, int backupPeriodMs, int cleanupPeriodMs, int maxBackups)
+    public ConfigPojo(Collection<ServerPojo> servers, int thisServerId, int checkSeconds, int backupPeriodMs, int cleanupPeriodMs, int maxBackups, Collection<String> backupPaths)
     {
-        this.servers = servers;
+        this.servers = (servers != null) ? servers : Lists.<ServerPojo>newArrayList();
         this.thisServerId = thisServerId;
         this.checkSeconds = checkSeconds;
         this.backupPeriodMs = backupPeriodMs;
         this.cleanupPeriodMs = cleanupPeriodMs;
         this.maxBackups = maxBackups;
+        this.backupPaths = (backupPaths != null) ? backupPaths : Lists.<String>newArrayList();
     }
 
     public Collection<ServerPojo> getServers()
@@ -87,5 +89,15 @@ public class ConfigPojo
     public void setMaxBackups(int maxBackups)
     {
         this.maxBackups = maxBackups;
+    }
+
+    public Collection<String> getBackupPaths()
+    {
+        return backupPaths;
+    }
+
+    public void setBackupPaths(Collection<String> backupPaths)
+    {
+        this.backupPaths = backupPaths;
     }
 }

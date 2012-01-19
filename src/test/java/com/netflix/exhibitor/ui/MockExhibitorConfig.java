@@ -1,5 +1,6 @@
 package com.netflix.exhibitor.ui;
 
+import com.google.common.collect.Lists;
 import com.netflix.exhibitor.spi.ExhibitorConfig;
 import com.netflix.exhibitor.spi.ServerInfo;
 import com.netflix.exhibitor.spi.UITab;
@@ -12,7 +13,7 @@ public class MockExhibitorConfig implements ExhibitorConfig
     @Override
     public Collection<ServerInfo> getServers()
     {
-        return Arrays.asList(new ServerInfo("localhost", 1, true), new ServerInfo("foo.com", 2, false));
+        return Arrays.asList(new ServerInfo("localhost", 1, true));
     }
 
     @Override
@@ -67,5 +68,11 @@ public class MockExhibitorConfig implements ExhibitorConfig
     public Collection<UITab> getAdditionalUITabs()
     {
         return null;
+    }
+
+    @Override
+    public Collection<String> getBackupPaths()
+    {
+        return Lists.newArrayList("/one/two", "/three/four/five");
     }
 }

@@ -1,17 +1,18 @@
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-		<title>Exhibitor</title>
+		<title id="app-name">Exhibitor</title>
 
 		<link rel="stylesheet" type="text/css" href="css/blitzer/jquery-ui-1.8.16.custom.css" />
         <link rel="stylesheet" type="text/css" href="dynatree/skin/ui.dynatree.css">
 
 		<script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
 		<script type="text/javascript" src="js/jquery.cookie.js"></script>
+		<script type="text/javascript" src="js/jquery.keyfilter.js"></script>
 		<script type="text/javascript" src="js/jquery-ui-1.8.16.custom.min.js"></script>
         <script type="text/javascript" src="dynatree/jquery.dynatree.min.js"></script>
 		<script type="text/javascript">
-            var BUILTIN_TAB_QTY = 2;
+            var BUILTIN_TAB_QTY = 3;
             var AUTO_REFRESH_PERIOD = 10000;
             var UPDATE_STATE_PERIOD = 10000;
 
@@ -27,6 +28,24 @@
                     }
                 );
                 $("#message-dialog").dialog("open");
+            }
+
+            function doConfigDialog()
+            {
+                updateConfigDialogValues();
+                $("#config-dialog").dialog("option", "title", "Edit Configuration");
+                $("#config-dialog").dialog("option", "buttons",
+                    {
+                        "Cancel": function() {
+                            $(this).dialog("close");
+                        },
+
+                        "Submit...": function() {
+                            $(this).dialog("close");
+                        }
+                    }
+                );
+                $("#config-dialog").dialog("open");
             }
 
             function okCancelDialog(title, message, okFunction)
@@ -54,13 +73,15 @@
             {
                 $.getJSON('state', function(data)
                 {
+                    systemState = data;
+                    systemState.running = (data.running === "true");    // it comes down as a string
+
                     if ( !connectedToExhibitor )
                     {
                         connectedToExhibitor = true;
-                        messageDialog("", "Connection with the Exhibitor server re-established.");
+                        messageDialog("", "Connection with the " + $('#app-name').html() + " server re-established.");
                     }
 
-                    systemState = data;
                     if ( systemState.running )
                     {
                         $('#tabs-main-running').show();
@@ -86,44 +107,55 @@
                   {
                       $('#not-connected-alert').show();
                       connectedToExhibitor = false;
-                      messageDialog("Error", "The browser lost connection with the Exhibitor server.");
+                      messageDialog("Error", "The browser lost connection with the " + $('#app-name').html() + " server.");
                   }
                 });
             }
             updateState();
 
-            function updateConfig()
+            function getServers()
             {
-                var serversTab;
+                var serversTab = $.makeArray(systemState.config.servers);
                 var servers = "";
-                if ( $.isArray(systemState.config.servers) )
-                {
-                    serversTab = systemState.config.servers;
-                }
-                else
-                {
-                    serversTab = new Array();
-                    serversTab[0] = systemState.config.servers;
-                }
                 for ( var i = 0; i < serversTab.length; ++i )
                 {
                     if ( i > 0 )
                     {
                         servers += ", ";
                     }
-                    servers += serversTab[i].serverId + ": " + serversTab[i].hostname;
+                    servers += serversTab[i].serverId + ":" + serversTab[i].hostname;
                 }
+                return servers;
+            }
+
+            function updateConfig()
+            {
+                var backupSource = "";
+                backupSource += '<div class="config-container"><div class="config-label">Backup Period:</div><div class="config-value">' + systemState.config.backupPeriodMs + ' ms</div></div>';
+                backupSource += '<div class="config-container"><div class="config-label">Cleanup Period:</div><div class="config-value">' + systemState.config.cleanupPeriodMs + ' ms</div></div>';
 
                 var configSource = "";
                 configSource += '<div class="config-container"><div class="config-label">This server ID:</div><div class="config-value">' + systemState.config.thisServerId + '</div></div>';
-                configSource += '<div class="config-container"><div class="config-label">Servers:</div><div class="config-value">' + servers + '</div></div>';
+                configSource += '<div class="config-container"><div class="config-label">Servers:</div><div class="config-value">' + getServers() + '</div></div>';
                 configSource += '<div class="config-container"><div class="config-label">Max Backups:</div><div class="config-value">' + systemState.config.maxBackups + '</div></div>';
                 configSource += '<div class="config-container"><div class="config-label">ZK Alive Checks:</div><div class="config-value">' + systemState.config.checkSeconds + ' second(s)</div></div>';
-                configSource += '<div class="config-container"><div class="config-label">Backup Period:</div><div class="config-value">' + systemState.config.backupPeriodMs + ' ms</div></div>';
-                configSource += '<div class="config-container"><div class="config-label">Cleanup Period:</div><div class="config-value">' + systemState.config.cleanupPeriodMs + ' ms</div></div>';
+                configSource += backupSource;
+
+                var backupPathsTab = $.makeArray(systemState.config.backupPaths);
+                var backupPaths = "";
+                for ( i = 0; i < backupPathsTab.length; ++i )
+                {
+                    backupPaths += '<li>' + backupPathsTab[i] + '</li>';
+                }
+                if ( backupPaths.length == 0 )
+                {
+                    backupPaths = "<i>none</i>";
+                }
 
                 $('#config-section').show();
                 $('#config').html(configSource);
+                $('#backup-paths').html(backupPaths);
+                $('#backup-config').html(backupSource);
             }
 
             function refreshCurrentTab()
@@ -234,7 +266,39 @@
                     return false;
                 });
 
+                $('#backup-button').button({
+                    icons: {
+                        primary: "ui-icon-disk"
+                    }
+                }).click(function() {
+                   return false;
+                });
+
+                $('#main-config-button').button({
+                    icons: {
+                        primary: "ui-icon-pencil"
+                    }
+                }).click(function() {
+                   doConfigDialog();
+                   return false;
+                });
+
+                $('#backup-config-button').button({
+                    icons: {
+                        primary: "ui-icon-pencil"
+                    }
+                }).click(function() {
+                   doConfigDialog();
+                   return false;
+                });
+
                 $("#message-dialog").dialog({
+                    modal: true,
+                    autoOpen: false
+                });
+
+                $("#config-dialog").dialog({
+                    minWidth: 500,
                     modal: true,
                     autoOpen: false
                 });
@@ -282,6 +346,9 @@
                 $('#refresh-state-auto').button("refresh");
                 $('#refresh-state-manual').button("refresh");
 
+                $('#not-connected-message').html("Not connected to " + $('#app-name').html() + " server");
+                $('#page-title').html($('#app-name').html() + " for ZooKeeper");
+
                 window.setInterval("updateState()", UPDATE_STATE_PERIOD);
                 updateState();
 			});
@@ -325,14 +392,6 @@
                 border: 1px solid black;
             }
 
-            .button
-            {
-                margin-top: 12px;
-                font-family: sans-serif;
-                font-size: 75%;
-                user-select: none;
-            }
-
             .config-label
             {
                 color: #000;
@@ -349,6 +408,21 @@
             .config-container
             {
                 margin-bottom: 6px;
+            }
+
+            #config-dialog label
+            {
+                margin-bottom: 6px;
+                font-size: 90%;
+                font-weight: bold;
+            }
+
+            #config-dialog input
+            {
+                margin-bottom: 6px;
+                font-size: 90%;
+                font-family: monospace;
+                font-weight: normal;
             }
 
             #not-connected-alert
@@ -410,26 +484,47 @@
             {
                 padding: 10px;
             }
+
+            #backup-paths
+            {
+                margin-top: 3px;
+                margin-bottom: 15px;
+                border: 1px solid black;
+                padding: 5px;
+            }
+
+            #backup-paths li
+            {
+                font-family: monospace;
+                padding-top: 3px;
+                padding-bottom: 3px;
+            }
+
+            #backup-config
+            {
+                margin-bottom: 30px;
+            }
 		</style>
 	</head>
 
 	<body>
         <div id="tabs" class="ui-tabs">
             <div id="title">
-                ZooKeeper Exhibitor
+                <div id="page-title"></div>
                 <div id="version"></div>
             </div>
 
             <div class="ui-widget" id="not-connected-alert">
                 <div class="ui-state-error ui-corner-all" style="padding: 0 .7em;">
                     <p><span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
-                        <strong>Not connected to Exhibitor server</strong></p>
+                        <strong id="not-connected-message"></strong></p>
                 </div>
             </div>
 
             <ul id="tabs-list">
                 <li><a href="#tabs-main">Control Panel</a></li>
                 <li><a href="#tabs-explorer">Explorer</a></li>
+                <li><a href="#tabs-backups">Backups</a></li>
             </ul>
 
 
@@ -444,23 +539,24 @@
                     <div class="ui-state-highlight ui-corner-all" style="padding: 10px;">
                         <div id="tabs-main-running" class="ui-helper-hidden">
                             ZooKeeper appears to be running
-                            <div id="stop-button-container" class="button">
+                            <div id="stop-button-container">
                                 <button id="stop-button">Stop ZooKeeper...</button>
                             </div>
                         </div>
                         <div id="tabs-main-not-running" class="ui-helper-hidden">
                             ZooKeeper appears to be <strong>not</strong> running
-                            <div id="start-button-container" class="button">
+                            <div id="start-button-container">
                                 <button id="start-button">Start ZooKeeper</button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <p><strong>Config:</strong></p>
                 <div class="ui-helper-hidden ui-widget" id="config-section">
-                    <div class="ui-state-default ui-corner-all">
-                        <div id="config"></div>
+                    <p><strong>Configuration:</strong></p>
+                    <div id="config"></div>
+                    <div id="main-edit-config-button-container">
+                        <button id="main-config-button">Change Configuration...</button>
                     </div>
                 </div>
             </div>
@@ -485,6 +581,20 @@
                     </table>
                 </div>
             </div>
+
+            <div id="tabs-backups" class="ui-helper-hidden">
+                <strong>Backup Paths:</strong><br/>
+                <div id="backup-paths"></div>
+                <div id="backup-config"></div>
+
+                <span id="backup-button-container">
+                    <button id="backup-button">Backup Now...</button>
+                </span>
+
+                <span id="backup-config-button-container">
+                    <button id="backup-config-button">Change Configuration...</button>
+                </span>
+            </div>
         </div>
 
         <div id="refresh-state-container" class="ui-helper-hidden">
@@ -492,8 +602,62 @@
             <input type="radio" id="refresh-state-manual" name="refresh-state" value="manual"/><label for="refresh-state-manual">Manual Reload</label>
         </div>
 
-        <div id="message-dialog">
-            <div id="message-dialog-text"></div>
+        <div id="message-dialog" class="ui-helper-hidden">
+            <p>
+            <span class="ui-icon ui-icon-alert" style="float: left; margin:0 7px 50px 0;"></span>
+            <span id="message-dialog-text"></span>
+            </p>
+        </div>
+
+        <div id="config-dialog" class="ui-helper-hidden">
+            <form action="javascript:void" name="config-form">
+
+
+                <label for="config-servers">Servers:</label><br/>
+                <input type="text" id="config-servers" size="50" class="ui-widget-content ui-corner-all"/>
+
+                <label for="config-backup-paths">Backup Paths:</label><br/>
+                <input type="text" id="config-backup-paths" size="50" class="mask-pint ui-widget-content ui-corner-all"/>
+
+                <label for="config-this-server-id">This Server ID:</label>
+                <input type="text" id="config-this-server-id" size="10" class="mask-pint ui-widget-content ui-corner-all"/>
+
+                <label for="config-max-backups">Max Backups:</label>
+                <input type="text" id="config-max-backups" size="10" class="mask-pint ui-widget-content ui-corner-all"/>
+
+                <label for="config-check-seconds">ZK Alive Check Period (ms):</label>
+                <input type="text" id="config-check-seconds" size="10" class="mask-pint ui-widget-content ui-corner-all"/>
+
+                <label for="config-backup-period">Backup Period (ms):</label>
+                <input type="text" id="config-backup-period" size="10" class="mask-pint ui-widget-content ui-corner-all"/>
+
+                <label for="config-cleanup-period">Cleanup Period (ms):</label>
+                <input type="text" id="config-cleanup-period" size="10" class="mask-pint ui-widget-content ui-corner-all"/>
+
+                <script type="text/javascript">
+                    function updateConfigDialogValues()
+                    {
+                        var backupPathsTab = $.makeArray(systemState.config.backupPaths);
+                        var backupPaths = "";
+                        for ( var i = 0; i < backupPathsTab.length; ++i )
+                        {
+                            if ( backupPaths.length > 0 )
+                            {
+                                backupPaths += ", ";
+                            }
+                            backupPaths += backupPathsTab[0];
+                        }
+
+                        $('#config-servers').val(getServers());
+                        $('#config-backup-paths').val(backupPaths);
+                        $('#config-this-server-id').val(systemState.config.thisServerId);
+                        $('#config-max-backups').val(systemState.config.maxBackups);
+                        $('#config-check-seconds').val(systemState.config.checkSeconds);
+                        $('#config-backup-period').val(systemState.config.backupPeriodMs);
+                        $('#config-cleanup-period').val(systemState.config.cleanupPeriodMs);
+                    }
+                </script>
+            </form>
         </div>
     </body>
 </html>

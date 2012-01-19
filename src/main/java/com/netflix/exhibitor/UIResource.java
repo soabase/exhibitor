@@ -162,7 +162,8 @@ public class UIResource
             context.getExhibitor().getConfig().getCheckSeconds(),
             context.getExhibitor().getConfig().getBackupPeriodMs(),
             context.getExhibitor().getConfig().getCleanupPeriodMs(),
-            context.getExhibitor().getConfig().getMaxBackups()
+            context.getExhibitor().getConfig().getMaxBackups(),
+            context.getExhibitor().getConfig().getBackupPaths()
         );
         SystemState state = new SystemState(config, "imok".equals(response), context.getExhibitor().restartsAreEnabled(), "v0.0.1"); // TODO - correct version
         return Response.ok(state).build();
