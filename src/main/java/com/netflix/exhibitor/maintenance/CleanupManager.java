@@ -35,7 +35,7 @@ public class CleanupManager implements Closeable
                 }
             }
         };
-        repeatingActivity = new RepeatingActivity(exhibitor, QueueGroups.IO, activity, exhibitor.getConfig().getCleanupPeriodMs());
+        repeatingActivity = new RepeatingActivity(exhibitor, QueueGroups.IO, activity, 10000); // TODO exhibitor.getConfig().getCleanupPeriodMs());
     }
 
     public void start()

@@ -37,7 +37,7 @@ public class BackupManager implements Closeable
                 doBackup();
             }
         };
-        repeatingActivity = new RepeatingActivity(exhibitor, QueueGroups.IO, activity, exhibitor.getConfig().getBackupPeriodMs());
+        repeatingActivity = new RepeatingActivity(exhibitor, QueueGroups.IO, activity, 100000); // TODO exhibitor.getConfig().getBackupPeriodMs());
     }
 
     public void     start()

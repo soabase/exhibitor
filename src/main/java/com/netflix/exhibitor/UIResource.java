@@ -1,16 +1,22 @@
 package com.netflix.exhibitor;
 
 import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
 import com.netflix.curator.utils.ZKPaths;
 import com.netflix.exhibitor.activity.ActivityLog;
 import com.netflix.exhibitor.activity.QueueGroups;
+import com.netflix.exhibitor.entities.ConfigPojo;
+import com.netflix.exhibitor.entities.ServerPojo;
 import com.netflix.exhibitor.entities.SystemState;
 import com.netflix.exhibitor.entities.UITabSpec;
+import com.netflix.exhibitor.spi.ServerInfo;
 import com.netflix.exhibitor.spi.UITab;
 import com.netflix.exhibitor.state.FourLetterWord;
+import com.netflix.exhibitor.state.InstanceStateManager;
 import com.netflix.exhibitor.state.KillRunningInstance;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.data.Stat;
@@ -134,8 +140,31 @@ public class UIResource
     @Produces(MediaType.APPLICATION_JSON)
     public Response getSystemState() throws Exception
     {
-        String      response = new FourLetterWord(FourLetterWord.Word.RUOK, context.getExhibitor().getConfig()).getResponse();
-        SystemState state = new SystemState("imok".equals(response), context.getExhibitor().restartsAreEnabled(), "v0.0.1"); // TODO - correct version
+        Collection<ServerInfo>      servers = context.getExhibitor().getConfig().getServers();
+        ServerInfo                  us = Iterables.find(servers, InstanceStateManager.isUs);
+        Collection<ServerPojo>      localServers = Collections2.transform
+        (
+            servers,
+            new Function<ServerInfo, ServerPojo>()
+            {
+                @Override
+                public ServerPojo apply(ServerInfo info)
+                {
+                    return new ServerPojo(info.getHostname(), info.getId());
+                }
+            }
+        );
+        String                      response = new FourLetterWord(FourLetterWord.Word.RUOK, context.getExhibitor().getConfig()).getResponse();
+        ConfigPojo                  config = new ConfigPojo
+        (
+            localServers,
+            (us != null) ? us.getId() : -1,
+            context.getExhibitor().getConfig().getCheckSeconds(),
+            context.getExhibitor().getConfig().getBackupPeriodMs(),
+            context.getExhibitor().getConfig().getCleanupPeriodMs(),
+            context.getExhibitor().getConfig().getMaxBackups()
+        );
+        SystemState state = new SystemState(config, "imok".equals(response), context.getExhibitor().restartsAreEnabled(), "v0.0.1"); // TODO - correct version
         return Response.ok(state).build();
     }
 

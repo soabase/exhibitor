@@ -8,13 +8,16 @@ public class SystemState
     private boolean         running;
     private boolean         restartsEnabled;
     private String          version;
+    private ConfigPojo      config;
 
     public SystemState()
     {
+        this(new ConfigPojo(), false, false, "");
     }
 
-    public SystemState(boolean running, boolean restartsEnabled, String version)
+    public SystemState(ConfigPojo config, boolean running, boolean restartsEnabled, String version)
     {
+        this.config = config;
         this.running = running;
         this.restartsEnabled = restartsEnabled;
         this.version = version;
@@ -48,5 +51,15 @@ public class SystemState
     public void setVersion(String version)
     {
         this.version = version;
+    }
+
+    public ConfigPojo getConfig()
+    {
+        return config;
+    }
+
+    public void setConfig(ConfigPojo config)
+    {
+        this.config = config;
     }
 }

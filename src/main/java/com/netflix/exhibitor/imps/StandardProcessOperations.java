@@ -6,8 +6,8 @@ import com.netflix.exhibitor.Exhibitor;
 import com.netflix.exhibitor.activity.ActivityLog;
 import com.netflix.exhibitor.maintenance.BackupSource;
 import com.netflix.exhibitor.spi.ProcessOperations;
+import com.netflix.exhibitor.spi.ServerInfo;
 import com.netflix.exhibitor.state.InstanceState;
-import com.netflix.exhibitor.state.ServerInfo;
 import java.io.*;
 import java.util.Date;
 import java.util.Properties;
@@ -210,7 +210,7 @@ public class StandardProcessOperations implements ProcessOperations
     @Override
     public void startInstance(Exhibitor exhibitor, InstanceState instanceState) throws Exception
     {
-        File configFile = prepConfigFile(exhibitor, instanceState);
+        File            configFile = prepConfigFile(exhibitor, instanceState);
         File            binDirectory = new File(zooKeeperDirectory, "bin");
         File            startScript = new File(binDirectory, "zkServer.sh");
         ProcessBuilder  builder = new ProcessBuilder(startScript.getPath(), "start").directory(binDirectory.getParentFile());
@@ -244,7 +244,7 @@ public class StandardProcessOperations implements ProcessOperations
     {
         File            idFile = new File(dataDirectory, "myid");
         Files.createParentDirs(idFile);
-        String          id = String.format("%d\n", exhibitor.getConfig().getServerIdForHostname(exhibitor.getConfig().getThisHostname()));
+        String          id = String.format("%d\n", instanceState.getServerId());
         Files.write(id.getBytes(), idFile);
 
         Properties      localProperties = new Properties(properties);

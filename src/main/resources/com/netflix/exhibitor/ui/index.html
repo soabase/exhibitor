@@ -13,6 +13,7 @@
 		<script type="text/javascript">
             var BUILTIN_TAB_QTY = 2;
             var AUTO_REFRESH_PERIOD = 10000;
+            var UPDATE_STATE_PERIOD = 10000;
 
             function messageDialog(title, message)
             {
@@ -47,12 +48,7 @@
                 $("#message-dialog").dialog("open");
             }
 
-            var systemState =
-            {
-                "running": false,
-                "restartsEnabled": true,
-                "version": ""
-            };
+            var systemState;
             var connectedToExhibitor = true;
             function updateState()
             {
@@ -82,13 +78,52 @@
                     $('#instance-restarts-disabled').button("refresh");
 
                     $('#version').html(systemState.version);
+                    $('#not-connected-alert').hide();
+
+                    updateConfig();
                 }).error(function() {
                   if ( connectedToExhibitor )
                   {
+                      $('#not-connected-alert').show();
                       connectedToExhibitor = false;
                       messageDialog("Error", "The browser lost connection with the Exhibitor server.");
                   }
                 });
+            }
+            updateState();
+
+            function updateConfig()
+            {
+                var serversTab;
+                var servers = "";
+                if ( $.isArray(systemState.config.servers) )
+                {
+                    serversTab = systemState.config.servers;
+                }
+                else
+                {
+                    serversTab = new Array();
+                    serversTab[0] = systemState.config.servers;
+                }
+                for ( var i = 0; i < serversTab.length; ++i )
+                {
+                    if ( i > 0 )
+                    {
+                        servers += ", ";
+                    }
+                    servers += serversTab[i].serverId + ": " + serversTab[i].hostname;
+                }
+
+                var configSource = "";
+                configSource += '<div class="config-container"><div class="config-label">This server ID:</div><div class="config-value">' + systemState.config.thisServerId + '</div></div>';
+                configSource += '<div class="config-container"><div class="config-label">Servers:</div><div class="config-value">' + servers + '</div></div>';
+                configSource += '<div class="config-container"><div class="config-label">Max Backups:</div><div class="config-value">' + systemState.config.maxBackups + '</div></div>';
+                configSource += '<div class="config-container"><div class="config-label">ZK Alive Checks:</div><div class="config-value">' + systemState.config.checkSeconds + ' second(s)</div></div>';
+                configSource += '<div class="config-container"><div class="config-label">Backup Period:</div><div class="config-value">' + systemState.config.backupPeriodMs + ' ms</div></div>';
+                configSource += '<div class="config-container"><div class="config-label">Cleanup Period:</div><div class="config-value">' + systemState.config.cleanupPeriodMs + ' ms</div></div>';
+
+                $('#config-section').show();
+                $('#config').html(configSource);
             }
 
             function refreshCurrentTab()
@@ -247,7 +282,7 @@
                 $('#refresh-state-auto').button("refresh");
                 $('#refresh-state-manual').button("refresh");
 
-                window.setInterval("updateState()", 2500);
+                window.setInterval("updateState()", UPDATE_STATE_PERIOD);
                 updateState();
 			});
 		</script>
@@ -298,13 +333,40 @@
                 user-select: none;
             }
 
+            .config-label
+            {
+                color: #000;
+                float: left;
+                width: 150px;
+            }
+
+            .config-value
+            {
+                color: #000;
+                width: 100%;
+            }
+
+            .config-container
+            {
+                margin-bottom: 6px;
+            }
+
+            #not-connected-alert
+            {
+                width: 300px;
+                position: absolute;
+                top: 5px;
+                left: 50%;
+                margin-left: -150px;
+            }
+
             #title
             {
                 font-size: 200%;
                 font-weight: bold;
                 padding: 3px;
                 text-shadow: 2px 2px #888;
-                color: #cc0000;
+                color: #C00;
             }
 
             #version
@@ -313,7 +375,8 @@
                 font-weight: normal;
                 font-style: italic;
                 position: relative;
-                left: 97%;
+                left: 100%;
+                margin-left: -40px;
                 top: -1.5em;
             }
 
@@ -338,9 +401,14 @@
 
             #refresh-state-container
             {
-                margin-top: 5px;
+                margin-top: 7px;
                 margin-bottom: 5px;
                 text-align: right;
+            }
+
+            #config
+            {
+                padding: 10px;
             }
 		</style>
 	</head>
@@ -350,6 +418,13 @@
             <div id="title">
                 ZooKeeper Exhibitor
                 <div id="version"></div>
+            </div>
+
+            <div class="ui-widget" id="not-connected-alert">
+                <div class="ui-state-error ui-corner-all" style="padding: 0 .7em;">
+                    <p><span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
+                        <strong>Not connected to Exhibitor server</strong></p>
+                </div>
             </div>
 
             <ul id="tabs-list">
@@ -382,6 +457,12 @@
                     </div>
                 </div>
 
+                <p><strong>Config:</strong></p>
+                <div class="ui-helper-hidden ui-widget" id="config-section">
+                    <div class="ui-state-default ui-corner-all">
+                        <div id="config"></div>
+                    </div>
+                </div>
             </div>
 
             <div id="tabs-explorer" class="ui-helper-hidden">
@@ -406,7 +487,7 @@
             </div>
         </div>
 
-        <div id="refresh-state-container">
+        <div id="refresh-state-container" class="ui-helper-hidden">
             <input type="radio" id="refresh-state-auto" name="refresh-state" value="auto"/><label for="refresh-state-auto">Auto Reload</label>
             <input type="radio" id="refresh-state-manual" name="refresh-state" value="manual"/><label for="refresh-state-manual">Manual Reload</label>
         </div>

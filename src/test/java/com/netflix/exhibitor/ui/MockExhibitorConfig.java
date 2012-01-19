@@ -1,27 +1,18 @@
 package com.netflix.exhibitor.ui;
 
 import com.netflix.exhibitor.spi.ExhibitorConfig;
+import com.netflix.exhibitor.spi.ServerInfo;
 import com.netflix.exhibitor.spi.UITab;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 
 public class MockExhibitorConfig implements ExhibitorConfig
 {
     @Override
-    public String getServers()
+    public Collection<ServerInfo> getServers()
     {
-        return "localhost";
-    }
-
-    @Override
-    public String getThisHostname()
-    {
-        return "localhost";
-    }
-
-    @Override
-    public int getServerIdForHostname(String hostname)
-    {
-        return 1;
+        return Arrays.asList(new ServerInfo("localhost", 1, true), new ServerInfo("foo.com", 2, false));
     }
 
     @Override
@@ -57,13 +48,13 @@ public class MockExhibitorConfig implements ExhibitorConfig
     @Override
     public int getBackupPeriodMs()
     {
-        return 100000;
+        return (int)TimeUnit.MILLISECONDS.convert(2, TimeUnit.MINUTES);
     }
 
     @Override
     public int getCleanupPeriodMs()
     {
-        return 100000;
+        return (int)TimeUnit.MILLISECONDS.convert(2, TimeUnit.MINUTES);
     }
 
     @Override

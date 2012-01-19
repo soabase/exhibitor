@@ -1,19 +1,26 @@
 package com.netflix.exhibitor.state;
 
-import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.netflix.exhibitor.Exhibitor;
+import com.netflix.exhibitor.spi.ServerInfo;
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
 
 public class InstanceStateManager implements Closeable
 {
     private final Exhibitor         exhibitor;
     private final Checker           checker;
+
+    public static final Predicate<ServerInfo>   isUs = new Predicate<ServerInfo>()
+    {
+        @Override
+        public boolean apply(ServerInfo info)
+        {
+            return info.isThisServer();
+        }
+    };
 
     public InstanceStateManager(Exhibitor exhibitor)
     {
@@ -34,43 +41,16 @@ public class InstanceStateManager implements Closeable
 
     public InstanceState getInstanceState()
     {
-        String[]                servers = exhibitor.getConfig().getServers().split(",");
-        Iterable<ServerInfo>    cleanedServers = Iterables.transform
-        (
-            Arrays.asList(servers),
-            new Function<String, ServerInfo>()
-            {
-                @Override
-                public ServerInfo apply(String str)
-                {
-                    String hostname = str.toLowerCase().trim();
-                    return new ServerInfo(hostname, exhibitor.getConfig().getServerIdForHostname(hostname));
-                }
-            }
-        );
+        Collection<ServerInfo>  servers = exhibitor.getConfig().getServers();
+        ServerInfo              us = Iterables.find(servers, isUs, null);
 
-        List<ServerInfo>    cleanedServersList = Lists.newArrayList(cleanedServers);
-        boolean             weAreInList = Iterables.any
-        (
-            cleanedServers,
-            new Predicate<ServerInfo>()
-            {
-                @Override
-                public boolean apply(ServerInfo info)
-                {
-                    return info.getHostname().equals(exhibitor.getConfig().getThisHostname());
-                }
-            }
-        );
-
-        int                 ourId = exhibitor.getConfig().getServerIdForHostname(exhibitor.getConfig().getThisHostname());
-        InstanceStateTypes state = (weAreInList && (ourId > 0)) ? checker.getState() : InstanceStateTypes.WAITING;
+        InstanceStateTypes state = (us != null) ? checker.getState() : InstanceStateTypes.WAITING;
         return new InstanceState
         (
-            cleanedServersList,
+            servers,
             exhibitor.getConfig().getConnectPort(),
             exhibitor.getConfig().getElectionPort(),
-            ourId,
+            (us != null) ? us.getId() : -1,
             state,
             checker.getState()
         );

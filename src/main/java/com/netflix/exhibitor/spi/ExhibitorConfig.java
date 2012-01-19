@@ -4,11 +4,7 @@ import java.util.Collection;
 
 public interface ExhibitorConfig
 {
-    public String   getServers();
-
-    public String   getThisHostname();
-    
-    public int      getServerIdForHostname(String hostname);
+    public Collection<ServerInfo> getServers();
 
     public int      getConnectPort();
 
@@ -26,5 +22,5 @@ public interface ExhibitorConfig
 
     public int      getMaxBackups();
 
-    public Collection<UITab>    getAdditionalUITabs();
+    public Collection<UITab>        getAdditionalUITabs();
 }

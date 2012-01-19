@@ -1,6 +1,7 @@
 package com.netflix.exhibitor.state;
 
 import com.google.common.collect.ImmutableList;
+import com.netflix.exhibitor.spi.ServerInfo;
 import java.util.Collection;
 import java.util.List;
 
