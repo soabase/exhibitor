@@ -4,7 +4,7 @@ import com.google.common.io.Closeables;
 import com.google.common.io.Files;
 import com.netflix.exhibitor.Exhibitor;
 import com.netflix.exhibitor.activity.ActivityLog;
-import com.netflix.exhibitor.maintenance.BackupSource;
+import com.netflix.exhibitor.spi.BackupSource;
 import com.netflix.exhibitor.spi.ProcessOperations;
 import com.netflix.exhibitor.spi.ServerInfo;
 import com.netflix.exhibitor.state.InstanceState;
@@ -110,47 +110,6 @@ public class StandardProcessOperations implements ProcessOperations
         finally
         {
             errorService.shutdownNow();
-        }
-    }
-
-    @Override
-    public void backupInstance(Exhibitor exhibitor, BackupSource source) throws Exception
-    {
-        if ( !dataDirectory.exists() )
-        {
-            exhibitor.getLog().add(ActivityLog.Type.ERROR, "Data directory not found: " + dataDirectory);
-            return;
-        }
-        File[]          snapshots = dataDirectory.listFiles
-        (
-            new FileFilter()
-            {
-                @Override
-                public boolean accept(File f)
-                {
-                    return f.getName().startsWith(SNAPSHOT_PREFIX);
-                }
-            }
-        );
-
-        for ( File f : snapshots )
-        {
-            try
-            {
-                InputStream     in = new BufferedInputStream(new FileInputStream(f));
-                try
-                {
-                    source.backup(exhibitor.getConfig(), f.getName(), in);
-                }
-                finally
-                {
-                    Closeables.closeQuietly(in);
-                }
-            }
-            catch ( Exception e )
-            {
-                exhibitor.getLog().add(ActivityLog.Type.ERROR, "Error backing up " + f.getPath(), e);
-            }
         }
     }
 

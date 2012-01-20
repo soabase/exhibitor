@@ -5,8 +5,8 @@ import com.netflix.exhibitor.Exhibitor;
 import com.netflix.exhibitor.UIContext;
 import com.netflix.exhibitor.UIResource;
 import com.netflix.exhibitor.imps.StandardProcessOperations;
-import com.netflix.exhibitor.maintenance.BackupSource;
-import com.netflix.exhibitor.maintenance.RestoreInstance;
+import com.netflix.exhibitor.spi.BackupSource;
+import com.netflix.exhibitor.spi.BackupSpec;
 import com.netflix.exhibitor.spi.ExhibitorConfig;
 import com.netflix.exhibitor.spi.ProcessOperations;
 import com.sun.jersey.api.core.DefaultResourceConfig;
@@ -37,12 +37,7 @@ public class UIIntegrationTest
             }
 
             @Override
-            public void checkRotation(ExhibitorConfig backupConfig) throws Exception
-            {
-            }
-
-            @Override
-            public RestoreInstance newRestoreInstance(ExhibitorConfig backupConfig) throws Exception
+            public InputStream openRestoreStream(ExhibitorConfig backupConfig, BackupSpec spec) throws Exception
             {
                 return null;
             }

@@ -25,4 +25,6 @@ public interface ExhibitorConfig
     public Collection<UITab>        getAdditionalUITabs();
     
     public Collection<String>       getBackupPaths();
+    
+    public Collection<BackupSpec>   getAvailableBackups();
 }

@@ -9,10 +9,12 @@ import com.google.common.io.Resources;
 import com.netflix.curator.utils.ZKPaths;
 import com.netflix.exhibitor.activity.ActivityLog;
 import com.netflix.exhibitor.activity.QueueGroups;
+import com.netflix.exhibitor.entities.BackupPojo;
 import com.netflix.exhibitor.entities.ConfigPojo;
 import com.netflix.exhibitor.entities.ServerPojo;
 import com.netflix.exhibitor.entities.SystemState;
 import com.netflix.exhibitor.entities.UITabSpec;
+import com.netflix.exhibitor.spi.BackupSpec;
 import com.netflix.exhibitor.spi.ServerInfo;
 import com.netflix.exhibitor.spi.UITab;
 import com.netflix.exhibitor.state.FourLetterWord;
@@ -38,9 +40,12 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.text.DateFormat;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Path("exhibitor/v1/ui")
@@ -48,6 +53,7 @@ public class UIResource
 {
     private final UIContext context;
     private final List<UITab> tabs;
+    private final DateFormat formatter;
 
     private static final String         ERROR_KEY = "*";
 
@@ -55,6 +61,9 @@ public class UIResource
     {
         context = resolver.getContext(UIContext.class);
         tabs = buildTabs();
+
+        formatter = DateFormat.getDateTimeInstance();
+        formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
     }
 
     @Path("{file:.*}")
@@ -154,6 +163,35 @@ public class UIResource
                 }
             }
         );
+
+        Collection<BackupSpec>      backupsFromConfig = context.getExhibitor().getConfig().getAvailableBackups();
+        List<BackupSpec>            availableBackups = (backupsFromConfig != null) ? Lists.newArrayList(backupsFromConfig) : Lists.<BackupSpec>newArrayList();
+        Collections.sort
+        (
+            availableBackups,
+            new Comparator<BackupSpec>()
+            {
+                @Override
+                public int compare(BackupSpec o1, BackupSpec o2)
+                {
+                    return o2.getDate().compareTo(o1.getDate());    // descending
+                }
+            }
+        );
+        
+        Collection<BackupPojo>     localAvailableRestores = Collections2.transform
+        (
+            availableBackups,
+            new Function<BackupSpec, BackupPojo>()
+            {
+                @Override
+                public BackupPojo apply(BackupSpec spec)
+                {
+                    return new BackupPojo(spec.getName(), formatter.format(spec.getDate()));
+                }
+            }
+        );
+
         String                      response = new FourLetterWord(FourLetterWord.Word.RUOK, context.getExhibitor().getConfig()).getResponse();
         ConfigPojo                  config = new ConfigPojo
         (
@@ -163,7 +201,8 @@ public class UIResource
             context.getExhibitor().getConfig().getBackupPeriodMs(),
             context.getExhibitor().getConfig().getCleanupPeriodMs(),
             context.getExhibitor().getConfig().getMaxBackups(),
-            context.getExhibitor().getConfig().getBackupPaths()
+            context.getExhibitor().getConfig().getBackupPaths(),
+            localAvailableRestores
         );
         SystemState state = new SystemState(config, "imok".equals(response), context.getExhibitor().restartsAreEnabled(), "v0.0.1"); // TODO - correct version
         return Response.ok(state).build();

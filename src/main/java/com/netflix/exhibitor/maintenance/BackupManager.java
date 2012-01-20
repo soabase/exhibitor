@@ -6,6 +6,8 @@ import com.netflix.exhibitor.activity.Activity;
 import com.netflix.exhibitor.activity.ActivityLog;
 import com.netflix.exhibitor.activity.QueueGroups;
 import com.netflix.exhibitor.activity.RepeatingActivity;
+import com.netflix.exhibitor.backup.BackupProcessor;
+import com.netflix.exhibitor.spi.BackupSource;
 import com.netflix.exhibitor.state.FourLetterWord;
 import java.io.Closeable;
 import java.io.IOException;
@@ -33,11 +35,10 @@ public class BackupManager implements Closeable
             @Override
             public void run()
             {
-                doRotate();
                 doBackup();
             }
         };
-        repeatingActivity = new RepeatingActivity(exhibitor, QueueGroups.IO, activity, 100000); // TODO exhibitor.getConfig().getBackupPeriodMs());
+        repeatingActivity = new RepeatingActivity(exhibitor, QueueGroups.IO, activity, exhibitor.getConfig().getBackupPeriodMs());
     }
 
     public void     start()
@@ -51,6 +52,11 @@ public class BackupManager implements Closeable
         repeatingActivity.close();
     }
 
+    public BackupSource getSource()
+    {
+        return source;
+    }
+
     @VisibleForTesting
     protected boolean isLeader()
     {
@@ -58,24 +64,12 @@ public class BackupManager implements Closeable
         return "leader".equalsIgnoreCase(stat.getResponseMap().get("mode"));
     }
 
-    private void doRotate()
-    {
-        try
-        {
-            source.checkRotation(exhibitor.getConfig());
-        }
-        catch ( Exception e )
-        {
-            exhibitor.getLog().add(ActivityLog.Type.ERROR, "Rotation error", e);
-        }
-    }
-
     private void doBackup()
     {
         exhibitor.getLog().add(ActivityLog.Type.INFO, "Starting backup");
         try
         {
-            exhibitor.getProcessOperations().backupInstance(exhibitor, source);
+            new BackupProcessor(exhibitor).execute();
             exhibitor.getLog().add(ActivityLog.Type.INFO, "Backup ended");
         }
         catch ( Exception e )

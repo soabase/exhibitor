@@ -143,7 +143,7 @@
 
                 var backupPathsTab = $.makeArray(systemState.config.backupPaths);
                 var backupPaths = "";
-                for ( i = 0; i < backupPathsTab.length; ++i )
+                for ( var i = 0; i < backupPathsTab.length; ++i )
                 {
                     backupPaths += '<li>' + backupPathsTab[i] + '</li>';
                 }
@@ -152,9 +152,21 @@
                     backupPaths = "<i>none</i>";
                 }
 
+                var restorePathsTab = $.makeArray(systemState.config.availableRestores);
+                var restorePaths = "";
+                for ( i = 0; i < restorePathsTab.length; ++i )
+                {
+                    restorePaths += '<li>' + restorePathsTab[i].date + " - " + restorePathsTab[i].name + '</li>';
+                }
+                if ( restorePaths.length == 0 )
+                {
+                    restorePaths = "<i>none</i>";
+                }
+
                 $('#config-section').show();
                 $('#config').html(configSource);
                 $('#backup-paths').html(backupPaths);
+                $('#restore-paths').html(restorePaths);
                 $('#backup-config').html(backupSource);
             }
 
@@ -269,6 +281,14 @@
                 $('#backup-button').button({
                     icons: {
                         primary: "ui-icon-disk"
+                    }
+                }).click(function() {
+                   return false;
+                });
+
+                $('#restore-button').button({
+                    icons: {
+                        primary: "ui-icon-arrowreturnthick-1-s"
                     }
                 }).click(function() {
                    return false;
@@ -485,7 +505,7 @@
                 padding: 10px;
             }
 
-            #backup-paths
+            #backup-paths, #restore-paths
             {
                 margin-top: 3px;
                 margin-bottom: 15px;
@@ -493,16 +513,21 @@
                 padding: 5px;
             }
 
-            #backup-paths li
+            #backup-paths li, #restore-paths li
             {
                 font-family: monospace;
                 padding-top: 3px;
                 padding-bottom: 3px;
             }
-
-            #backup-config
+            
+            #backup-config, #backup-paths
             {
-                margin-bottom: 30px;
+                margin-bottom: 20px;
+            }
+
+            #backup-tab-buttons
+            {
+                margin-top: 30px;
             }
 		</style>
 	</head>
@@ -583,17 +608,27 @@
             </div>
 
             <div id="tabs-backups" class="ui-helper-hidden">
-                <strong>Backup Paths:</strong><br/>
-                <div id="backup-paths"></div>
                 <div id="backup-config"></div>
 
-                <span id="backup-button-container">
-                    <button id="backup-button">Backup Now...</button>
-                </span>
+                <strong>Backup Paths:</strong><br/>
+                <div id="backup-paths"></div>
 
-                <span id="backup-config-button-container">
-                    <button id="backup-config-button">Change Configuration...</button>
-                </span>
+                <strong>Available Backups for Playback:</strong><br/>
+                <div id="restore-paths"></div>
+
+                <div id="backup-tab-buttons">
+                    <span id="restore-button-container">
+                        <button id="restore-button">Playback a Backup...</button>
+                    </span>
+
+                    <span id="backup-config-button-container">
+                        <button id="backup-config-button">Change Configuration...</button>
+                    </span>
+
+                    <span id="backup-button-container">
+                        <button id="backup-button">Backup Now...</button>
+                    </span>
+                </div>
             </div>
         </div>
 

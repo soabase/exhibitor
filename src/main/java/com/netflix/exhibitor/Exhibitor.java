@@ -7,7 +7,7 @@ import com.netflix.curator.retry.ExponentialBackoffRetry;
 import com.netflix.exhibitor.activity.ActivityLog;
 import com.netflix.exhibitor.activity.ActivityQueue;
 import com.netflix.exhibitor.maintenance.BackupManager;
-import com.netflix.exhibitor.maintenance.BackupSource;
+import com.netflix.exhibitor.spi.BackupSource;
 import com.netflix.exhibitor.maintenance.CleanupManager;
 import com.netflix.exhibitor.spi.ExhibitorConfig;
 import com.netflix.exhibitor.spi.ProcessOperations;
@@ -93,6 +93,11 @@ public class Exhibitor implements Closeable
     public void         setRestartsEnabled(boolean newValue)
     {
         restartsEnabled.set(newValue);
+    }
+
+    public BackupManager getBackupManager()
+    {
+        return backupManager;
     }
 
     @Override

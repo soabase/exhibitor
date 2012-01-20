@@ -1,11 +1,13 @@
 package com.netflix.exhibitor.ui;
 
 import com.google.common.collect.Lists;
+import com.netflix.exhibitor.spi.BackupSpec;
 import com.netflix.exhibitor.spi.ExhibitorConfig;
 import com.netflix.exhibitor.spi.ServerInfo;
 import com.netflix.exhibitor.spi.UITab;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 public class MockExhibitorConfig implements ExhibitorConfig
@@ -74,5 +76,12 @@ public class MockExhibitorConfig implements ExhibitorConfig
     public Collection<String> getBackupPaths()
     {
         return Lists.newArrayList("/one/two", "/three/four/five");
+    }
+
+    @Override
+    public Collection<BackupSpec> getAvailableBackups()
+    {
+        Date now = new Date();
+        return Lists.newArrayList(new BackupSpec("hey", now), new BackupSpec("foo", new Date(now.getTime() + 101010101)), new BackupSpec("/a/b/*", new Date(now.getTime() + 10000)));
     }
 }
