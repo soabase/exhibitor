@@ -49,12 +49,6 @@ public class ActivityQueue implements Closeable
         }
 
         @Override
-        public int hashCode()
-        {
-            return (int)endMs;
-        }
-
-        @Override
         public boolean equals(Object o)
         {
             if ( this == o )
@@ -66,8 +60,27 @@ public class ActivityQueue implements Closeable
                 return false;
             }
 
-            ActivityHolder that = (ActivityHolder)o;
-            return compareTo(that) == 0;
+            ActivityHolder holder = (ActivityHolder)o;
+
+            if ( endMs != holder.endMs )
+            {
+                return false;
+            }
+            //noinspection RedundantIfStatement
+            if ( !activity.equals(holder.activity) )
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            int result = activity.hashCode();
+            result = 31 * result + (int)(endMs ^ (endMs >>> 32));
+            return result;
         }
     }
 
@@ -117,13 +130,26 @@ public class ActivityQueue implements Closeable
             );
         }
     }
-    
-    public void     add(QueueGroups group, Activity activity)
+
+    public synchronized void     replace(QueueGroups group, Activity activity)
+    {
+        replace(group, activity, 0, TimeUnit.MILLISECONDS);
+    }
+
+    public synchronized void     replace(QueueGroups group, Activity activity, long delay, TimeUnit unit)
+    {
+        ActivityHolder  holder = new ActivityHolder(activity, TimeUnit.MILLISECONDS.convert(delay, unit));
+        DelayQueue<ActivityHolder> queue = queues.get(group);
+        queue.remove(holder);
+        queue.offer(holder);
+    }
+
+    public synchronized void     add(QueueGroups group, Activity activity)
     {
         add(group, activity, 0, TimeUnit.MILLISECONDS);
     }
 
-    public void     add(QueueGroups group, Activity activity, long delay, TimeUnit unit)
+    public synchronized void     add(QueueGroups group, Activity activity, long delay, TimeUnit unit)
     {
         ActivityHolder  holder = new ActivityHolder(activity, TimeUnit.MILLISECONDS.convert(delay, unit));
         queues.get(group).offer(holder);

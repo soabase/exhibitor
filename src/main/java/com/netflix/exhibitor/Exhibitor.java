@@ -7,9 +7,9 @@ import com.netflix.curator.retry.ExponentialBackoffRetry;
 import com.netflix.exhibitor.activity.ActivityLog;
 import com.netflix.exhibitor.activity.ActivityQueue;
 import com.netflix.exhibitor.maintenance.BackupManager;
-import com.netflix.exhibitor.spi.BackupSource;
 import com.netflix.exhibitor.maintenance.CleanupManager;
-import com.netflix.exhibitor.spi.ExhibitorConfig;
+import com.netflix.exhibitor.spi.BackupSource;
+import com.netflix.exhibitor.spi.GlobalSharedConfig;
 import com.netflix.exhibitor.spi.ProcessOperations;
 import com.netflix.exhibitor.state.InstanceStateManager;
 import com.netflix.exhibitor.state.MonitorRunningInstance;
@@ -23,7 +23,8 @@ public class Exhibitor implements Closeable
     private final ActivityQueue             activityQueue = new ActivityQueue();
     private final MonitorRunningInstance    monitorRunningInstance;
     private final InstanceStateManager      instanceStateManager;
-    private final ExhibitorConfig           exhibitorConfig;
+    private final InstanceConfig            instanceConfig;
+    private final GlobalSharedConfig globalSharedConfig;
     private final ProcessOperations         processOperations;
     private final CleanupManager            cleanupManager;
     private final BackupManager             backupManager;
@@ -31,9 +32,10 @@ public class Exhibitor implements Closeable
 
     private CuratorFramework    localConnection;    // protected by synchronization
 
-    public Exhibitor(ExhibitorConfig exhibitorConfig, ProcessOperations processOperations, BackupSource backupSource)
+    public Exhibitor(InstanceConfig instanceConfig, GlobalSharedConfig globalSharedConfig, ProcessOperations processOperations, BackupSource backupSource)
     {
-        this.exhibitorConfig = exhibitorConfig;
+        this.instanceConfig = instanceConfig;
+        this.globalSharedConfig = globalSharedConfig;
         this.processOperations = processOperations;
         instanceStateManager = new InstanceStateManager(this);
         monitorRunningInstance = new MonitorRunningInstance(this);
@@ -55,9 +57,9 @@ public class Exhibitor implements Closeable
         backupManager.start();
     }
 
-    public ExhibitorConfig getConfig()
+    public InstanceConfig getConfig()
     {
-        return exhibitorConfig;
+        return instanceConfig;
     }
 
     public InstanceStateManager getInstanceStateManager()
@@ -75,11 +77,16 @@ public class Exhibitor implements Closeable
         return processOperations;
     }
 
+    public GlobalSharedConfig getGlobalSharedConfig()
+    {
+        return globalSharedConfig;
+    }
+
     public synchronized CuratorFramework getLocalConnection() throws IOException
     {
         if ( localConnection == null )
         {
-            localConnection = CuratorFrameworkFactory.newClient("localhost:" + exhibitorConfig.getClientPort(), 30000, 5000, new ExponentialBackoffRetry(10, 3));
+            localConnection = CuratorFrameworkFactory.newClient("localhost:" + instanceConfig.getClientPort(), 30000, 5000, new ExponentialBackoffRetry(10, 3));
             localConnection.start();
         }
         return localConnection;

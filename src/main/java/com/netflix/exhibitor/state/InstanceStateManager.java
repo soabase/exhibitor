@@ -2,6 +2,7 @@ package com.netflix.exhibitor.state;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.netflix.exhibitor.Exhibitor;
 import com.netflix.exhibitor.spi.ServerInfo;
 import java.io.Closeable;
@@ -41,7 +42,11 @@ public class InstanceStateManager implements Closeable
 
     public InstanceState getInstanceState()
     {
-        Collection<ServerInfo>  servers = exhibitor.getConfig().getServers();
+        Collection<ServerInfo>  servers = exhibitor.getGlobalSharedConfig().getServers();
+        if ( servers == null )
+        {
+            servers = Lists.newArrayList();
+        }
         ServerInfo              us = Iterables.find(servers, isUs, null);
 
         InstanceStateTypes state = (us != null) ? checker.getState() : InstanceStateTypes.WAITING;

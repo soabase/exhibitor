@@ -34,10 +34,10 @@ public class BackupProcessor
 
     public void execute() throws Exception
     {
-        if ( exhibitor.getConfig().getBackupPaths() != null )
+        if ( exhibitor.getGlobalSharedConfig().getBackupPaths() != null )
         {
             CuratorFramework    client = exhibitor.getLocalConnection();
-            for ( String path : exhibitor.getConfig().getBackupPaths() )
+            for ( String path : exhibitor.getGlobalSharedConfig().getBackupPaths() )
             {
                 backupPath(client, path);
             }

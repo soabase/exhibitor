@@ -1,10 +1,14 @@
 package com.netflix.exhibitor.spi;
 
+import com.netflix.exhibitor.InstanceConfig;
 import java.io.InputStream;
+import java.util.Collection;
 
 public interface BackupSource
 {
-    public void     backup(ExhibitorConfig backupConfig, String name, InputStream stream) throws Exception;
+    public void     backup(InstanceConfig backupConfig, String name, InputStream stream) throws Exception;
 
-    public InputStream openRestoreStream(ExhibitorConfig backupConfig, BackupSpec spec) throws Exception;
+    public InputStream openRestoreStream(InstanceConfig backupConfig, BackupSpec spec) throws Exception;
+
+    public Collection<BackupSpec> getAvailableBackups();
 }

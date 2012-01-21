@@ -1,6 +1,7 @@
 package com.netflix.exhibitor;
 
 import com.google.common.base.Function;
+import com.google.common.base.Predicates;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -11,6 +12,8 @@ import com.netflix.exhibitor.activity.ActivityLog;
 import com.netflix.exhibitor.activity.QueueGroups;
 import com.netflix.exhibitor.entities.BackupPojo;
 import com.netflix.exhibitor.entities.ConfigPojo;
+import com.netflix.exhibitor.entities.PathPojo;
+import com.netflix.exhibitor.entities.ResultPojo;
 import com.netflix.exhibitor.entities.ServerPojo;
 import com.netflix.exhibitor.entities.SystemState;
 import com.netflix.exhibitor.entities.UITabSpec;
@@ -26,7 +29,9 @@ import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.JsonNodeFactory;
 import org.codehaus.jackson.node.ObjectNode;
 import javax.activation.MimetypesFileTypeMap;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -56,6 +61,15 @@ public class UIResource
     private final DateFormat formatter;
 
     private static final String         ERROR_KEY = "*";
+
+    private static final Function<PathPojo,String> toPojo = new Function<PathPojo, String>()
+    {
+        @Override
+        public String apply(PathPojo pojo)
+        {
+            return pojo.getPath();
+        }
+    };
 
     public UIResource(@Context ContextResolver<UIContext> resolver)
     {
@@ -149,8 +163,12 @@ public class UIResource
     @Produces(MediaType.APPLICATION_JSON)
     public Response getSystemState() throws Exception
     {
-        Collection<ServerInfo>      servers = context.getExhibitor().getConfig().getServers();
-        ServerInfo                  us = Iterables.find(servers, InstanceStateManager.isUs);
+        Collection<ServerInfo>      servers = context.getExhibitor().getGlobalSharedConfig().getServers();
+        if ( servers == null )
+        {
+            servers = Lists.newArrayList();
+        }
+        ServerInfo                  us = Iterables.find(servers, InstanceStateManager.isUs, null);
         Collection<ServerPojo>      localServers = Collections2.transform
         (
             servers,
@@ -164,7 +182,7 @@ public class UIResource
             }
         );
 
-        Collection<BackupSpec>      backupsFromConfig = context.getExhibitor().getConfig().getAvailableBackups();
+        Collection<BackupSpec>      backupsFromConfig = context.getExhibitor().getBackupManager().getSource().getAvailableBackups();
         List<BackupSpec>            availableBackups = (backupsFromConfig != null) ? Lists.newArrayList(backupsFromConfig) : Lists.<BackupSpec>newArrayList();
         Collections.sort
         (
@@ -197,11 +215,8 @@ public class UIResource
         (
             localServers,
             (us != null) ? us.getId() : -1,
-            context.getExhibitor().getConfig().getCheckSeconds(),
-            context.getExhibitor().getConfig().getBackupPeriodMs(),
-            context.getExhibitor().getConfig().getCleanupPeriodMs(),
-            context.getExhibitor().getConfig().getMaxBackups(),
-            context.getExhibitor().getConfig().getBackupPaths(),
+            context.getExhibitor().getConfig().getHostname(),
+            context.getExhibitor().getGlobalSharedConfig().getBackupPaths(),
             localAvailableRestores
         );
         SystemState state = new SystemState(config, "imok".equals(response), context.getExhibitor().restartsAreEnabled(), "v0.0.1"); // TODO - correct version
@@ -210,16 +225,74 @@ public class UIResource
 
     @Path("set/restarts/{value}")
     @GET
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response setRestartsState(@PathParam("value") boolean newValue) throws Exception
     {
         context.getExhibitor().setRestartsEnabled(newValue);
-        return Response.ok("").build();
+        return Response.ok(new ResultPojo("OK", true)).build();
+    }
+
+    @Path("set/servers")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response setServers(List<PathPojo> paths) throws Exception
+    {
+        Collection<String>      localPaths = Collections2.transform(paths, toPojo);
+        Collection<ServerInfo>  servers = Collections2.transform
+        (
+            localPaths,
+            new Function<String, ServerInfo>()
+            {
+                @Override
+                public ServerInfo apply(String str)
+                {
+                    String[] parts = str.trim().split(":");
+                    if ( parts.length == 2 )
+                    {
+                        String hostname = parts[1];
+                        try
+                        {
+                            return new ServerInfo(hostname, Integer.parseInt(parts[0]), hostname.equals(context.getExhibitor().getConfig().getHostname()));
+                        }
+                        catch ( NumberFormatException ignore )
+                        {
+                            // ignore
+                        }
+                    }
+                    return null;
+                }
+            }
+        );
+        Collection<ServerInfo>  filtered = Collections2.filter(servers, Predicates.notNull());
+        
+        context.getExhibitor().getGlobalSharedConfig().setServers(filtered);
+        return Response.ok(new ResultPojo("OK", true)).build();
+    }
+
+    @Path("set/backup-paths")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response setBackupPaths(List<PathPojo> paths) throws Exception
+    {
+        Collection<String>      localPaths = Collections2.transform(paths, toPojo);
+        context.getExhibitor().getGlobalSharedConfig().setBackupPaths(localPaths);
+        return Response.ok(new ResultPojo("OK", true)).build();
+    }
+
+    @Path("start-backup")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response startBackup() throws Exception
+    {
+        context.getExhibitor().getBackupManager().forceBackup();
+        return Response.ok(new ResultPojo("OK", true)).build();
     }
 
     @Path("stop")
     @GET
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response stopZooKeeper() throws Exception
     {
         context.getExhibitor().getActivityQueue().add
@@ -234,7 +307,7 @@ public class UIResource
             }
         );
 
-        return Response.ok("").build();
+        return Response.ok(new ResultPojo("OK", true)).build();
     }
 
     @GET

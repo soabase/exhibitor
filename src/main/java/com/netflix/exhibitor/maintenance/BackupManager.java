@@ -57,6 +57,11 @@ public class BackupManager implements Closeable
         return source;
     }
 
+    public void forceBackup()
+    {
+        repeatingActivity.forceReQueue();
+    }
+
     @VisibleForTesting
     protected boolean isLeader()
     {

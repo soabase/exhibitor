@@ -10,6 +10,8 @@
 		<script type="text/javascript" src="js/jquery.cookie.js"></script>
 		<script type="text/javascript" src="js/jquery.keyfilter.js"></script>
 		<script type="text/javascript" src="js/jquery-ui-1.8.16.custom.min.js"></script>
+		<script type="text/javascript" src="js/jquery.tools.min.js"></script>
+		<script type="text/javascript" src="js/json2.js"></script>
         <script type="text/javascript" src="dynatree/jquery.dynatree.min.js"></script>
 		<script type="text/javascript">
             var BUILTIN_TAB_QTY = 3;
@@ -28,24 +30,6 @@
                     }
                 );
                 $("#message-dialog").dialog("open");
-            }
-
-            function doConfigDialog()
-            {
-                updateConfigDialogValues();
-                $("#config-dialog").dialog("option", "title", "Edit Configuration");
-                $("#config-dialog").dialog("option", "buttons",
-                    {
-                        "Cancel": function() {
-                            $(this).dialog("close");
-                        },
-
-                        "Submit...": function() {
-                            $(this).dialog("close");
-                        }
-                    }
-                );
-                $("#config-dialog").dialog("open");
             }
 
             function okCancelDialog(title, message, okFunction)
@@ -100,6 +84,8 @@
 
                     $('#version').html(systemState.version);
                     $('#not-connected-alert').hide();
+                    $('#instance-hostname').html(systemState.config.thisHostname);
+                    $('#instance-id').html((systemState.config.thisServerId > 0) ? systemState.config.thisServerId : "n/a");
 
                     updateConfig();
                 }).error(function() {
@@ -113,34 +99,8 @@
             }
             updateState();
 
-            function getServers()
-            {
-                var serversTab = $.makeArray(systemState.config.servers);
-                var servers = "";
-                for ( var i = 0; i < serversTab.length; ++i )
-                {
-                    if ( i > 0 )
-                    {
-                        servers += ", ";
-                    }
-                    servers += serversTab[i].serverId + ":" + serversTab[i].hostname;
-                }
-                return servers;
-            }
-
             function updateConfig()
             {
-                var backupSource = "";
-                backupSource += '<div class="config-container"><div class="config-label">Backup Period:</div><div class="config-value">' + systemState.config.backupPeriodMs + ' ms</div></div>';
-                backupSource += '<div class="config-container"><div class="config-label">Cleanup Period:</div><div class="config-value">' + systemState.config.cleanupPeriodMs + ' ms</div></div>';
-
-                var configSource = "";
-                configSource += '<div class="config-container"><div class="config-label">This server ID:</div><div class="config-value">' + systemState.config.thisServerId + '</div></div>';
-                configSource += '<div class="config-container"><div class="config-label">Servers:</div><div class="config-value">' + getServers() + '</div></div>';
-                configSource += '<div class="config-container"><div class="config-label">Max Backups:</div><div class="config-value">' + systemState.config.maxBackups + '</div></div>';
-                configSource += '<div class="config-container"><div class="config-label">ZK Alive Checks:</div><div class="config-value">' + systemState.config.checkSeconds + ' second(s)</div></div>';
-                configSource += backupSource;
-
                 var backupPathsTab = $.makeArray(systemState.config.backupPaths);
                 var backupPaths = "";
                 for ( var i = 0; i < backupPathsTab.length; ++i )
@@ -163,11 +123,21 @@
                     restorePaths = "<i>none</i>";
                 }
 
+                var serversTab = $.makeArray(systemState.config.servers);
+                var servers = "";
+                for ( i = 0; i < serversTab.length; ++i )
+                {
+                    servers += '<li>hostname: <strong>' + serversTab[i].hostname + "</strong> - Server ID: <strong>" + serversTab[i].serverId + '</strong></li>';
+                }
+                if ( servers.length == 0 )
+                {
+                    servers = "<i>none</i>";
+                }
+
                 $('#config-section').show();
-                $('#config').html(configSource);
+                $('#servers').html(servers);
                 $('#backup-paths').html(backupPaths);
                 $('#restore-paths').html(restorePaths);
-                $('#backup-config').html(backupSource);
             }
 
             function refreshCurrentTab()
@@ -231,6 +201,56 @@
                 });
             }
 
+            function makePathsPojo(paths)
+            {
+                var pathsTab = new Array();
+                var splitPath = paths.split(/[,\s]/);
+                for ( var i in splitPath )
+                {
+                    if ( splitPath[i].length > 0 )
+                    {
+                        var thisPath =
+                        {
+                            path:splitPath[i]
+                        };
+                        pathsTab.push(thisPath);
+                    }
+                }
+                return {
+                    pathPojo: pathsTab
+                };
+            }
+
+            function submitBackupPaths(paths)
+            {
+                var pojo = makePathsPojo(paths);
+                $.ajax({
+                    type: 'POST',
+                    url: "set/backup-paths",
+                    data: JSON.stringify(pojo),
+                    contentType: "application/json",
+                    success: function()
+                    {
+                        updateState();
+                    }
+                });
+            }
+
+            function submitServers(paths)
+            {
+                var pojo = makePathsPojo(paths);
+                $.ajax({
+                    type: 'POST',
+                    url: "set/servers",
+                    data: JSON.stringify(pojo),
+                    contentType: "application/json",
+                    success: function()
+                    {
+                        updateState();
+                    }
+                });
+            }
+
 			$(function(){
                 $.getJSON('tabs', function(data) {
                     for ( var i = 0; i < data.uiTabSpec.length; ++i )
@@ -283,6 +303,8 @@
                         primary: "ui-icon-disk"
                     }
                 }).click(function() {
+                   $.get("start-backup");
+                   messageDialog("Backup", "Backup request sent. Check the Log for details.");
                    return false;
                 });
 
@@ -299,7 +321,8 @@
                         primary: "ui-icon-pencil"
                     }
                 }).click(function() {
-                   doConfigDialog();
+                   updateConfigDialogValues();
+                   $("#config-servers-dialog").dialog("open");
                    return false;
                 });
 
@@ -308,7 +331,8 @@
                         primary: "ui-icon-pencil"
                     }
                 }).click(function() {
-                   doConfigDialog();
+                   updateConfigDialogValues();
+                   $("#config-backup-paths-dialog").dialog("open");
                    return false;
                 });
 
@@ -321,6 +345,45 @@
                     minWidth: 500,
                     modal: true,
                     autoOpen: false
+                });
+
+                $("#config-servers-dialog").dialog({
+                    minWidth: 500,
+                    modal: true,
+                    autoOpen: false,
+                    title: "Change Servers",
+                    buttons:
+                    {
+                        "Cancel": function() {
+                            $(this).dialog("close");
+                        },
+
+                        "Submit...": function() {
+                            okCancelDialog("Change Servers", "Are you sure? This will cause the instances to be reconfigured and restarted.", function(){
+                                    submitServers($('#config-servers').val());
+                                }
+                            );
+                            $(this).dialog("close");
+                        }
+                    }
+                });
+
+                $("#config-backup-paths-dialog").dialog({
+                    minWidth: 500,
+                    modal: true,
+                    autoOpen: false,
+                    title: "Change Backup Paths",
+                    buttons:
+                    {
+                        "Cancel": function() {
+                            $(this).dialog("close");
+                        },
+
+                        "Submit": function() {
+                            submitBackupPaths($('#config-backup-paths').val());
+                            $(this).dialog("close");
+                        }
+                    }
                 });
 
                 $("#instance-restarts").buttonset({
@@ -369,6 +432,9 @@
                 $('#not-connected-message').html("Not connected to " + $('#app-name').html() + " server");
                 $('#page-title').html($('#app-name').html() + " for ZooKeeper");
 
+                $('#help-config-servers').tooltip();
+                $('#help-config-backup-paths').tooltip();
+
                 window.setInterval("updateState()", UPDATE_STATE_PERIOD);
                 updateState();
 			});
@@ -412,22 +478,15 @@
                 border: 1px solid black;
             }
 
-            .config-label
+            .tooltip
             {
-                color: #000;
-                float: left;
-                width: 150px;
-            }
-
-            .config-value
-            {
-                color: #000;
-                width: 100%;
-            }
-
-            .config-container
-            {
-                margin-bottom: 6px;
+                display: none;
+                background-color: #f5f5b5;
+                font-size: 90%;
+                height: 75px;
+                width: 200px;
+                padding: 8px;
+                z-index: 65535;
             }
 
             #config-dialog label
@@ -452,6 +511,16 @@
                 top: 5px;
                 left: 50%;
                 margin-left: -150px;
+            }
+
+            #instance-info
+            {
+                width: 300px;
+                position: absolute;
+                top: 5px;
+                left: 100%;
+                margin-left: -400px;
+                font-size: 75%;
             }
 
             #title
@@ -500,17 +569,13 @@
                 text-align: right;
             }
 
-            #config
-            {
-                padding: 10px;
-            }
-
-            #backup-paths, #restore-paths
+            #backup-paths, #restore-paths, #servers
             {
                 margin-top: 3px;
                 margin-bottom: 15px;
                 border: 1px solid black;
                 padding: 5px;
+                width: 500px;
             }
 
             #backup-paths li, #restore-paths li
@@ -529,6 +594,12 @@
             {
                 margin-top: 30px;
             }
+
+            #start-stop-button-container
+            {
+                margin-top: 20px;
+                margin-bottom: 20px;
+            }
 		</style>
 	</head>
 
@@ -546,6 +617,13 @@
                 </div>
             </div>
 
+            <div class="ui-widget" id="instance-info">
+                <div class="ui-state-highlight ui-corner-all" style="padding: 10px;">
+                    This Instance: <span id="instance-hostname" style="font-weight: bold;"></span><br/>
+                    This Server ID: <span id="instance-id" style="font-weight: bold;"></span><br/>
+                </div>
+            </div>
+
             <ul id="tabs-list">
                 <li><a href="#tabs-main">Control Panel</a></li>
                 <li><a href="#tabs-explorer">Explorer</a></li>
@@ -560,28 +638,26 @@
                     <input type="radio" id="instance-restarts-disabled" name="instance-restarts" value="disabled"/><label for="instance-restarts-disabled">Disabled</label>
                 </div>
 
-                <div class="ui-widget">
-                    <div class="ui-state-highlight ui-corner-all" style="padding: 10px;">
-                        <div id="tabs-main-running" class="ui-helper-hidden">
-                            ZooKeeper appears to be running
-                            <div id="stop-button-container">
-                                <button id="stop-button">Stop ZooKeeper...</button>
-                            </div>
-                        </div>
-                        <div id="tabs-main-not-running" class="ui-helper-hidden">
-                            ZooKeeper appears to be <strong>not</strong> running
-                            <div id="start-button-container">
-                                <button id="start-button">Start ZooKeeper</button>
-                            </div>
-                        </div>
+                <div class="ui-widget" id="start-stop-button-container">
+                    <div id="tabs-main-running" class="ui-helper-hidden">
+                        <span id="stop-button-container">
+                            <button id="stop-button">Stop ZooKeeper...</button>
+                        </span>
+                        <span style="margin-left: 10px;">ZooKeeper appears to be running</span>
+                    </div>
+                    <div id="tabs-main-not-running" class="ui-helper-hidden">
+                        <span id="start-button-container">
+                            <button id="start-button">Start ZooKeeper</button>
+                        </span>
+                        <span style="margin-left: 10px;">ZooKeeper appears to be <strong>not</strong> running</span>
                     </div>
                 </div>
 
                 <div class="ui-helper-hidden ui-widget" id="config-section">
-                    <p><strong>Configuration:</strong></p>
-                    <div id="config"></div>
+                    <strong>Servers:</strong>
+                    <div id="servers"></div>
                     <div id="main-edit-config-button-container">
-                        <button id="main-config-button">Change Configuration...</button>
+                        <button id="main-config-button">Change Servers...</button>
                     </div>
                 </div>
             </div>
@@ -622,11 +698,11 @@
                     </span>
 
                     <span id="backup-config-button-container">
-                        <button id="backup-config-button">Change Configuration...</button>
+                        <button id="backup-config-button">Change Backup Paths...</button>
                     </span>
 
                     <span id="backup-button-container">
-                        <button id="backup-button">Backup Now...</button>
+                        <button id="backup-button">Backup Now</button>
                     </span>
                 </div>
             </div>
@@ -644,31 +720,24 @@
             </p>
         </div>
 
+        <div id="config-servers-dialog" class="ui-helper-hidden">
+            <form action="javascript:void" name="config-servers-form">
+                <label for="config-servers"><strong>Servers:</strong></label><br/>
+                <textarea rows="4" cols="60" id="config-servers" class="ui-widget-content ui-corner-all"></textarea>
+                <span id="help-config-servers" class="ui-icon ui-icon-help" style="float: right" title="List of servers in the cluster in the form: id:host, id:host, ... IMPORTANT: Changing this list will cause ZK instance, starts/restarts, etc."></span><br/>
+            </form>
+        </div>
+
+        <div id="config-backup-paths-dialog" class="ui-helper-hidden">
+            <form action="javascript:void" name="config-backup-paths-form">
+                <label for="config-backup-paths"><strong>Backup Paths:</strong></label><br/>
+                <textarea rows="4" cols="60" id="config-backup-paths" class="ui-widget-content ui-corner-all"></textarea>
+                <span id="help-config-backup-paths" class="ui-icon ui-icon-help" style="float: right" title="ZKPaths to backup when the backup task is run in the form: path, path, ... End a path with * for a recursive backup (e.g. /a/b/*)"></span><br/>
+            </form>
+        </div>
+
         <div id="config-dialog" class="ui-helper-hidden">
             <form action="javascript:void" name="config-form">
-
-
-                <label for="config-servers">Servers:</label><br/>
-                <input type="text" id="config-servers" size="50" class="ui-widget-content ui-corner-all"/>
-
-                <label for="config-backup-paths">Backup Paths:</label><br/>
-                <input type="text" id="config-backup-paths" size="50" class="mask-pint ui-widget-content ui-corner-all"/>
-
-                <label for="config-this-server-id">This Server ID:</label>
-                <input type="text" id="config-this-server-id" size="10" class="mask-pint ui-widget-content ui-corner-all"/>
-
-                <label for="config-max-backups">Max Backups:</label>
-                <input type="text" id="config-max-backups" size="10" class="mask-pint ui-widget-content ui-corner-all"/>
-
-                <label for="config-check-seconds">ZK Alive Check Period (ms):</label>
-                <input type="text" id="config-check-seconds" size="10" class="mask-pint ui-widget-content ui-corner-all"/>
-
-                <label for="config-backup-period">Backup Period (ms):</label>
-                <input type="text" id="config-backup-period" size="10" class="mask-pint ui-widget-content ui-corner-all"/>
-
-                <label for="config-cleanup-period">Cleanup Period (ms):</label>
-                <input type="text" id="config-cleanup-period" size="10" class="mask-pint ui-widget-content ui-corner-all"/>
-
                 <script type="text/javascript">
                     function updateConfigDialogValues()
                     {
@@ -680,16 +749,22 @@
                             {
                                 backupPaths += ", ";
                             }
-                            backupPaths += backupPathsTab[0];
+                            backupPaths += backupPathsTab[i];
                         }
 
-                        $('#config-servers').val(getServers());
+                        var serversTab = $.makeArray(systemState.config.servers);
+                        var servers = "";
+                        for ( i = 0; i < serversTab.length; ++i )
+                        {
+                            if ( servers.length > 0 )
+                            {
+                                servers += ", ";
+                            }
+                            servers += serversTab[i].serverId + ":" + serversTab[i].hostname;
+                        }
+
                         $('#config-backup-paths').val(backupPaths);
-                        $('#config-this-server-id').val(systemState.config.thisServerId);
-                        $('#config-max-backups').val(systemState.config.maxBackups);
-                        $('#config-check-seconds').val(systemState.config.checkSeconds);
-                        $('#config-backup-period').val(systemState.config.backupPeriodMs);
-                        $('#config-cleanup-period').val(systemState.config.cleanupPeriodMs);
+                        $('#config-servers').val(servers);
                     }
                 </script>
             </form>

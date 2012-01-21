@@ -51,6 +51,11 @@ public class RepeatingActivity implements Closeable
         isStarted.set(false);
     }
 
+    public void forceReQueue()
+    {
+        exhibitor.getActivityQueue().replace(group, activity);
+    }
+
     private void reQueue()
     {
         exhibitor.getActivityQueue().add(group, activity, timePeriodMs, TimeUnit.MILLISECONDS);
