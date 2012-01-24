@@ -111,7 +111,7 @@ public class MonitorRunningInstance implements Closeable
                 @Override
                 public void completed(boolean wasSuccessful)
                 {
-                    if ( wasSuccessful )
+                    if ( wasSuccessful && (instanceState.getState() != InstanceStateTypes.WAITING) )
                     {
                         try
                         {
