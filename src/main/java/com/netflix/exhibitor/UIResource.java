@@ -17,6 +17,7 @@ import com.netflix.exhibitor.entities.ResultPojo;
 import com.netflix.exhibitor.entities.ServerPojo;
 import com.netflix.exhibitor.entities.SystemState;
 import com.netflix.exhibitor.entities.UITabSpec;
+import com.netflix.exhibitor.spi.BackupPath;
 import com.netflix.exhibitor.spi.BackupSpec;
 import com.netflix.exhibitor.spi.ServerInfo;
 import com.netflix.exhibitor.spi.UITab;
@@ -61,6 +62,7 @@ public class UIResource
     private final DateFormat formatter;
 
     private static final String         ERROR_KEY = "*";
+    private static final String         RECURSIVE_FLAG = "*";
 
     private static final Function<PathPojo,String> toPojo = new Function<PathPojo, String>()
     {
@@ -209,6 +211,19 @@ public class UIResource
                 }
             }
         );
+        
+        Collection<String>          localBackupPaths = Collections2.transform
+        (
+            context.getExhibitor().getGlobalSharedConfig().getBackupPaths(),
+            new Function<BackupPath, String>()
+            {
+                @Override
+                public String apply(BackupPath backupPath)
+                {
+                    return backupPath.isRecursive() ? ZKPaths.makePath(backupPath.getPath(), RECURSIVE_FLAG) : backupPath.getPath();
+                }
+            }
+        );
 
         String                      response = new FourLetterWord(FourLetterWord.Word.RUOK, context.getExhibitor().getConfig()).getResponse();
         ConfigPojo                  config = new ConfigPojo
@@ -216,7 +231,7 @@ public class UIResource
             localServers,
             (us != null) ? us.getId() : -1,
             context.getExhibitor().getConfig().getHostname(),
-            context.getExhibitor().getGlobalSharedConfig().getBackupPaths(),
+            localBackupPaths,
             localAvailableRestores
         );
         SystemState state = new SystemState(config, "imok".equals(response), context.getExhibitor().restartsAreEnabled(), "v0.0.1"); // TODO - correct version
@@ -276,7 +291,47 @@ public class UIResource
     @Produces(MediaType.APPLICATION_JSON)
     public Response setBackupPaths(List<PathPojo> paths) throws Exception
     {
-        Collection<String>      localPaths = Collections2.transform(paths, toPojo);
+        Collection<BackupPath>      localPaths = Collections2.transform
+        (
+            paths,
+            new Function<PathPojo, BackupPath>()
+            {
+                @Override
+                public BackupPath apply(PathPojo pojo)
+                {
+                    String      path = pojo.getPath();
+                    String      originalPath = path;
+                    boolean     isRecursive = path.endsWith(RECURSIVE_FLAG);
+                    if ( isRecursive )
+                    {
+                        path = trimEnding(path, RECURSIVE_FLAG);
+                        if ( path == null )
+                        {
+                            return null;
+                        }
+                    }
+                    if ( path.endsWith("/") )
+                    {
+                        path = trimEnding(path, "/");
+                        if ( path == null )
+                        {
+                            return null;
+                        }
+                    }
+                    try
+                    {
+                        return new BackupPath(path, isRecursive);
+                    }
+                    catch ( IllegalArgumentException ignore )
+                    {
+                        // ignore
+                    }
+                    return null;
+                }
+            }
+        );
+        localPaths = Collections2.filter(localPaths, Predicates.notNull());
+
         context.getExhibitor().getGlobalSharedConfig().setBackupPaths(localPaths);
         return Response.ok(new ResultPojo("OK", true)).build();
     }
@@ -467,4 +522,17 @@ public class UIResource
         }
         return str.toString();
     }
+
+    private String trimEnding(String path, String ending)
+    {
+        int     endIndex = path.length() - ending.length();
+        if ( endIndex < 1 )
+        {
+            context.getExhibitor().getLog().add(ActivityLog.Type.INFO, "Ignoring bad path in backups: " + path);
+            return null;
+        }
+        path = path.substring(0, endIndex);
+        return path;
+    }
+
 }

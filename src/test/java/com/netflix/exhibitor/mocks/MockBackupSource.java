@@ -4,6 +4,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.io.ByteStreams;
 import com.netflix.exhibitor.InstanceConfig;
+import com.netflix.exhibitor.spi.BackupPath;
 import com.netflix.exhibitor.spi.BackupSource;
 import com.netflix.exhibitor.spi.BackupSpec;
 import java.io.BufferedInputStream;
@@ -29,9 +30,9 @@ public class MockBackupSource implements BackupSource
     }
 
     @Override
-    public void backup(InstanceConfig backupConfig, String path, InputStream stream) throws Exception
+    public void backup(InstanceConfig backupConfig, BackupPath path, InputStream stream) throws Exception
     {
-        File                    f = new File(tempDirectory, URLEncoder.encode(path, "UTF-8"));
+        File                    f = new File(tempDirectory, URLEncoder.encode(path.getPath(), "UTF-8"));
         BufferedOutputStream    out = new BufferedOutputStream(new FileOutputStream(f));
         try
         {

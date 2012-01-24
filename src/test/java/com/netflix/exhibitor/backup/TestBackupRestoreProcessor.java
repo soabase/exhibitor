@@ -11,6 +11,7 @@ import com.netflix.exhibitor.InstanceConfig;
 import com.netflix.exhibitor.activity.ActivityLog;
 import com.netflix.exhibitor.mocks.MockBackupSource;
 import com.netflix.exhibitor.mocks.MockGlobalSharedConfig;
+import com.netflix.exhibitor.spi.BackupPath;
 import com.netflix.exhibitor.spi.BackupSource;
 import com.netflix.exhibitor.spi.BackupSpec;
 import org.testng.Assert;
@@ -41,7 +42,7 @@ public class TestBackupRestoreProcessor
             BackupSource            source = new MockBackupSource(tempDirectory);
 
             BackupProcessor         backupProcessor = new BackupProcessor(sharedConfig, client, new ActivityLog(), source, config);
-            sharedConfig.setBackupPaths(Arrays.asList("/test"));
+            sharedConfig.setBackupPaths(Arrays.asList(new BackupPath("/test", false)));
             backupProcessor.execute();
 
             Collection<BackupSpec>  backups = source.getAvailableBackups();
@@ -91,7 +92,7 @@ public class TestBackupRestoreProcessor
             BackupSource            source = new MockBackupSource(tempDirectory);
 
             BackupProcessor         backupProcessor = new BackupProcessor(sharedConfig, client, new ActivityLog(), source, config);
-            sharedConfig.setBackupPaths(Arrays.asList("/a1/*"));
+            sharedConfig.setBackupPaths(Arrays.asList(new BackupPath("/a1", true)));
             backupProcessor.execute();
 
             Collection<BackupSpec>  backups = source.getAvailableBackups();

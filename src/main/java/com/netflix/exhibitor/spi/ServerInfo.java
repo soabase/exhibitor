@@ -1,11 +1,19 @@
 package com.netflix.exhibitor.spi;
 
+/**
+ * POJO representing a server in the ensemble
+ */
 public class ServerInfo
 {
     private final String            hostname;
     private final int               id;
     private final boolean           isThisServer;
 
+    /**
+     * @param hostname hostname of the server
+     * @param id Server ID
+     * @param thisServer true if this represents the instance this Exhibitor is monitoring
+     */
     public ServerInfo(String hostname, int id, boolean thisServer)
     {
         this.hostname = hostname;

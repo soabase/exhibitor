@@ -1,12 +1,13 @@
 package com.netflix.exhibitor.imps;
 
+import com.google.common.collect.Iterables;
 import com.google.common.io.Closeables;
 import com.google.common.io.Files;
 import com.netflix.exhibitor.Exhibitor;
 import com.netflix.exhibitor.activity.ActivityLog;
 import com.netflix.exhibitor.spi.ProcessOperations;
 import com.netflix.exhibitor.spi.ServerInfo;
-import com.netflix.exhibitor.state.InstanceState;
+import com.netflix.exhibitor.state.InstanceStateManager;
 import java.io.*;
 import java.util.Date;
 import java.util.Properties;
@@ -166,9 +167,9 @@ public class StandardProcessOperations implements ProcessOperations
     }
 
     @Override
-    public void startInstance(Exhibitor exhibitor, InstanceState instanceState) throws Exception
+    public void startInstance(Exhibitor exhibitor) throws Exception
     {
-        File            configFile = prepConfigFile(exhibitor, instanceState);
+        File            configFile = prepConfigFile(exhibitor);
         File            binDirectory = new File(zooKeeperDirectory, "bin");
         File            startScript = new File(binDirectory, "zkServer.sh");
         ProcessBuilder  builder = new ProcessBuilder(startScript.getPath(), "start").directory(binDirectory.getParentFile());
@@ -198,11 +199,13 @@ public class StandardProcessOperations implements ProcessOperations
         return snapshots[0];
     }
 
-    private File prepConfigFile(Exhibitor exhibitor, InstanceState instanceState) throws IOException
+    private File prepConfigFile(Exhibitor exhibitor) throws IOException
     {
+        ServerInfo      us = Iterables.find(exhibitor.getGlobalSharedConfig().getServers(), InstanceStateManager.isUs);
+        
         File            idFile = new File(dataDirectory, "myid");
         Files.createParentDirs(idFile);
-        String          id = String.format("%d\n", instanceState.getServerId());
+        String          id = String.format("%d\n", us.getId());
         Files.write(id.getBytes(), idFile);
 
         Properties      localProperties = new Properties();
@@ -210,8 +213,8 @@ public class StandardProcessOperations implements ProcessOperations
 
         localProperties.setProperty("clientPort", Integer.toString(exhibitor.getConfig().getClientPort()));
 
-        String          portSpec = String.format(":%d:%d", instanceState.getConnectPort(), instanceState.getElectionPort());
-        for ( ServerInfo server : instanceState.getServers() )
+        String          portSpec = String.format(":%d:%d", exhibitor.getConfig().getConnectPort(), exhibitor.getConfig().getElectionPort());
+        for ( ServerInfo server : exhibitor.getGlobalSharedConfig().getServers() )
         {
             localProperties.setProperty("server." + server.getId(), server.getHostname() + portSpec);
         }

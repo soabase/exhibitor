@@ -1,5 +1,6 @@
 package com.netflix.exhibitor.mocks;
 
+import com.netflix.exhibitor.spi.BackupPath;
 import com.netflix.exhibitor.spi.GlobalSharedConfig;
 import com.netflix.exhibitor.spi.ServerInfo;
 import java.util.Arrays;
@@ -7,7 +8,7 @@ import java.util.Collection;
 
 public class MockGlobalSharedConfig implements GlobalSharedConfig
 {
-    private volatile Collection<String> backupPaths;
+    private volatile Collection<BackupPath> backupPaths;
     private volatile Collection<ServerInfo> servers = Arrays.asList(new ServerInfo("localhost", 1, true));
 
     @Override
@@ -23,13 +24,13 @@ public class MockGlobalSharedConfig implements GlobalSharedConfig
     }
 
     @Override
-    public Collection<String> getBackupPaths()
+    public Collection<BackupPath> getBackupPaths()
     {
         return backupPaths;
     }
 
     @Override
-    public void setBackupPaths(Collection<String> newBackupPaths) throws Exception
+    public void setBackupPaths(Collection<BackupPath> newBackupPaths) throws Exception
     {
         this.backupPaths = newBackupPaths;
     }
