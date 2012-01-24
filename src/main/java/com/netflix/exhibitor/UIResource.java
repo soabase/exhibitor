@@ -205,7 +205,7 @@ public class UIResource
                 @Override
                 public BackupPojo apply(BackupSpec spec)
                 {
-                    return new BackupPojo(spec.getName(), formatter.format(spec.getDate()));
+                    return new BackupPojo(spec.getPath(), formatter.format(spec.getDate()));
                 }
             }
         );

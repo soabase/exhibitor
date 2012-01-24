@@ -6,7 +6,7 @@ import java.util.Collection;
 
 public interface BackupSource
 {
-    public void     backup(InstanceConfig backupConfig, String name, InputStream stream) throws Exception;
+    public void     backup(InstanceConfig backupConfig, String path, InputStream stream) throws Exception;
 
     public InputStream openRestoreStream(InstanceConfig backupConfig, BackupSpec spec) throws Exception;
 

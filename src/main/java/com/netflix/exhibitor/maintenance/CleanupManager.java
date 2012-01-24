@@ -23,7 +23,7 @@ public class CleanupManager implements Closeable
             }
 
             @Override
-            public void run()
+            public Boolean call() throws Exception
             {
                 try
                 {
@@ -33,9 +33,10 @@ public class CleanupManager implements Closeable
                 {
                     exhibitor.getLog().add(ActivityLog.Type.ERROR, "Doing cleanup", e);
                 }
+                return true;
             }
         };
-        repeatingActivity = new RepeatingActivity(exhibitor, QueueGroups.IO, activity, 10000); // TODO exhibitor.getConfig().getCleanupPeriodMs());
+        repeatingActivity = new RepeatingActivity(exhibitor.getActivityQueue(), QueueGroups.IO, activity, exhibitor.getConfig().getCleanupPeriodMs());
     }
 
     public void start()

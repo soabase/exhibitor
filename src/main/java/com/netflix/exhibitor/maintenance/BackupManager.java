@@ -33,12 +33,13 @@ public class BackupManager implements Closeable
             }
 
             @Override
-            public void run()
+            public Boolean call() throws Exception
             {
                 doBackup();
+                return true;
             }
         };
-        repeatingActivity = new RepeatingActivity(exhibitor, QueueGroups.IO, activity, exhibitor.getConfig().getBackupPeriodMs());
+        repeatingActivity = new RepeatingActivity(exhibitor.getActivityQueue(), QueueGroups.IO, activity, exhibitor.getConfig().getBackupPeriodMs());
     }
 
     public void     start()
@@ -74,7 +75,14 @@ public class BackupManager implements Closeable
         exhibitor.getLog().add(ActivityLog.Type.INFO, "Starting backup");
         try
         {
-            new BackupProcessor(exhibitor).execute();
+            new BackupProcessor
+            (
+                exhibitor.getGlobalSharedConfig(),
+                exhibitor.getLocalConnection(),
+                exhibitor.getLog(),
+                exhibitor.getBackupManager().getSource(),
+                exhibitor.getConfig()
+            ).execute();
             exhibitor.getLog().add(ActivityLog.Type.INFO, "Backup ended");
         }
         catch ( Exception e )

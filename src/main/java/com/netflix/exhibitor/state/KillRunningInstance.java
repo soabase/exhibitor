@@ -14,7 +14,7 @@ public abstract class KillRunningInstance implements Activity
     }
 
     @Override
-    public void run()
+    public Boolean call() throws Exception
     {
         exhibitor.getLog().add(ActivityLog.Type.INFO, "Attempting to stop instance");
 
@@ -28,6 +28,6 @@ public abstract class KillRunningInstance implements Activity
         {
             exhibitor.getLog().add(ActivityLog.Type.ERROR, "Trying to kill running instance", e);
         }
-        completed(success);
+        return success;
     }
 }

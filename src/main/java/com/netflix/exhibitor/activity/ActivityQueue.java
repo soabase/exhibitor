@@ -44,7 +44,7 @@ public class ActivityQueue implements Closeable
                 return 0;
             }
 
-            long    diff = getDelay(TimeUnit.NANOSECONDS) - rhs.getDelay(TimeUnit.NANOSECONDS);
+            long    diff = getDelay(TimeUnit.MILLISECONDS) - rhs.getDelay(TimeUnit.MILLISECONDS);
             return (diff == 0) ? 0 : ((diff < 0) ? -1 : 1);
         }
 
@@ -113,7 +113,8 @@ public class ActivityQueue implements Closeable
                                 ActivityHolder holder = thisQueue.take();
                                 try
                                 {
-                                    holder.activity.run();
+                                    Boolean result = holder.activity.call();
+                                    holder.activity.completed((result != null) && result);
                                 }
                                 catch ( Throwable e )
                                 {

@@ -3,9 +3,10 @@ package com.netflix.exhibitor.backup;
 import com.google.common.io.Closeables;
 import com.netflix.curator.framework.CuratorFramework;
 import com.netflix.curator.utils.ZKPaths;
-import com.netflix.exhibitor.Exhibitor;
+import com.netflix.exhibitor.InstanceConfig;
 import com.netflix.exhibitor.activity.ActivityLog;
 import com.netflix.exhibitor.spi.BackupSource;
+import com.netflix.exhibitor.spi.GlobalSharedConfig;
 import org.apache.zookeeper.common.PathUtils;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -20,43 +21,56 @@ import java.util.zip.GZIPOutputStream;
 
 public class BackupProcessor
 {
-    private final Exhibitor exhibitor;
-    
+    private final GlobalSharedConfig sharedConfig;
+    private final CuratorFramework client;
+    private final ActivityLog log;
+    private final BackupSource backupSource;
+    private final InstanceConfig config;
+
     static final String     FILE_VERSION = "1.0";
     static final String     EOF_MARKER = "!";   // an illegal path
 
     private static final String RECURSIVE_FLAG = "*";
 
-    public BackupProcessor(Exhibitor exhibitor)
+    public BackupProcessor(GlobalSharedConfig sharedConfig, CuratorFramework client, ActivityLog log, BackupSource backupSource, InstanceConfig config)
     {
-        this.exhibitor = exhibitor;
+        this.sharedConfig = sharedConfig;
+        this.client = client;
+        this.log = log;
+        this.backupSource = backupSource;
+        this.config = config;
     }
 
     public void execute() throws Exception
     {
-        if ( exhibitor.getGlobalSharedConfig().getBackupPaths() != null )
+        if ( sharedConfig.getBackupPaths() != null )
         {
-            CuratorFramework    client = exhibitor.getLocalConnection();
-            for ( String path : exhibitor.getGlobalSharedConfig().getBackupPaths() )
+            for ( String path : sharedConfig.getBackupPaths() )
             {
-                backupPath(client, path);
+                backupPath(path);
             }
         }
     }
 
-    private void backupPath(CuratorFramework client, String path) throws Exception
+    private void backupPath(String path) throws Exception
     {
         String      originalPath = path;
         boolean     isRecursive = path.endsWith(RECURSIVE_FLAG);
         if ( isRecursive )
         {
-            int     endIndex = path.length() - RECURSIVE_FLAG.length();
-            if ( endIndex < 1 )
+            path = trimEnding(path, RECURSIVE_FLAG);
+            if ( path == null )
             {
-                exhibitor.getLog().add(ActivityLog.Type.ERROR, "Bad path in backups: " + path);
                 return;
             }
-            path = path.substring(0, endIndex);
+        }
+        if ( path.endsWith("/") )
+        {
+            path = trimEnding(path, "/");
+            if ( path == null )
+            {
+                return;
+            }
         }
         
         try
@@ -65,7 +79,7 @@ public class BackupProcessor
         }
         catch ( IllegalArgumentException e )
         {
-            exhibitor.getLog().add(ActivityLog.Type.ERROR, "Bad path in backups: " + path, e);
+            log.add(ActivityLog.Type.ERROR, "Bad path in backups: " + path, e);
             return;
         }
 
@@ -85,17 +99,15 @@ public class BackupProcessor
                 backupOnePath(client, path, out, isRecursive);
                 out.writeUTF(EOF_MARKER);
 
-                Closeables.closeQuietly(out);
+                out.close();
                 out = null;
 
-                BackupSource backupSource = exhibitor.getBackupManager().getSource();
-
                 in = new BufferedInputStream(new FileInputStream(tempFile));
-                backupSource.backup(exhibitor.getConfig(), path, in);
+                backupSource.backup(config, path, in);
             }
             catch ( Exception e )
             {
-                exhibitor.getLog().add(ActivityLog.Type.ERROR, "Could not backup path: " + originalPath, e);
+                log.add(ActivityLog.Type.ERROR, "Could not backup path: " + originalPath, e);
             }
         }
         finally
@@ -105,6 +117,18 @@ public class BackupProcessor
             //noinspection ResultOfMethodCallIgnored
             tempFile.delete();
         }
+    }
+
+    private String trimEnding(String path, String ending)
+    {
+        int     endIndex = path.length() - ending.length();
+        if ( endIndex < 1 )
+        {
+            log.add(ActivityLog.Type.ERROR, "Bad path in backups: " + path);
+            return null;
+        }
+        path = path.substring(0, endIndex);
+        return path;
     }
 
     private void backupOnePath(CuratorFramework client, String path, DataOutputStream out, boolean recursive) throws Exception

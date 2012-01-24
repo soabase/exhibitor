@@ -4,7 +4,6 @@ import com.google.common.io.Closeables;
 import com.google.common.io.Files;
 import com.netflix.exhibitor.Exhibitor;
 import com.netflix.exhibitor.activity.ActivityLog;
-import com.netflix.exhibitor.spi.BackupSource;
 import com.netflix.exhibitor.spi.ProcessOperations;
 import com.netflix.exhibitor.spi.ServerInfo;
 import com.netflix.exhibitor.state.InstanceState;
@@ -182,14 +181,14 @@ public class StandardProcessOperations implements ProcessOperations
     private File findJar(File dir, final String name) throws IOException
     {
         File[]          snapshots = dir.listFiles
-            (
-                new FileFilter()
+        (
+            new FileFilter()
+            {
+                @Override
+                public boolean accept(File f)
                 {
-                    @Override
-                    public boolean accept(File f)
-                    {
-                        return f.getName().startsWith(name) && f.getName().endsWith(".jar");
-                    }
+                    return f.getName().startsWith(name) && f.getName().endsWith(".jar");
+                }
             }
         );
         if ( snapshots.length == 0 )
@@ -206,7 +205,8 @@ public class StandardProcessOperations implements ProcessOperations
         String          id = String.format("%d\n", instanceState.getServerId());
         Files.write(id.getBytes(), idFile);
 
-        Properties      localProperties = new Properties(properties);
+        Properties      localProperties = new Properties();
+        localProperties.putAll(properties);
 
         localProperties.setProperty("clientPort", Integer.toString(exhibitor.getConfig().getClientPort()));
 

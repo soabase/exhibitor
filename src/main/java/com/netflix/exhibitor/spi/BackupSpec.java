@@ -4,18 +4,18 @@ import java.util.Date;
 
 public class BackupSpec
 {
-    private final String        name;
-    private final Date          date;
+    private final String    path;
+    private final Date      date;
 
-    public BackupSpec(String name, Date date)
+    public BackupSpec(String path, Date date)
     {
-        this.name = name;
+        this.path = path;
         this.date = date;
     }
 
-    public String getName()
+    public String getPath()
     {
-        return name;
+        return path;
     }
 
     public Date getDate()

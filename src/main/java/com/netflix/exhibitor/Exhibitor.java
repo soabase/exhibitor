@@ -24,7 +24,7 @@ public class Exhibitor implements Closeable
     private final MonitorRunningInstance    monitorRunningInstance;
     private final InstanceStateManager      instanceStateManager;
     private final InstanceConfig            instanceConfig;
-    private final GlobalSharedConfig globalSharedConfig;
+    private final GlobalSharedConfig        globalSharedConfig;
     private final ProcessOperations         processOperations;
     private final CleanupManager            cleanupManager;
     private final BackupManager             backupManager;

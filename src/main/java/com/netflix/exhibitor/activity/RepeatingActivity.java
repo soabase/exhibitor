@@ -1,6 +1,5 @@
 package com.netflix.exhibitor.activity;
 
-import com.netflix.exhibitor.Exhibitor;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -8,15 +7,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RepeatingActivity implements Closeable
 {
-    private final Exhibitor     exhibitor;
     private final QueueGroups   group;
     private final AtomicBoolean isStarted = new AtomicBoolean(false);
     private final Activity      activity;
     private final long          timePeriodMs;
+    private final ActivityQueue queue;
 
-    public RepeatingActivity(Exhibitor exhibitor, QueueGroups group, final Activity actualActivity, long timePeriodMs)
+    public RepeatingActivity(ActivityQueue queue, QueueGroups group, final Activity actualActivity, long timePeriodMs)
     {
-        this.exhibitor = exhibitor;
+        this.queue = queue;
         this.group = group;
         this.activity = new Activity()
         {
@@ -27,13 +26,15 @@ public class RepeatingActivity implements Closeable
             }
 
             @Override
-            public void run()
+            public Boolean call() throws Exception
             {
+                boolean     result = false;
                 if ( isStarted.get() )
                 {
-                    actualActivity.run();
+                    result = actualActivity.call();
                     reQueue();
                 }
+                return result;
             }
         };
         this.timePeriodMs = timePeriodMs;
@@ -53,11 +54,11 @@ public class RepeatingActivity implements Closeable
 
     public void forceReQueue()
     {
-        exhibitor.getActivityQueue().replace(group, activity);
+        queue.replace(group, activity);
     }
 
     private void reQueue()
     {
-        exhibitor.getActivityQueue().add(group, activity, timePeriodMs, TimeUnit.MILLISECONDS);
+        queue.add(group, activity, timePeriodMs, TimeUnit.MILLISECONDS);
     }
 }

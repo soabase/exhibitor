@@ -28,12 +28,13 @@ public class Checker implements Closeable
             }
 
             @Override
-            public void run()
+            public Boolean call() throws Exception
             {
                 setState();
+                return true;
             }
         };
-        repeatingActivity = new RepeatingActivity(exhibitor, QueueGroups.MAIN, activity, TimeUnit.MILLISECONDS.convert(exhibitor.getConfig().getCheckSeconds(), TimeUnit.SECONDS));
+        repeatingActivity = new RepeatingActivity(exhibitor.getActivityQueue(), QueueGroups.MAIN, activity, TimeUnit.MILLISECONDS.convert(exhibitor.getConfig().getCheckSeconds(), TimeUnit.SECONDS));
     }
 
     public void     start()

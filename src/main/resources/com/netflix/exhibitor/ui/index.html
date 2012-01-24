@@ -263,6 +263,15 @@
                         show: function(event, ui)
                         {
                             var selected = $("#tabs").tabs("option", "selected");
+                            if ( selected == 0 )
+                            {
+                                $('#instance-info').show();
+                            }
+                            else
+                            {
+                                $('#instance-info').hide();
+                            }
+
                             if ( selected < BUILTIN_TAB_QTY )
                             {
                                 $("#refresh-state-container").hide();
@@ -517,10 +526,9 @@
             {
                 width: 300px;
                 position: absolute;
-                top: 5px;
-                left: 100%;
-                margin-left: -400px;
-                font-size: 75%;
+                top: 150px;
+                left: 50%;
+                margin-left: -150px;
             }
 
             #title
@@ -617,13 +625,6 @@
                 </div>
             </div>
 
-            <div class="ui-widget" id="instance-info">
-                <div class="ui-state-highlight ui-corner-all" style="padding: 10px;">
-                    This Instance: <span id="instance-hostname" style="font-weight: bold;"></span><br/>
-                    This Server ID: <span id="instance-id" style="font-weight: bold;"></span><br/>
-                </div>
-            </div>
-
             <ul id="tabs-list">
                 <li><a href="#tabs-main">Control Panel</a></li>
                 <li><a href="#tabs-explorer">Explorer</a></li>
@@ -711,6 +712,14 @@
         <div id="refresh-state-container" class="ui-helper-hidden">
             <input type="radio" id="refresh-state-auto" name="refresh-state" value="auto"/><label for="refresh-state-auto">Auto Reload</label>
             <input type="radio" id="refresh-state-manual" name="refresh-state" value="manual"/><label for="refresh-state-manual">Manual Reload</label>
+        </div>
+
+        <div class="ui-widget ui-helper-hidden" id="instance-info">
+            <div class="ui-state-highlight ui-corner-all" style="padding: 10px;">
+                This Instance: <span id="instance-hostname" style="font-weight: bold;"></span><br/>
+                This Server ID: <span id="instance-id" style="font-weight: bold;"></span><br/>
+                <span id="instance-inactive-message" class="ui-helper-hidden">This instance is <strong>inactive</strong></span><br/>
+            </div>
         </div>
 
         <div id="message-dialog" class="ui-helper-hidden">

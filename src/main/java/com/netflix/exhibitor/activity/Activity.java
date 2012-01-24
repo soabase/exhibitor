@@ -1,6 +1,8 @@
 package com.netflix.exhibitor.activity;
 
-public interface Activity extends Runnable
+import java.util.concurrent.Callable;
+
+public interface Activity extends Callable<Boolean>
 {
     public void     completed(boolean wasSuccessful);
 }

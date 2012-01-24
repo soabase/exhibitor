@@ -3,7 +3,7 @@ package com.netflix.exhibitor.backup;
 import com.google.common.io.Closeables;
 import com.netflix.curator.RetryPolicy;
 import com.netflix.curator.framework.CuratorFramework;
-import com.netflix.exhibitor.Exhibitor;
+import com.netflix.exhibitor.InstanceConfig;
 import com.netflix.exhibitor.activity.ActivityLog;
 import com.netflix.exhibitor.spi.BackupSource;
 import com.netflix.exhibitor.spi.BackupSpec;
@@ -16,23 +16,26 @@ import java.util.zip.GZIPInputStream;
 
 public class RestoreProcessor
 {
-    private final Exhibitor exhibitor;
+    private final CuratorFramework client;
+    private final ActivityLog log;
+    private final BackupSource backupSource;
+    private final InstanceConfig config;
 
-    public RestoreProcessor(Exhibitor exhibitor)
+    public RestoreProcessor(CuratorFramework client, ActivityLog log, BackupSource backupSource, InstanceConfig config)
     {
-        this.exhibitor = exhibitor;
+        this.client = client;
+        this.log = log;
+        this.backupSource = backupSource;
+        this.config = config;
     }
 
     public void restoreFromBackup(BackupSpec spec) throws Exception
     {
-        CuratorFramework    client = exhibitor.getLocalConnection();
-        BackupSource        source = exhibitor.getBackupManager().getSource();
-
         boolean             hasRestorations = false;
         InputStream         in = null;
         try
         {
-            in = source.openRestoreStream(exhibitor.getConfig(), spec);
+            in = backupSource.openRestoreStream(config, spec);
 
             DataInputStream wrapped = new DataInputStream(new GZIPInputStream(new BufferedInputStream(in)));
             in = wrapped;
@@ -57,7 +60,7 @@ public class RestoreProcessor
                 wrapped.readFully(data);
 
                 restoreWithRetry(client, thisPath, data);
-                exhibitor.getLog().add(ActivityLog.Type.INFO, "Restored: " + thisPath);
+                log.add(ActivityLog.Type.INFO, "Restored: " + thisPath);
                 hasRestorations = true;
             }
         }
@@ -68,7 +71,7 @@ public class RestoreProcessor
             {
                 message += " - IMPORTATION: Some paths have been restored already. Check the log for details.";
             }
-            exhibitor.getLog().add(ActivityLog.Type.ERROR, message, e);
+            log.add(ActivityLog.Type.ERROR, message, e);
         }
         finally
         {
