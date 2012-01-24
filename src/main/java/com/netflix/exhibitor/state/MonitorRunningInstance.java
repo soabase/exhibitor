@@ -81,7 +81,7 @@ public class MonitorRunningInstance implements Closeable
                     case NOT_SERVING:
                     case UNKNOWN:
                     {
-                        notServingStartMs.set(System.currentTimeMillis());
+                        setNotServing();
                         restartZooKeeper(instanceState);
                         break;
                     }
@@ -94,6 +94,11 @@ public class MonitorRunningInstance implements Closeable
                 }
             }
         }
+    }
+
+    private void setNotServing()
+    {
+        notServingStartMs.set(System.currentTimeMillis());
     }
 
     private void restartZooKeeper(final InstanceState instanceState)
@@ -111,15 +116,22 @@ public class MonitorRunningInstance implements Closeable
                 @Override
                 public void completed(boolean wasSuccessful)
                 {
-                    if ( wasSuccessful && (instanceState.getState() != InstanceStateTypes.WAITING) )
+                    if ( wasSuccessful )
                     {
-                        try
+                        if ( instanceState.getState() == InstanceStateTypes.WAITING )
                         {
-                            exhibitor.getProcessOperations().startInstance(exhibitor, instanceState);
+                            setNotServing();
                         }
-                        catch ( Exception e )
+                        else
                         {
-                            exhibitor.getLog().add(ActivityLog.Type.ERROR, "Monitoring instance", e);
+                            try
+                            {
+                                exhibitor.getProcessOperations().startInstance(exhibitor, instanceState);
+                            }
+                            catch ( Exception e )
+                            {
+                                exhibitor.getLog().add(ActivityLog.Type.ERROR, "Monitoring instance", e);
+                            }
                         }
                     }
                 }
