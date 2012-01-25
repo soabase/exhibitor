@@ -1,6 +1,5 @@
 package com.netflix.exhibitor.spi;
 
-import com.netflix.exhibitor.InstanceConfig;
 import java.io.InputStream;
 import java.util.Collection;
 
@@ -12,12 +11,11 @@ public interface BackupSource
     /**
      * Backup the given path
      *
-     * @param backupConfig config
      * @param path the path being backed-up
      * @param stream stream of the backup. The stream is buffered and compressed.
      * @throws Exception errors
      */
-    public void     backup(InstanceConfig backupConfig, BackupPath path, InputStream stream) throws Exception;
+    public void     backup(BackupPath path, InputStream stream) throws Exception;
 
     /**
      * Return the list of available backups
@@ -29,10 +27,17 @@ public interface BackupSource
     /**
      * Open a stream for the specified backup. There's no need to buffer the stream.
      *
-     * @param backupConfig config
      * @param spec the backup
      * @return the stream
      * @throws Exception errors
      */
-    public InputStream openRestoreStream(InstanceConfig backupConfig, BackupSpec spec) throws Exception;
+    public InputStream openRestoreStream(BackupSpec spec) throws Exception;
+
+    /**
+     * Delete the given backup (it is being cleaned up)
+     *
+     * @param spec the backup
+     * @throws Exception errors
+     */
+    public void deleteBackup(BackupSpec spec) throws Exception;
 }

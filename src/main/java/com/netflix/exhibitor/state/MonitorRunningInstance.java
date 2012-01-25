@@ -126,7 +126,7 @@ public class MonitorRunningInstance implements Closeable
                         {
                             try
                             {
-                                exhibitor.getProcessOperations().startInstance(exhibitor);
+                                exhibitor.getProcessOperations().startInstance();
                             }
                             catch ( Exception e )
                             {

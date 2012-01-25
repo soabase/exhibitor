@@ -35,7 +35,7 @@ public class RestoreProcessor
         InputStream         in = null;
         try
         {
-            in = backupSource.openRestoreStream(config, spec);
+            in = backupSource.openRestoreStream(spec);
 
             DataInputStream wrapped = new DataInputStream(new GZIPInputStream(new BufferedInputStream(in)));
             in = wrapped;

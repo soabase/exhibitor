@@ -21,7 +21,7 @@ public abstract class KillRunningInstance implements Activity
         boolean     success = false;
         try
         {
-            exhibitor.getProcessOperations().killInstance(exhibitor);
+            exhibitor.getProcessOperations().killInstance();
             success = true;
         }
         catch ( Exception e )

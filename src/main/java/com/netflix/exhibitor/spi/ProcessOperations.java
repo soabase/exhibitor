@@ -13,24 +13,21 @@ public interface ProcessOperations
      * Start the instance
      *
      *
-     * @param exhibitor main
      * @throws Exception errors
      */
-    public void         startInstance(Exhibitor exhibitor) throws Exception;
+    public void         startInstance() throws Exception;
 
     /**
      * Kill the instance
      *
-     * @param exhibitor main
      * @throws Exception errors
      */
-    public void         killInstance(Exhibitor exhibitor) throws Exception;
+    public void         killInstance() throws Exception;
 
     /**
      * Perform an instance log/etc. cleanup
      *
-     * @param exhibitor main
      * @throws Exception errors
      */
-    public void         cleanupInstance(Exhibitor exhibitor) throws Exception;
+    public void         cleanupInstance() throws Exception;
 }

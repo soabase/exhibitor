@@ -72,7 +72,7 @@ public class BackupProcessor
                 out = null;
 
                 in = new BufferedInputStream(new FileInputStream(tempFile));
-                backupSource.backup(config, path, in);
+                backupSource.backup(path, in);
             }
             catch ( Exception e )
             {

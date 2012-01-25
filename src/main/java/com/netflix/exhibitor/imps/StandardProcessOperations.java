@@ -23,14 +23,16 @@ public class StandardProcessOperations implements ProcessOperations
     private final File log4jJarPath;
     private final File zooKeeperJarPath;
     private final Properties properties;
+    private final Exhibitor exhibitor;
 
     private static final String     MODIFIED_CONFIG_NAME = "exhibitor.cfg";
     private static final String     SNAPSHOT_PREFIX = "snapshot.";
 
     private static final int        LOG_BACKUP_COUNT = 3;   // TODO - make configurable
 
-    public StandardProcessOperations(String zooKeeperDirectory, String dataDirectory) throws IOException
+    public StandardProcessOperations(Exhibitor exhibitor, String zooKeeperDirectory, String dataDirectory) throws IOException
     {
+        this.exhibitor = exhibitor;
         this.zooKeeperDirectory = new File(zooKeeperDirectory);
         this.dataDirectory = new File(dataDirectory);
 
@@ -52,7 +54,7 @@ public class StandardProcessOperations implements ProcessOperations
     }
 
     @Override
-    public void cleanupInstance(Exhibitor exhibitor) throws Exception
+    public void cleanupInstance() throws Exception
     {
         // see http://zookeeper.apache.org/doc/r3.3.3/zookeeperAdmin.html#Ongoing+Data+Directory+Cleanup
         ProcessBuilder      builder = new ProcessBuilder
@@ -114,7 +116,7 @@ public class StandardProcessOperations implements ProcessOperations
     }
 
     @Override
-    public void killInstance(Exhibitor exhibitor) throws Exception
+    public void killInstance() throws Exception
     {
         exhibitor.getLog().add(ActivityLog.Type.INFO, "Attempting to start/restart ZooKeeper");
 
@@ -167,7 +169,7 @@ public class StandardProcessOperations implements ProcessOperations
     }
 
     @Override
-    public void startInstance(Exhibitor exhibitor) throws Exception
+    public void startInstance() throws Exception
     {
         File            configFile = prepConfigFile(exhibitor);
         File            binDirectory = new File(zooKeeperDirectory, "bin");

@@ -211,10 +211,11 @@ public class UIResource
                 }
             }
         );
-        
+
+        Collection<BackupPath>      backupPaths = context.getExhibitor().getGlobalSharedConfig().getBackupPaths();
         Collection<String>          localBackupPaths = Collections2.transform
         (
-            context.getExhibitor().getGlobalSharedConfig().getBackupPaths(),
+            (backupPaths != null) ? backupPaths : Lists.<BackupPath>newArrayList(),
             new Function<BackupPath, String>()
             {
                 @Override
@@ -234,8 +235,24 @@ public class UIResource
             localBackupPaths,
             localAvailableRestores
         );
-        SystemState state = new SystemState(config, "imok".equals(response), context.getExhibitor().restartsAreEnabled(), "v0.0.1"); // TODO - correct version
+        SystemState state = new SystemState
+        (
+            config,
+            "imok".equals(response),
+            context.getExhibitor().restartsAreEnabled(),
+            "v0.0.1",       // TODO - correct version
+            context.getExhibitor().backupCleanupEnabled()
+        );
         return Response.ok(state).build();
+    }
+
+    @Path("set/backup-cleanups/{value}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response setBackupCleanupState(@PathParam("value") boolean newValue) throws Exception
+    {
+        context.getExhibitor().setBackupCleanupEnabled(newValue);
+        return Response.ok(new ResultPojo("OK", true)).build();
     }
 
     @Path("set/restarts/{value}")

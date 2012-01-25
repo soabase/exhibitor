@@ -27,7 +27,7 @@ public class CleanupManager implements Closeable
             {
                 try
                 {
-                    exhibitor.getProcessOperations().cleanupInstance(exhibitor);
+                    exhibitor.getProcessOperations().cleanupInstance();
                 }
                 catch ( Exception e )
                 {

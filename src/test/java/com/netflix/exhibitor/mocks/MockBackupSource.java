@@ -3,7 +3,6 @@ package com.netflix.exhibitor.mocks;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.io.ByteStreams;
-import com.netflix.exhibitor.InstanceConfig;
 import com.netflix.exhibitor.spi.BackupPath;
 import com.netflix.exhibitor.spi.BackupSource;
 import com.netflix.exhibitor.spi.BackupSpec;
@@ -12,6 +11,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -24,15 +24,17 @@ public class MockBackupSource implements BackupSource
 {
     private final File tempDirectory;
 
+    private static final String SEPARATOR = "-";
+
     public MockBackupSource(File tempDirectory)
     {
         this.tempDirectory = tempDirectory;
     }
 
     @Override
-    public void backup(InstanceConfig backupConfig, BackupPath path, InputStream stream) throws Exception
+    public void backup(BackupPath path, InputStream stream) throws Exception
     {
-        File                    f = new File(tempDirectory, URLEncoder.encode(path.getPath(), "UTF-8"));
+        File                    f = new File(tempDirectory, URLEncoder.encode(path.getPath() + SEPARATOR + System.currentTimeMillis(), "UTF-8"));
         BufferedOutputStream    out = new BufferedOutputStream(new FileOutputStream(f));
         try
         {
@@ -45,7 +47,17 @@ public class MockBackupSource implements BackupSource
     }
 
     @Override
-    public InputStream openRestoreStream(InstanceConfig backupConfig, BackupSpec spec) throws Exception
+    public void deleteBackup(BackupSpec spec) throws Exception
+    {
+        File   f = new File(spec.getUserValue());
+        if ( !f.delete() )
+        {
+            throw new IOException("Could not delete: " + f.getPath());
+        }
+    }
+
+    @Override
+    public InputStream openRestoreStream(BackupSpec spec) throws Exception
     {
         File                    f = new File(tempDirectory, URLEncoder.encode(spec.getPath(), "UTF-8"));
         return new BufferedInputStream(new FileInputStream(f));
@@ -65,7 +77,8 @@ public class MockBackupSource implements BackupSource
                 {
                     try
                     {
-                        return new BackupSpec(URLDecoder.decode(f.getName(), "UTF-8"), new Date(f.lastModified()));
+                        String[] parts = f.getName().split("\\" + SEPARATOR);
+                        return new BackupSpec(URLDecoder.decode(parts[0], "UTF-8"), new Date(f.lastModified()), f.getPath());
                     }
                     catch ( UnsupportedEncodingException e )
                     {

@@ -28,7 +28,7 @@ public class UIIntegrationTest
             return;
         }
 
-        ProcessOperations   processOperations = new StandardProcessOperations(args[0], args[1]);
+        ProcessOperations   processOperations = new StandardProcessOperations(null, args[0], args[1]);
         GlobalSharedConfig  globalSharedConfig = new MockGlobalSharedConfig();
 
         InstanceConfig      config = InstanceConfig.builder().hostname("localhost").build();

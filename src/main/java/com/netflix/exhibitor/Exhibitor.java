@@ -6,6 +6,7 @@ import com.netflix.curator.framework.CuratorFrameworkFactory;
 import com.netflix.curator.retry.ExponentialBackoffRetry;
 import com.netflix.exhibitor.activity.ActivityLog;
 import com.netflix.exhibitor.activity.ActivityQueue;
+import com.netflix.exhibitor.imps.StandardProcessOperations;
 import com.netflix.exhibitor.maintenance.BackupManager;
 import com.netflix.exhibitor.maintenance.CleanupManager;
 import com.netflix.exhibitor.spi.BackupSource;
@@ -17,6 +18,9 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * The main application
+ */
 public class Exhibitor implements Closeable
 {
     private final ActivityLog               log = new ActivityLog();
@@ -29,9 +33,16 @@ public class Exhibitor implements Closeable
     private final CleanupManager            cleanupManager;
     private final BackupManager             backupManager;
     private final AtomicBoolean             restartsEnabled = new AtomicBoolean(true);
+    private final AtomicBoolean             backupCleanupEnabled = new AtomicBoolean(true);
 
     private CuratorFramework    localConnection;    // protected by synchronization
 
+    /**
+     * @param instanceConfig static config for this instance
+     * @param globalSharedConfig Configuration values that are <strong>global</strong> and <strong>mutable</strong>
+     * @param processOperations Various inject-able operations. In most cases, you can use {@link StandardProcessOperations}
+     * @param backupSource Abstraction for managing backups
+     */
     public Exhibitor(InstanceConfig instanceConfig, GlobalSharedConfig globalSharedConfig, ProcessOperations processOperations, BackupSource backupSource)
     {
         this.instanceConfig = instanceConfig;
@@ -100,6 +111,16 @@ public class Exhibitor implements Closeable
     public void         setRestartsEnabled(boolean newValue)
     {
         restartsEnabled.set(newValue);
+    }
+
+    public boolean backupCleanupEnabled()
+    {
+        return backupCleanupEnabled.get();
+    }
+
+    public void         setBackupCleanupEnabled(boolean newValue)
+    {
+        backupCleanupEnabled.set(newValue);
     }
 
     public BackupManager getBackupManager()
