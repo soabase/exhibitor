@@ -3,7 +3,7 @@ Exhibitor is a supervisor system for ZooKeeper.
 
 ## DETAILS
 
-Please see the doc at [[https://github.com/Netflix/exhibitor/wiki]]
+Please see the doc at https://github.com/Netflix/exhibitor/wiki
 
 ## MAVEN
 
