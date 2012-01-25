@@ -3,10 +3,18 @@ package com.netflix.exhibitor;
 import com.netflix.exhibitor.spi.UITab;
 import java.util.Collection;
 
+/**
+ * Static configuration needed by Exhibitor
+ */
 public class InstanceConfig
 {
     private final InstanceConfigBuilder builder;
 
+    /**
+     * Start a builder for instance config
+     *
+     * @return builder
+     */
     public static InstanceConfigBuilder builder()
     {
         return new InstanceConfigBuilder();

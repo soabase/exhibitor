@@ -1,5 +1,6 @@
 package com.netflix.exhibitor;
 
+import com.google.common.base.Preconditions;
 import com.google.common.io.Closeables;
 import com.netflix.curator.framework.CuratorFramework;
 import com.netflix.curator.framework.CuratorFrameworkFactory;
@@ -17,9 +18,17 @@ import com.netflix.exhibitor.state.MonitorRunningInstance;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * The main application
+ * <p>
+ *     The main application - this class serves as a container for the various
+ *     objects needed by the application and as a lifecycle maintainer
+ * </p>
+ *
+ * <p>
+ *     Most users of the Exhibitor system will not need direct access to this class
+ * </p>
  */
 public class Exhibitor implements Closeable
 {
@@ -34,8 +43,16 @@ public class Exhibitor implements Closeable
     private final BackupManager             backupManager;
     private final AtomicBoolean             restartsEnabled = new AtomicBoolean(true);
     private final AtomicBoolean             backupCleanupEnabled = new AtomicBoolean(true);
+    private final AtomicReference<State>    state = new AtomicReference<State>(State.LATENT);
 
     private CuratorFramework    localConnection;    // protected by synchronization
+
+    private enum State
+    {
+        LATENT,
+        STARTED,
+        STOPPED
+    }
 
     /**
      * @param instanceConfig static config for this instance
@@ -59,13 +76,31 @@ public class Exhibitor implements Closeable
         return log;
     }
 
+    /**
+     * Start the app
+     */
     public void start()
     {
+        Preconditions.checkState(state.compareAndSet(State.LATENT, State.STARTED));
+
         activityQueue.start();
         instanceStateManager.start();
         monitorRunningInstance.start();
         cleanupManager.start();
         backupManager.start();
+    }
+
+    @Override
+    public void close() throws IOException
+    {
+        Preconditions.checkState(state.compareAndSet(State.STARTED, State.STOPPED));
+
+        Closeables.closeQuietly(backupManager);
+        Closeables.closeQuietly(cleanupManager);
+        Closeables.closeQuietly(monitorRunningInstance);
+        Closeables.closeQuietly(instanceStateManager);
+        Closeables.closeQuietly(activityQueue);
+        closeLocalConnection();
     }
 
     public InstanceConfig getConfig()
@@ -126,17 +161,6 @@ public class Exhibitor implements Closeable
     public BackupManager getBackupManager()
     {
         return backupManager;
-    }
-
-    @Override
-    public void close() throws IOException
-    {
-        Closeables.closeQuietly(backupManager);
-        Closeables.closeQuietly(cleanupManager);
-        Closeables.closeQuietly(monitorRunningInstance);
-        Closeables.closeQuietly(instanceStateManager);
-        Closeables.closeQuietly(activityQueue);
-        closeLocalConnection();
     }
 
     private synchronized void closeLocalConnection()
