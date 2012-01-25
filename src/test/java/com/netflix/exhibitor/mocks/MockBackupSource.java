@@ -59,7 +59,7 @@ public class MockBackupSource implements BackupSource
     @Override
     public InputStream openRestoreStream(BackupSpec spec) throws Exception
     {
-        File                    f = new File(tempDirectory, URLEncoder.encode(spec.getPath(), "UTF-8"));
+        File                    f = new File(spec.getUserValue());
         return new BufferedInputStream(new FileInputStream(f));
     }
 
