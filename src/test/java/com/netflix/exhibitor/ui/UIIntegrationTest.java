@@ -6,8 +6,8 @@ import com.netflix.exhibitor.Exhibitor;
 import com.netflix.exhibitor.InstanceConfig;
 import com.netflix.exhibitor.UIContext;
 import com.netflix.exhibitor.UIResource;
+import com.netflix.exhibitor.imps.FileBasedBackupSource;
 import com.netflix.exhibitor.imps.StandardProcessOperations;
-import com.netflix.exhibitor.mocks.MockBackupSource;
 import com.netflix.exhibitor.mocks.MockGlobalSharedConfig;
 import com.netflix.exhibitor.spi.GlobalSharedConfig;
 import com.netflix.exhibitor.spi.ProcessOperations;
@@ -33,7 +33,7 @@ public class UIIntegrationTest
 
         InstanceConfig      config = InstanceConfig.builder().hostname("localhost").build();
 
-        Exhibitor           exhibitor = new Exhibitor(config, globalSharedConfig, processOperations, new MockBackupSource(Files.createTempDir()));
+        Exhibitor           exhibitor = new Exhibitor(config, globalSharedConfig, processOperations, new FileBasedBackupSource(Files.createTempDir()));
         exhibitor.start();
 
         final UIContext   context = new UIContext(exhibitor);

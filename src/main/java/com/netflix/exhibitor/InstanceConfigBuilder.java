@@ -1,8 +1,8 @@
 package com.netflix.exhibitor;
 
 import com.google.common.collect.ImmutableList;
+import com.netflix.exhibitor.pojos.UITab;
 import com.netflix.exhibitor.spi.GlobalSharedConfig;
-import com.netflix.exhibitor.spi.UITab;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 

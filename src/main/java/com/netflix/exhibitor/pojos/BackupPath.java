@@ -1,4 +1,4 @@
-package com.netflix.exhibitor.spi;
+package com.netflix.exhibitor.pojos;
 
 import org.apache.zookeeper.common.PathUtils;
 

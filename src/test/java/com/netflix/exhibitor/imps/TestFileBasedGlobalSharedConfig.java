@@ -2,8 +2,8 @@ package com.netflix.exhibitor.imps;
 
 import com.netflix.exhibitor.InstanceConfig;
 import com.netflix.exhibitor.activity.ActivityLog;
-import com.netflix.exhibitor.spi.BackupPath;
-import com.netflix.exhibitor.spi.ServerInfo;
+import com.netflix.exhibitor.pojos.BackupPath;
+import com.netflix.exhibitor.pojos.ServerInfo;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;

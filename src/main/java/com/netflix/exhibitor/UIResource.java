@@ -17,10 +17,10 @@ import com.netflix.exhibitor.entities.ResultPojo;
 import com.netflix.exhibitor.entities.ServerPojo;
 import com.netflix.exhibitor.entities.SystemState;
 import com.netflix.exhibitor.entities.UITabSpec;
-import com.netflix.exhibitor.spi.BackupPath;
-import com.netflix.exhibitor.spi.BackupSpec;
-import com.netflix.exhibitor.spi.ServerInfo;
-import com.netflix.exhibitor.spi.UITab;
+import com.netflix.exhibitor.pojos.BackupPath;
+import com.netflix.exhibitor.pojos.BackupSpec;
+import com.netflix.exhibitor.pojos.ServerInfo;
+import com.netflix.exhibitor.pojos.UITab;
 import com.netflix.exhibitor.state.FourLetterWord;
 import com.netflix.exhibitor.state.InstanceStateManager;
 import com.netflix.exhibitor.state.KillRunningInstance;
@@ -484,14 +484,8 @@ public class UIResource
 
         builder.add
         (
-            new UITab()
+            new UITab("Log")
             {
-                @Override
-                public String getName()
-                {
-                    return "Log";
-                }
-
                 @Override
                 public String getContent() throws Exception
                 {
@@ -499,14 +493,8 @@ public class UIResource
                 }
             },
 
-            new UITab()
+            new UITab("4LTR")
             {
-                @Override
-                public String getName()
-                {
-                    return "4LTR";
-                }
-
                 @Override
                 public String getContent() throws Exception
                 {

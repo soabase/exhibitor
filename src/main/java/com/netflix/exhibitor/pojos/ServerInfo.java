@@ -1,4 +1,4 @@
-package com.netflix.exhibitor.spi;
+package com.netflix.exhibitor.pojos;
 
 /**
  * POJO representing a server in the ensemble

@@ -5,7 +5,7 @@ import com.netflix.curator.framework.CuratorFramework;
 import com.netflix.curator.utils.ZKPaths;
 import com.netflix.exhibitor.InstanceConfig;
 import com.netflix.exhibitor.activity.ActivityLog;
-import com.netflix.exhibitor.spi.BackupPath;
+import com.netflix.exhibitor.pojos.BackupPath;
 import com.netflix.exhibitor.spi.BackupSource;
 import com.netflix.exhibitor.spi.GlobalSharedConfig;
 import java.io.BufferedInputStream;

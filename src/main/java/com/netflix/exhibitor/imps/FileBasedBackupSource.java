@@ -1,11 +1,11 @@
-package com.netflix.exhibitor.mocks;
+package com.netflix.exhibitor.imps;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.io.ByteStreams;
-import com.netflix.exhibitor.spi.BackupPath;
+import com.netflix.exhibitor.pojos.BackupPath;
+import com.netflix.exhibitor.pojos.BackupSpec;
 import com.netflix.exhibitor.spi.BackupSource;
-import com.netflix.exhibitor.spi.BackupSpec;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -20,21 +20,27 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 
-public class MockBackupSource implements BackupSource
+/**
+ * A possible implementation for backups. Stores the backups in files in the given directory
+ */
+public class FileBasedBackupSource implements BackupSource
 {
-    private final File tempDirectory;
+    private final File backupDirectory;
 
     private static final String SEPARATOR = "-";
 
-    public MockBackupSource(File tempDirectory)
+    /**
+     * @param backupDirectory the directory to store backup files in
+     */
+    public FileBasedBackupSource(File backupDirectory)
     {
-        this.tempDirectory = tempDirectory;
+        this.backupDirectory = backupDirectory;
     }
 
     @Override
     public void backup(BackupPath path, InputStream stream) throws Exception
     {
-        File                    f = new File(tempDirectory, URLEncoder.encode(path.getPath() + SEPARATOR + System.currentTimeMillis(), "UTF-8"));
+        File                    f = new File(backupDirectory, URLEncoder.encode(path.getPath() + SEPARATOR + System.currentTimeMillis(), "UTF-8"));
         BufferedOutputStream    out = new BufferedOutputStream(new FileOutputStream(f));
         try
         {
@@ -66,7 +72,7 @@ public class MockBackupSource implements BackupSource
     @Override
     public Collection<BackupSpec> getAvailableBackups()
     {
-        File[]        files = tempDirectory.listFiles();        
+        File[]        files = backupDirectory.listFiles();
         return Collections2.transform
         (
             Arrays.asList(files),

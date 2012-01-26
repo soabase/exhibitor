@@ -9,11 +9,11 @@ import com.netflix.curator.test.DirectoryUtils;
 import com.netflix.curator.test.TestingServer;
 import com.netflix.exhibitor.InstanceConfig;
 import com.netflix.exhibitor.activity.ActivityLog;
-import com.netflix.exhibitor.mocks.MockBackupSource;
+import com.netflix.exhibitor.imps.FileBasedBackupSource;
 import com.netflix.exhibitor.mocks.MockGlobalSharedConfig;
-import com.netflix.exhibitor.spi.BackupPath;
+import com.netflix.exhibitor.pojos.BackupPath;
+import com.netflix.exhibitor.pojos.BackupSpec;
 import com.netflix.exhibitor.spi.BackupSource;
-import com.netflix.exhibitor.spi.BackupSpec;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import java.io.File;
@@ -39,7 +39,7 @@ public class TestBackupRestoreProcessor
 
             MockGlobalSharedConfig  sharedConfig = new MockGlobalSharedConfig();
             InstanceConfig          config = InstanceConfig.builder().hostname("localhost").build();
-            BackupSource            source = new MockBackupSource(tempDirectory);
+            BackupSource            source = new FileBasedBackupSource(tempDirectory);
 
             BackupProcessor         backupProcessor = new BackupProcessor(sharedConfig, client, new ActivityLog(), source, config);
             sharedConfig.setBackupPaths(Arrays.asList(new BackupPath("/test", false)));
@@ -89,7 +89,7 @@ public class TestBackupRestoreProcessor
 
             MockGlobalSharedConfig  sharedConfig = new MockGlobalSharedConfig();
             InstanceConfig          config = InstanceConfig.builder().hostname("localhost").build();
-            BackupSource            source = new MockBackupSource(tempDirectory);
+            BackupSource            source = new FileBasedBackupSource(tempDirectory);
 
             BackupProcessor         backupProcessor = new BackupProcessor(sharedConfig, client, new ActivityLog(), source, config);
             sharedConfig.setBackupPaths(Arrays.asList(new BackupPath("/a1", true)));

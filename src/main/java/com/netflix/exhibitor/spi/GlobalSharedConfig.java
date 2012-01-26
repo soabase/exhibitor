@@ -1,5 +1,7 @@
 package com.netflix.exhibitor.spi;
 
+import com.netflix.exhibitor.pojos.BackupPath;
+import com.netflix.exhibitor.pojos.ServerInfo;
 import java.util.Collection;
 
 /**

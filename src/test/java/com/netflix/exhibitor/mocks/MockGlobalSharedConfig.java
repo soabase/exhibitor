@@ -1,8 +1,8 @@
 package com.netflix.exhibitor.mocks;
 
-import com.netflix.exhibitor.spi.BackupPath;
+import com.netflix.exhibitor.pojos.BackupPath;
+import com.netflix.exhibitor.pojos.ServerInfo;
 import com.netflix.exhibitor.spi.GlobalSharedConfig;
-import com.netflix.exhibitor.spi.ServerInfo;
 import java.util.Arrays;
 import java.util.Collection;
 

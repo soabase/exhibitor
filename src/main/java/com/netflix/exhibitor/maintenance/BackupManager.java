@@ -7,8 +7,8 @@ import com.netflix.exhibitor.activity.ActivityLog;
 import com.netflix.exhibitor.activity.QueueGroups;
 import com.netflix.exhibitor.activity.RepeatingActivity;
 import com.netflix.exhibitor.backup.BackupProcessor;
+import com.netflix.exhibitor.pojos.BackupSpec;
 import com.netflix.exhibitor.spi.BackupSource;
-import com.netflix.exhibitor.spi.BackupSpec;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Collection;
@@ -96,7 +96,7 @@ public class BackupManager implements Closeable
 
         while ( sortedSpecs.size() > exhibitor.getConfig().getMaxBackups() )
         {
-            BackupSpec      spec = sortedSpecs.remove(0);
+            BackupSpec spec = sortedSpecs.remove(0);
 
             exhibitor.getLog().add(ActivityLog.Type.INFO, "Cleaning old backup: " + spec);
             try

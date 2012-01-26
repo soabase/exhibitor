@@ -4,7 +4,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.netflix.exhibitor.Exhibitor;
-import com.netflix.exhibitor.spi.ServerInfo;
+import com.netflix.exhibitor.pojos.ServerInfo;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Collection;
@@ -47,7 +47,7 @@ public class InstanceStateManager implements Closeable
         {
             servers = Lists.newArrayList();
         }
-        ServerInfo              us = Iterables.find(servers, isUs, null);
+        ServerInfo us = Iterables.find(servers, isUs, null);
 
         InstanceStateTypes state = (us != null) ? checker.getState() : InstanceStateTypes.WAITING;
         return new InstanceState

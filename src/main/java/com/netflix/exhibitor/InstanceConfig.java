@@ -1,6 +1,6 @@
 package com.netflix.exhibitor;
 
-import com.netflix.exhibitor.spi.UITab;
+import com.netflix.exhibitor.pojos.UITab;
 import java.util.Collection;
 
 /**
