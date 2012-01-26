@@ -73,6 +73,12 @@
             <version>6.1.9</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.derby</groupId>
+            <artifactId>derby</artifactId>
+            <version>10.8.2.2</version>
+        </dependency>
     </dependencies>
 
     <build>

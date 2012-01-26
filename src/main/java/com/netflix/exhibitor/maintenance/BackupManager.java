@@ -1,6 +1,5 @@
 package com.netflix.exhibitor.maintenance;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.netflix.exhibitor.Exhibitor;
 import com.netflix.exhibitor.activity.Activity;
@@ -10,7 +9,6 @@ import com.netflix.exhibitor.activity.RepeatingActivity;
 import com.netflix.exhibitor.backup.BackupProcessor;
 import com.netflix.exhibitor.spi.BackupSource;
 import com.netflix.exhibitor.spi.BackupSpec;
-import com.netflix.exhibitor.state.FourLetterWord;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Collection;
@@ -68,13 +66,6 @@ public class BackupManager implements Closeable
     public void forceBackup()
     {
         repeatingActivity.forceReQueue();
-    }
-
-    @VisibleForTesting
-    protected boolean isLeader()
-    {
-        FourLetterWord stat = new FourLetterWord(FourLetterWord.Word.STAT, exhibitor.getConfig());
-        return "leader".equalsIgnoreCase(stat.getResponseMap().get("mode"));
     }
 
     private void deleteOldBackups()

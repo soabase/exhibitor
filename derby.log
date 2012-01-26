@@ -1,0 +1,20 @@
+----------------------------------------------------------------
+Wed Jan 25 18:22:29 PST 2012:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.8.2.2 - (1181258): instance a816c00e-0135-17d2-3ff0-000004afb340 
+on database directory memory:/Users/jzimmerman/Netflix/dev/oss/exhibitor/temp1327544549182089000  with class loader sun.misc.Launcher$AppClassLoader@425224ee 
+Loaded from file:/Users/jzimmerman/.m2/repository/org/apache/derby/derby/10.8.2.2/derby-10.8.2.2.jar
+java.vendor=Apple Inc.
+java.runtime.version=1.6.0_29-b11-402-11M3527
+user.dir=/Users/jzimmerman/Netflix/dev/oss/exhibitor
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''
+----------------------------------------------------------------
+Wed Jan 25 18:22:30 PST 2012:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.8.2.2 - (1181258): instance 560740aa-0135-17d2-3ff0-000004afb340 
+on database directory memory:/Users/jzimmerman/Netflix/dev/oss/exhibitor/temp1327544550209737000  with class loader sun.misc.Launcher$AppClassLoader@425224ee 
+Loaded from file:/Users/jzimmerman/.m2/repository/org/apache/derby/derby/10.8.2.2/derby-10.8.2.2.jar
+java.vendor=Apple Inc.
+java.runtime.version=1.6.0_29-b11-402-11M3527
+user.dir=/Users/jzimmerman/Netflix/dev/oss/exhibitor
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''

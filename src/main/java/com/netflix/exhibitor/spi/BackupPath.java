@@ -34,6 +34,41 @@ public class BackupPath
         return recursive;
     }
 
+    @SuppressWarnings("RedundantIfStatement")
+    @Override
+    public boolean equals(Object o)
+    {
+        if ( this == o )
+        {
+            return true;
+        }
+        if ( o == null || getClass() != o.getClass() )
+        {
+            return false;
+        }
+
+        BackupPath that = (BackupPath)o;
+
+        if ( recursive != that.recursive )
+        {
+            return false;
+        }
+        if ( !path.equals(that.path) )
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = path.hashCode();
+        result = 31 * result + (recursive ? 1 : 0);
+        return result;
+    }
+
     @Override
     public String toString()
     {
