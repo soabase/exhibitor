@@ -64,7 +64,7 @@ public class Checker implements Closeable
             // The following code depends on inside knowledge of the "stat" response. If they change it
             // this code might break
 
-            List<String> lines = new FourLetterWord(FourLetterWord.Word.STAT, exhibitor.getConfig()).getResponseLines();
+            List<String> lines = new FourLetterWord(FourLetterWord.Word.SRVR, exhibitor.getConfig()).getResponseLines();
             for ( String line : lines )
             {
                 if ( line.contains("not currently serving") )

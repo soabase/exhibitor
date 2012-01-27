@@ -17,7 +17,7 @@ public class TestFileBasedGlobalSharedConfig extends TestGlobalSharedConfigImps<
     @Override
     protected GlobalSharedConfigBase makeConfig(File context, InstanceConfig config, ActivityLog log, int sleepMs)
     {
-        return new FileBasedGlobalSharedConfig(context, config, log, sleepMs);
+        return new FileBasedGlobalSharedConfig(context, null, config, log, sleepMs);
     }
 
     @Override

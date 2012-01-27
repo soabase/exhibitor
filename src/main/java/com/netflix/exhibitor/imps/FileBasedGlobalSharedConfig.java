@@ -7,10 +7,13 @@ import com.netflix.exhibitor.InstanceConfig;
 import com.netflix.exhibitor.activity.ActivityLog;
 import com.netflix.exhibitor.pojos.BackupPath;
 import com.netflix.exhibitor.pojos.ServerInfo;
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
@@ -23,21 +26,23 @@ import java.util.concurrent.TimeUnit;
 
 public class FileBasedGlobalSharedConfig implements GlobalSharedConfigBase
 {
-    private final File                              theFile;
+    private final File                              sharedFile;
+    private final File                              localFile;
     private final ActivityLog                       log;
     private final int                               checkPeriodMs;
     private final ExecutorService                   service = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setDaemon(true).setNameFormat("FileBasedGlobalSharedConfig-%d").build());
     private final Random                            random;
     private final PropertyBasedGlobalSharedConfig   propertyConfig;
 
-    public FileBasedGlobalSharedConfig(File theFile, InstanceConfig config, ActivityLog log)
+    public FileBasedGlobalSharedConfig(File sharedFile, File localFile, InstanceConfig config, ActivityLog log)
     {
-        this(theFile, config, log, (int)TimeUnit.MILLISECONDS.convert(1, TimeUnit.MINUTES));
+        this(sharedFile, localFile, config, log, (int)TimeUnit.MILLISECONDS.convert(1, TimeUnit.MINUTES));
     }
 
-    public FileBasedGlobalSharedConfig(File theFile, InstanceConfig config, ActivityLog log, int checkPeriodMs)
+    public FileBasedGlobalSharedConfig(File sharedFile, File localFile, InstanceConfig config, ActivityLog log, int checkPeriodMs)
     {
-        this.theFile = theFile;
+        this.sharedFile = sharedFile;
+        this.localFile = localFile;
         this.log = log;
         random = new Random();
         this.checkPeriodMs = checkPeriodMs;
@@ -49,7 +54,11 @@ public class FileBasedGlobalSharedConfig implements GlobalSharedConfigBase
     {
         Preconditions.checkArgument(!service.isShutdown());
 
-        readProperties();
+        if ( !readProperties() )
+        {
+            tryReadLocalProperties();
+        }
+
         service.submit
         (
             new Runnable()
@@ -100,7 +109,9 @@ public class FileBasedGlobalSharedConfig implements GlobalSharedConfigBase
         readProperties();
 
         propertyConfig.setServers(newServers);
-        writeProperties(propertyConfig.getProperties());
+        Properties properties = propertyConfig.getProperties();
+        writeProperties(properties);
+        updateLocalFile(properties);
     }
 
     @Override
@@ -115,7 +126,42 @@ public class FileBasedGlobalSharedConfig implements GlobalSharedConfigBase
         readProperties();
 
         propertyConfig.setBackupPaths(newBackupPaths);
-        writeProperties(propertyConfig.getProperties());
+        Properties properties = propertyConfig.getProperties();
+        writeProperties(properties);
+        updateLocalFile(properties);
+    }
+
+    private synchronized void updateLocalFile(Properties properties)
+    {
+        if ( localFile == null )
+        {
+            return;
+        }
+
+        RandomAccessFile    raf = null;
+        try
+        {
+            raf = new RandomAccessFile(localFile, "rw");
+            writeToRaf(raf, properties);
+        }
+        catch ( Exception e )
+        {
+            log.add(ActivityLog.Type.ERROR, "Could not write local property file: " + localFile, e);
+        }
+        finally
+        {
+            try
+            {
+                if ( raf != null )
+                {
+                    raf.close();
+                }
+            }
+            catch ( IOException ignore )
+            {
+                // ignore
+            }
+        }
     }
 
     private synchronized void writeProperties(Properties properties)
@@ -123,7 +169,7 @@ public class FileBasedGlobalSharedConfig implements GlobalSharedConfigBase
         RandomAccessFile    raf = null;
         try
         {
-            raf = new RandomAccessFile(theFile, "rw");  // always read/write
+            raf = new RandomAccessFile(sharedFile, "rw");  // always read/write
 
             for(;;)
             {
@@ -132,12 +178,7 @@ public class FileBasedGlobalSharedConfig implements GlobalSharedConfigBase
                     FileLock    lock = raf.getChannel().lock();
                     try
                     {
-                        ByteArrayOutputStream   bytes = new ByteArrayOutputStream();
-                        properties.store(bytes, "Auto-generated properties");
-                        raf.setLength(0);
-                        raf.seek(0);
-                        raf.write(bytes.toByteArray());
-
+                        writeToRaf(raf, properties);
                         break;
                     }
                     finally
@@ -162,7 +203,7 @@ public class FileBasedGlobalSharedConfig implements GlobalSharedConfigBase
         }
         catch ( Exception e )
         {
-            log.add(ActivityLog.Type.ERROR, "Could not read shared property file: " + theFile, e);
+            log.add(ActivityLog.Type.ERROR, "Could not write shared property file: " + sharedFile, e);
         }
         finally
         {
@@ -170,17 +211,50 @@ public class FileBasedGlobalSharedConfig implements GlobalSharedConfigBase
         }
     }
 
-    private synchronized void readProperties()
+    private void writeToRaf(RandomAccessFile raf, Properties properties) throws IOException
     {
-        if ( !theFile.exists() )
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        properties.store(bytes, "Auto-generated properties");
+        raf.setLength(0);
+        raf.seek(0);
+        raf.write(bytes.toByteArray());
+    }
+
+    private void tryReadLocalProperties()
+    {
+        if ( (localFile != null) && localFile.exists() )
         {
-            return;
+            InputStream     in = null;
+            try
+            {
+                in = new BufferedInputStream(new FileInputStream(localFile));
+                Properties      newProperties = new Properties();
+                newProperties.load(in);
+                propertyConfig.setProperties(newProperties);
+            }
+            catch ( IOException e )
+            {
+                log.add(ActivityLog.Type.ERROR, "Could not read local property file: " + localFile, e);
+            }
+            finally
+            {
+                Closeables.closeQuietly(in);
+            }
+        }
+    }
+
+    private synchronized boolean readProperties()
+    {
+        if ( !sharedFile.exists() )
+        {
+            return false;
         }
 
+        boolean             success = true;
         RandomAccessFile    raf = null;
         try
         {
-            raf = new RandomAccessFile(theFile, "rw");  // always read/write
+            raf = new RandomAccessFile(sharedFile, "rw");  // always read/write
             for(;;)
             {
                 try
@@ -188,12 +262,13 @@ public class FileBasedGlobalSharedConfig implements GlobalSharedConfigBase
                     FileLock    lock = raf.getChannel().lock();
                     try
                     {
-                        byte[]      bytes = new byte[(int)theFile.length()];
+                        byte[]      bytes = new byte[(int)sharedFile.length()];
                         raf.readFully(bytes);
 
                         Properties  newProperties = new Properties();
                         newProperties.load(new ByteArrayInputStream(bytes));
                         propertyConfig.setProperties(newProperties);
+                        updateLocalFile(newProperties);
 
                         break;
                     }
@@ -212,6 +287,7 @@ public class FileBasedGlobalSharedConfig implements GlobalSharedConfigBase
                     catch ( InterruptedException e )
                     {
                         Thread.currentThread().interrupt();
+                        success = false;
                         break;
                     }
                 }
@@ -219,11 +295,14 @@ public class FileBasedGlobalSharedConfig implements GlobalSharedConfigBase
         }
         catch ( Exception e )
         {
-            log.add(ActivityLog.Type.ERROR, "Could not read shared property file: " + theFile, e);
+            log.add(ActivityLog.Type.ERROR, "Could not read shared property file: " + sharedFile, e);
+            success = false;
         }
         finally
         {
             Closeables.closeQuietly(raf);
         }
+
+        return success;
     }
 }
