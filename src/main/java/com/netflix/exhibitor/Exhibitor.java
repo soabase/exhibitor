@@ -7,9 +7,9 @@ import com.netflix.curator.framework.CuratorFrameworkFactory;
 import com.netflix.curator.retry.ExponentialBackoffRetry;
 import com.netflix.exhibitor.activity.ActivityLog;
 import com.netflix.exhibitor.activity.ActivityQueue;
-import com.netflix.exhibitor.imps.StandardProcessOperations;
+import com.netflix.exhibitor.state.StandardProcessOperations;
 import com.netflix.exhibitor.maintenance.CleanupManager;
-import com.netflix.exhibitor.spi.ProcessOperations;
+import com.netflix.exhibitor.state.ProcessOperations;
 import com.netflix.exhibitor.state.InstanceStateManager;
 import com.netflix.exhibitor.state.MonitorRunningInstance;
 import java.io.Closeable;
@@ -51,12 +51,15 @@ public class Exhibitor implements Closeable
 
     /**
      * @param instanceConfig static config for this instance
-     * @param processOperations Various inject-able operations. In most cases, you can use {@link StandardProcessOperations}
+     *
+     * @param zooKeeperDirectory path to the ZooKeeper distribution
+     * @param dataDirectory path to where your ZooKeeper data is stored
+     * @throws IOException errors
      */
-    public Exhibitor(InstanceConfig instanceConfig, ProcessOperations processOperations)
+    public Exhibitor(InstanceConfig instanceConfig, String zooKeeperDirectory, String dataDirectory) throws IOException
     {
         this.instanceConfig = instanceConfig;
-        this.processOperations = processOperations;
+        this.processOperations = new StandardProcessOperations(this, zooKeeperDirectory, dataDirectory);
         instanceStateManager = new InstanceStateManager(this);
         monitorRunningInstance = new MonitorRunningInstance(this);
         cleanupManager = new CleanupManager(this);

@@ -5,8 +5,6 @@ import com.netflix.exhibitor.Exhibitor;
 import com.netflix.exhibitor.InstanceConfig;
 import com.netflix.exhibitor.UIContext;
 import com.netflix.exhibitor.UIResource;
-import com.netflix.exhibitor.imps.StandardProcessOperations;
-import com.netflix.exhibitor.spi.ProcessOperations;
 import com.sun.jersey.api.core.DefaultResourceConfig;
 import com.sun.jersey.spi.container.servlet.ServletContainer;
 import org.mortbay.jetty.Server;
@@ -24,11 +22,9 @@ public class UIIntegrationTest
             return;
         }
 
-        ProcessOperations   processOperations = new StandardProcessOperations(null, args[0], args[1]);
-
         InstanceConfig      config = InstanceConfig.builder().hostname("localhost").build();
 
-        Exhibitor           exhibitor = new Exhibitor(config, processOperations);
+        Exhibitor           exhibitor = new Exhibitor(config, args[0], args[1]);
         exhibitor.start();
 
         final UIContext   context = new UIContext(exhibitor);

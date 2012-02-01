@@ -1,11 +1,10 @@
-package com.netflix.exhibitor.imps;
+package com.netflix.exhibitor.state;
 
+import com.google.common.collect.Iterables;
 import com.google.common.io.Closeables;
 import com.google.common.io.Files;
 import com.netflix.exhibitor.Exhibitor;
 import com.netflix.exhibitor.activity.ActivityLog;
-import com.netflix.exhibitor.pojos.ServerInfo;
-import com.netflix.exhibitor.spi.ProcessOperations;
 import java.io.*;
 import java.util.Date;
 import java.util.Properties;
@@ -201,12 +200,16 @@ public class StandardProcessOperations implements ProcessOperations
 
     private File prepConfigFile(Exhibitor exhibitor) throws IOException
     {
-        ServerInfo      us = new ServerInfo("", -1, false); // TODO
-        
-        File            idFile = new File(dataDirectory, "myid");
-        Files.createParentDirs(idFile);
-        String          id = String.format("%d\n", us.getId());
-        Files.write(id.getBytes(), idFile);
+        ServerList              serverList = new ServerList(exhibitor.getConfig().getServerSpec());
+
+        ServerList.ServerSpec   us = Iterables.find(serverList.getSpecs(), ServerList.isUs(exhibitor.getConfig().getHostname()), null);
+        if ( us != null )
+        {
+            File                    idFile = new File(dataDirectory, "myid");
+            Files.createParentDirs(idFile);
+            String                  id = String.format("%d\n", us.getServerId());
+            Files.write(id.getBytes(), idFile);
+        }
 
         Properties      localProperties = new Properties();
         localProperties.putAll(properties);
@@ -214,12 +217,10 @@ public class StandardProcessOperations implements ProcessOperations
         localProperties.setProperty("clientPort", Integer.toString(exhibitor.getConfig().getClientPort()));
 
         String          portSpec = String.format(":%d:%d", exhibitor.getConfig().getConnectPort(), exhibitor.getConfig().getElectionPort());
-/*  TODO
-        for ( ServerInfo server : exhibitor.getGlobalSharedConfig().getServers() )
+        for ( ServerList.ServerSpec spec : serverList.getSpecs() )
         {
-            localProperties.setProperty("server." + server.getId(), server.getHostname() + portSpec);
+            localProperties.setProperty("server." + spec.getServerId(), spec.getHostname() + portSpec);
         }
-*/
 
         File            configFile = new File(configDirectory, MODIFIED_CONFIG_NAME);
         OutputStream out = new BufferedOutputStream(new FileOutputStream(configFile));

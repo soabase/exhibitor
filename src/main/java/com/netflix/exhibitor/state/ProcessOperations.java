@@ -1,8 +1,4 @@
-package com.netflix.exhibitor.spi;
-
-import com.netflix.exhibitor.Exhibitor;
-import com.netflix.exhibitor.imps.StandardProcessOperations;
-import com.netflix.exhibitor.state.InstanceState;
+package com.netflix.exhibitor.state;
 
 /**
  * Various inject-able operations. In most cases, you can use {@link StandardProcessOperations}

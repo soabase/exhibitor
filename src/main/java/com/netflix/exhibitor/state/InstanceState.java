@@ -1,32 +1,27 @@
 package com.netflix.exhibitor.state;
 
-import com.google.common.collect.ImmutableList;
-import com.netflix.exhibitor.pojos.ServerInfo;
-import java.util.Collection;
-import java.util.List;
-
 public class InstanceState
 {
-    private final List<ServerInfo>      servers;
     private final int                   connectPort;
     private final int                   electionPort;
     private final int                   serverId;
     private final InstanceStateTypes    state;
+    private final ServerList            serverList;
     private final InstanceStateTypes    rawState;
 
-    public InstanceState(Collection<ServerInfo> servers, int connectPort, int electionPort, int serverId, InstanceStateTypes state, InstanceStateTypes rawState)
+    public InstanceState(ServerList serverList, int connectPort, int electionPort, int serverId, InstanceStateTypes state, InstanceStateTypes rawState)
     {
+        this.serverList = serverList;
         this.rawState = rawState;
-        this.servers = ImmutableList.copyOf(servers);
         this.connectPort = connectPort;
         this.electionPort = electionPort;
         this.serverId = serverId;
         this.state = state;
     }
 
-    public List<ServerInfo> getServers()
+    public ServerList getServerList()
     {
-        return servers;
+        return serverList;
     }
 
     public int getConnectPort()
@@ -85,7 +80,11 @@ public class InstanceState
         {
             return false;
         }
-        if ( !servers.equals(that.servers) )
+        if ( rawState != that.rawState )
+        {
+            return false;
+        }
+        if ( !serverList.equals(that.serverList) )
         {
             return false;
         }
@@ -101,11 +100,12 @@ public class InstanceState
     @Override
     public int hashCode()
     {
-        int result = servers.hashCode();
-        result = 31 * result + connectPort;
+        int result = connectPort;
         result = 31 * result + electionPort;
         result = 31 * result + serverId;
         result = 31 * result + state.hashCode();
+        result = 31 * result + serverList.hashCode();
+        result = 31 * result + rawState.hashCode();
         return result;
     }
 }
