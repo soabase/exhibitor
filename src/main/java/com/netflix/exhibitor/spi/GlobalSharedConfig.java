@@ -1,6 +1,5 @@
 package com.netflix.exhibitor.spi;
 
-import com.netflix.exhibitor.pojos.BackupPath;
 import com.netflix.exhibitor.pojos.ServerInfo;
 import java.util.Collection;
 
@@ -33,19 +32,4 @@ public interface GlobalSharedConfig
      * @throws Exception errors
      */
     public void                     setServers(Collection<ServerInfo> newServers) throws Exception;
-
-    /**
-     * Return the set of all paths being backed-up
-     *
-     * @return list of paths
-     */
-    public Collection<BackupPath>   getBackupPaths();
-
-    /**
-     * Change the set of paths to be backed up
-     *
-     * @param newBackupPaths new paths (can be empty but not null)
-     * @throws Exception errors
-     */
-    public void                     setBackupPaths(Collection<BackupPath> newBackupPaths) throws Exception;
 }

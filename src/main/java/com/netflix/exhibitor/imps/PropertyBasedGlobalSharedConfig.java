@@ -3,7 +3,6 @@ package com.netflix.exhibitor.imps;
 import com.google.common.collect.ImmutableList;
 import com.netflix.exhibitor.InstanceConfig;
 import com.netflix.exhibitor.activity.ActivityLog;
-import com.netflix.exhibitor.pojos.BackupPath;
 import com.netflix.exhibitor.pojos.ServerInfo;
 import com.netflix.exhibitor.spi.GlobalSharedConfig;
 import java.util.Collection;
@@ -72,40 +71,6 @@ public class PropertyBasedGlobalSharedConfig implements GlobalSharedConfig
     {
         Properties  properties = new Properties();
         internalSetServers(properties, newServers);
-        internalSetBackupPaths(properties, getBackupPaths());
-        cachedProperties.set(properties);
-    }
-
-    @Override
-    public Collection<BackupPath> getBackupPaths()
-    {
-        Properties  properties = cachedProperties.get();
-
-        ImmutableList.Builder<BackupPath> builder = ImmutableList.builder();
-
-        int     backupQty = getInt(properties, PROPERTY_BACKUP_QTY);
-        for ( int i = 0; i < backupQty; ++i )
-        {
-            String      path = properties.getProperty(String.format(PROPERTY_BACKUP_N_PATH, i), null);
-            boolean     recursive = properties.getProperty(String.format(PROPERTY_BACKUP_N_RECURSIVE, i), "false").equalsIgnoreCase("true");
-            if ( path == null )
-            {
-                log.add(ActivityLog.Type.ERROR, "Property file is incorrect. Missing backup index " + i);
-                break;
-            }
-
-            builder.add(new BackupPath(path, recursive));
-        }
-
-        return builder.build();
-    }
-
-    @Override
-    public void setBackupPaths(Collection<BackupPath> newBackupPaths) throws Exception
-    {
-        Properties  properties = new Properties();
-        internalSetServers(properties, getServers());
-        internalSetBackupPaths(properties, newBackupPaths);
         cachedProperties.set(properties);
     }
 
@@ -131,19 +96,6 @@ public class PropertyBasedGlobalSharedConfig implements GlobalSharedConfig
         {
             properties.setProperty(String.format(PROPERTY_SERVER_N_HOSTNAME, index), info.getHostname());
             properties.setProperty(String.format(PROPERTY_SERVER_N_ID, index), Integer.toString(info.getId()));
-            ++index;
-        }
-    }
-
-    private void internalSetBackupPaths(Properties properties, Collection<BackupPath> newBackupPaths)
-    {
-        properties.setProperty(PROPERTY_BACKUP_QTY, Integer.toString(newBackupPaths.size()));
-
-        int     index = 0;
-        for ( BackupPath backupPath : newBackupPaths )
-        {
-            properties.setProperty(String.format(PROPERTY_BACKUP_N_PATH, index), backupPath.getPath());
-            properties.setProperty(String.format(PROPERTY_BACKUP_N_RECURSIVE, index), Boolean.toString(backupPath.isRecursive()));
             ++index;
         }
     }

@@ -13,7 +13,7 @@
 		<script type="text/javascript" src="js/jquery.tools.min.js"></script>
         <script type="text/javascript" src="dynatree/jquery.dynatree.min.js"></script>
 		<script type="text/javascript">
-            var BUILTIN_TAB_QTY = 5;
+            var BUILTIN_TAB_QTY = 6;
             var AUTO_REFRESH_PERIOD = 10000;
             var UPDATE_STATE_PERIOD = 10000;
 
@@ -81,11 +81,6 @@
                     $('#instance-restarts-enabled').button("refresh");
                     $('#instance-restarts-disabled').button("refresh");
 
-                    $('#backup-cleanups-enabled')[0].checked = systemState.backupCleanupEnabled === "true";
-                    $('#backup-cleanups-disabled')[0].checked = systemState.backupCleanupEnabled != "true";
-                    $('#backup-cleanups-enabled').button("refresh");
-                    $('#backup-cleanups-disabled').button("refresh");
-
                     $('#version').html(systemState.version);
                     $('#not-connected-alert').hide();
                     $('#instance-hostname').html(systemState.config.thisHostname);
@@ -105,30 +100,6 @@
 
             function updateConfig()
             {
-                var backupPathsTab = $.makeArray(systemState.config.backupPaths);
-                var backupPaths = "";
-                var restorePathSelectables = "";
-                for ( var i = 0; i < backupPathsTab.length; ++i )
-                {
-                    backupPaths += '<li>' + backupPathsTab[i] + '</li>';
-                }
-                if ( backupPaths.length == 0 )
-                {
-                    backupPaths = "<i>none</i>";
-                }
-
-                var restorePathsTab = $.makeArray(systemState.config.availableRestores);
-                var restorePaths = "";
-                for ( i = 0; i < restorePathsTab.length; ++i )
-                {
-                    restorePaths += '<li>' + restorePathsTab[i].date + " - " + restorePathsTab[i].name + '</li>';
-                    restorePathSelectables += '<li class="ui-widget-content">' + restorePathsTab[i].date + " - " + restorePathsTab[i].name + '</li>\n';
-                }
-                if ( restorePaths.length == 0 )
-                {
-                    restorePaths = "<i>none</i>";
-                }
-
                 var serversTab = $.makeArray(systemState.config.servers);
                 var servers = "";
                 for ( i = 0; i < serversTab.length; ++i )
@@ -142,11 +113,6 @@
 
                 $('#config-section').show();
                 $('#servers').html(servers);
-                $('#backup-paths').html(backupPaths);
-                $('#restore-paths').html(restorePaths);
-                $('#restore-path-selectable').html(restorePathSelectables);
-
-                $('#restore-button').button((restorePathsTab.length > 0) ? "enable" : "disable");
             }
 
             function refreshCurrentTab()
@@ -230,21 +196,6 @@
                 };
             }
 
-            function submitBackupPaths(paths)
-            {
-                var pojo = makePathsPojo(paths);
-                $.ajax({
-                    type: 'POST',
-                    url: "set/backup-paths",
-                    data: JSON.stringify(pojo),
-                    contentType: "application/json",
-                    success: function()
-                    {
-                        updateState();
-                    }
-                });
-            }
-
             function submitServers(paths)
             {
                 var pojo = makePathsPojo(paths);
@@ -317,26 +268,6 @@
                     return false;
                 });
 
-                $('#backup-button').button({
-                    icons: {
-                        primary: "ui-icon-disk"
-                    }
-                }).click(function() {
-                   $.get("start-backup");
-                   messageDialog("Backup", "Backup request sent. Check the Log for details.");
-                   return false;
-                });
-
-                $('#restore-button').button({
-                    icons: {
-                        primary: "ui-icon-arrowreturnthick-1-s"
-                    }
-                }).click(function() {
-                   $.get("set/backup-cleanups/false");
-                   $("#restore-dialog").dialog("open");
-                   return false;
-                });
-
                 $('#main-config-button').button({
                     icons: {
                         primary: "ui-icon-pencil"
@@ -347,38 +278,9 @@
                    return false;
                 });
 
-                $('#backup-config-button').button({
-                    icons: {
-                        primary: "ui-icon-pencil"
-                    }
-                }).click(function() {
-                   updateConfigDialogValues();
-                   $("#config-backup-paths-dialog").dialog("open");
-                   return false;
-                });
-
                 $("#message-dialog").dialog({
                     modal: true,
                     autoOpen: false
-                });
-
-                $("#restore-dialog").dialog({
-                    modal: true,
-                    autoOpen: false,
-                    title: "Backup Playback",
-                    buttons:
-                    {
-                        "Cancel": function() {
-                            $(this).dialog("close");
-                        },
-
-                        "Start Playback...": function() {
-                            okCancelDialog("Change Servers", "Are you sure? This cannot be undone.", function(){
-                                }
-                            );
-                            $(this).dialog("close");
-                        }
-                    }
                 });
 
                 $("#config-dialog").dialog({
@@ -408,24 +310,6 @@
                     }
                 });
 
-                $("#config-backup-paths-dialog").dialog({
-                    minWidth: 500,
-                    modal: true,
-                    autoOpen: false,
-                    title: "Change Backup Paths",
-                    buttons:
-                    {
-                        "Cancel": function() {
-                            $(this).dialog("close");
-                        },
-
-                        "Submit": function() {
-                            submitBackupPaths($('#config-backup-paths').val());
-                            $(this).dialog("close");
-                        }
-                    }
-                });
-
                 $("#instance-restarts").buttonset({
                     create: function(event, ui)
                     {
@@ -435,20 +319,6 @@
                         });
                         $("#instance-restarts-disabled").button().click(function() {
                             $.get("set/restarts/false");
-                            return false;
-                        });
-                    }
-                });
-
-                $("#backup-cleanups").buttonset({
-                    create: function(event, ui)
-                    {
-                        $("#backup-cleanups-enabled").button().click(function() {
-                            $.get("set/backup-cleanups/true");
-                            return false;
-                        });
-                        $("#backup-cleanups-disabled").button().click(function() {
-                            $.get("set/backup-cleanups/false");
                             return false;
                         });
                     }
@@ -487,9 +357,6 @@
                 $('#page-title').html($('#app-name').html() + " for ZooKeeper");
 
                 $('#help-config-servers').tooltip();
-                $('#help-config-backup-paths').tooltip();
-
-                $('#restore-path-selectable').selectable();
 
                 $('#4ltr-button').button().click(function() {
                     var word = $('#4ltr-word').val();
@@ -511,11 +378,6 @@
                 font-size: 14px;
                 background-color: #777;
             }
-
-            #restore-path-selectable .ui-selecting { background: #888; color: white; }
-            #restore-path-selectable .ui-selected { background: #C00; color: white; }
-            #restore-path-selectable { list-style-type: none; margin: 0; padding: 0; width: 100%; }
-            #restore-path-selectable li { margin: 3px; padding: 0.4em; height: 1.5em; }
 
             td
             {
@@ -635,30 +497,13 @@
                 text-align: right;
             }
 
-            #backup-paths, #restore-paths, #servers
+            #servers
             {
                 margin-top: 3px;
                 margin-bottom: 15px;
                 border: 1px solid black;
                 padding: 5px;
                 width: 500px;
-            }
-
-            #backup-paths li, #restore-paths li
-            {
-                font-family: monospace;
-                padding-top: 3px;
-                padding-bottom: 3px;
-            }
-            
-            #backup-paths, #backup-cleanups
-            {
-                margin-bottom: 20px;
-            }
-
-            #backup-tab-buttons
-            {
-                margin-top: 30px;
             }
 
             #start-stop-button-container
@@ -687,7 +532,6 @@
                 <li><a href="#tabs-main">Control Panel</a></li>
                 <li><a href="#tabs-explorer">Explorer</a></li>
                 <li><a href="#tabs-config">Config</a></li>
-                <li><a href="#tabs-backups">Backups</a></li>
                 <li><a href="#tabs-4ltr">4LTR</a></li>
             </ul>
 
@@ -748,34 +592,6 @@
                 TBD
             </div>
 
-            <div id="tabs-backups" class="ui-helper-hidden">
-                <div id="backup-cleanups">
-                    <strong>Old backup cleaning: </strong>
-                    <input type="radio" id="backup-cleanups-enabled" name="backup-cleanups" value="enabled"/><label for="backup-cleanups-enabled">Enabled</label>
-                    <input type="radio" id="backup-cleanups-disabled" name="backup-cleanups" value="disabled"/><label for="backup-cleanups-disabled">Disabled</label>
-                </div>
-
-                <strong>Backup Paths:</strong><br/>
-                <div id="backup-paths"></div>
-
-                <strong>Available Backups for Playback:</strong><br/>
-                <div id="restore-paths"></div>
-
-                <div id="backup-tab-buttons">
-                    <span id="restore-button-container">
-                        <button id="restore-button">Playback a Backup...</button>
-                    </span>
-
-                    <span id="backup-config-button-container">
-                        <button id="backup-config-button">Change Backup Paths...</button>
-                    </span>
-
-                    <span id="backup-button-container">
-                        <button id="backup-button">Backup Now</button>
-                    </span>
-                </div>
-            </div>
-
             <div id="tabs-4ltr" class="ui-helper-hidden">
                 <div>
                     <label for="4ltr-word"><strong>Word: </strong></label>
@@ -815,38 +631,11 @@
             </form>
         </div>
 
-        <div id="config-backup-paths-dialog" class="ui-helper-hidden">
-            <form action="#" name="config-backup-paths-form">
-                <label for="config-backup-paths"><strong>Backup Paths:</strong></label><br/>
-                <textarea rows="4" cols="60" id="config-backup-paths" class="ui-widget-content ui-corner-all"></textarea>
-                <span id="help-config-backup-paths" class="ui-icon ui-icon-help" style="float: right" title="ZKPaths to backup when the backup task is run in the form: path, path, ... End a path with * for a recursive backup (e.g. /a/b/*)"></span><br/>
-            </form>
-        </div>
-
-        <div id="restore-dialog" class="ui-helper-hidden">
-            <form action="#" name="restore-path-form">
-                <strong>Select Backup(s):</strong>
-                <ul id="restore-path-selectable">
-                </ul>
-            </form>
-        </div>
-
         <div id="config-dialog" class="ui-helper-hidden">
             <form action="#" name="config-form">
                 <script type="text/javascript">
                     function updateConfigDialogValues()
                     {
-                        var backupPathsTab = $.makeArray(systemState.config.backupPaths);
-                        var backupPaths = "";
-                        for ( var i = 0; i < backupPathsTab.length; ++i )
-                        {
-                            if ( backupPaths.length > 0 )
-                            {
-                                backupPaths += ", ";
-                            }
-                            backupPaths += backupPathsTab[i];
-                        }
-
                         var serversTab = $.makeArray(systemState.config.servers);
                         var servers = "";
                         for ( i = 0; i < serversTab.length; ++i )
@@ -858,7 +647,6 @@
                             servers += serversTab[i].serverId + ":" + serversTab[i].hostname;
                         }
 
-                        $('#config-backup-paths').val(backupPaths);
                         $('#config-servers').val(servers);
                     }
                 </script>

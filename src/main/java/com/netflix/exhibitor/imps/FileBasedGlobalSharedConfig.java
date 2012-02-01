@@ -5,7 +5,6 @@ import com.google.common.io.Closeables;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.netflix.exhibitor.InstanceConfig;
 import com.netflix.exhibitor.activity.ActivityLog;
-import com.netflix.exhibitor.pojos.BackupPath;
 import com.netflix.exhibitor.pojos.ServerInfo;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -60,28 +59,28 @@ public class FileBasedGlobalSharedConfig implements GlobalSharedConfigBase
         }
 
         service.submit
-        (
-            new Runnable()
-            {
-                @Override
-                public void run()
+            (
+                new Runnable()
                 {
-                    while ( !Thread.currentThread().isInterrupted() )
+                    @Override
+                    public void run()
                     {
-                        try
+                        while ( !Thread.currentThread().isInterrupted() )
                         {
-                            sleep();
-                            readProperties();
-                        }
-                        catch ( InterruptedException e )
-                        {
-                            Thread.currentThread().interrupt();
-                            break;
+                            try
+                            {
+                                sleep();
+                                readProperties();
+                            }
+                            catch ( InterruptedException e )
+                            {
+                                Thread.currentThread().interrupt();
+                                break;
+                            }
                         }
                     }
                 }
-            }
-        );
+            );
     }
 
     private void sleep() throws InterruptedException
@@ -109,23 +108,6 @@ public class FileBasedGlobalSharedConfig implements GlobalSharedConfigBase
         readProperties();
 
         propertyConfig.setServers(newServers);
-        Properties properties = propertyConfig.getProperties();
-        writeProperties(properties);
-        updateLocalFile(properties);
-    }
-
-    @Override
-    public Collection<BackupPath> getBackupPaths()
-    {
-        return propertyConfig.getBackupPaths();
-    }
-
-    @Override
-    public void setBackupPaths(Collection<BackupPath> newBackupPaths) throws Exception
-    {
-        readProperties();
-
-        propertyConfig.setBackupPaths(newBackupPaths);
         Properties properties = propertyConfig.getProperties();
         writeProperties(properties);
         updateLocalFile(properties);

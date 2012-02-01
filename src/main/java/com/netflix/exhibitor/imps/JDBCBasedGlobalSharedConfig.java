@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.netflix.exhibitor.InstanceConfig;
 import com.netflix.exhibitor.activity.ActivityLog;
-import com.netflix.exhibitor.pojos.BackupPath;
 import com.netflix.exhibitor.pojos.ServerInfo;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -56,28 +55,28 @@ public class JDBCBasedGlobalSharedConfig implements GlobalSharedConfigBase, Clos
 
         readProperties();
         service.submit
-        (
-            new Runnable()
-            {
-                @Override
-                public void run()
+            (
+                new Runnable()
                 {
-                    while ( !Thread.currentThread().isInterrupted() )
+                    @Override
+                    public void run()
                     {
-                        try
+                        while ( !Thread.currentThread().isInterrupted() )
                         {
-                            Thread.sleep(checkPeriodMs + random.nextInt(checkPeriodMs));
-                            readProperties();
-                        }
-                        catch ( InterruptedException e )
-                        {
-                            Thread.currentThread().interrupt();
-                            break;
+                            try
+                            {
+                                Thread.sleep(checkPeriodMs + random.nextInt(checkPeriodMs));
+                                readProperties();
+                            }
+                            catch ( InterruptedException e )
+                            {
+                                Thread.currentThread().interrupt();
+                                break;
+                            }
                         }
                     }
                 }
-            }
-        );
+            );
     }
 
     @Override
@@ -100,21 +99,6 @@ public class JDBCBasedGlobalSharedConfig implements GlobalSharedConfigBase, Clos
         readProperties();
 
         propertyConfig.setServers(newServers);
-        writeProperties(propertyConfig.getProperties());
-    }
-
-    @Override
-    public Collection<BackupPath> getBackupPaths()
-    {
-        return propertyConfig.getBackupPaths();
-    }
-
-    @Override
-    public void setBackupPaths(Collection<BackupPath> newBackupPaths) throws Exception
-    {
-        readProperties();
-
-        propertyConfig.setBackupPaths(newBackupPaths);
         writeProperties(propertyConfig.getProperties());
     }
 

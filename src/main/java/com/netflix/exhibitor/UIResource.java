@@ -10,15 +10,12 @@ import com.google.common.io.Resources;
 import com.netflix.curator.utils.ZKPaths;
 import com.netflix.exhibitor.activity.ActivityLog;
 import com.netflix.exhibitor.activity.QueueGroups;
-import com.netflix.exhibitor.entities.BackupPojo;
 import com.netflix.exhibitor.entities.ConfigPojo;
 import com.netflix.exhibitor.entities.PathPojo;
 import com.netflix.exhibitor.entities.ResultPojo;
 import com.netflix.exhibitor.entities.ServerPojo;
 import com.netflix.exhibitor.entities.SystemState;
 import com.netflix.exhibitor.entities.UITabSpec;
-import com.netflix.exhibitor.pojos.BackupPath;
-import com.netflix.exhibitor.pojos.BackupSpec;
 import com.netflix.exhibitor.pojos.ServerInfo;
 import com.netflix.exhibitor.pojos.UITab;
 import com.netflix.exhibitor.state.FourLetterWord;
@@ -46,12 +43,9 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.text.DateFormat;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Path("exhibitor/v1/ui")
@@ -59,7 +53,6 @@ public class UIResource
 {
     private final UIContext context;
     private final List<UITab> tabs;
-    private final DateFormat formatter;
 
     private static final String         ERROR_KEY = "*";
     private static final String         RECURSIVE_FLAG = "*";
@@ -77,9 +70,6 @@ public class UIResource
     {
         context = resolver.getContext(UIContext.class);
         tabs = buildTabs();
-
-        formatter = DateFormat.getDateTimeInstance();
-        formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
     }
 
     @Path("{file:.*}")
@@ -202,56 +192,12 @@ public class UIResource
             }
         );
 
-        Collection<BackupSpec>      backupsFromConfig = context.getExhibitor().getBackupManager().getSource().getAvailableBackups();
-        List<BackupSpec>            availableBackups = (backupsFromConfig != null) ? Lists.newArrayList(backupsFromConfig) : Lists.<BackupSpec>newArrayList();
-        Collections.sort
-        (
-            availableBackups,
-            new Comparator<BackupSpec>()
-            {
-                @Override
-                public int compare(BackupSpec o1, BackupSpec o2)
-                {
-                    return o2.getDate().compareTo(o1.getDate());    // descending
-                }
-            }
-        );
-        
-        Collection<BackupPojo>     localAvailableRestores = Collections2.transform
-        (
-            availableBackups,
-            new Function<BackupSpec, BackupPojo>()
-            {
-                @Override
-                public BackupPojo apply(BackupSpec spec)
-                {
-                    return new BackupPojo(spec.getPath(), formatter.format(spec.getDate()));
-                }
-            }
-        );
-
-        Collection<BackupPath>      backupPaths = context.getExhibitor().getGlobalSharedConfig().getBackupPaths();
-        Collection<String>          localBackupPaths = Collections2.transform
-        (
-            (backupPaths != null) ? backupPaths : Lists.<BackupPath>newArrayList(),
-            new Function<BackupPath, String>()
-            {
-                @Override
-                public String apply(BackupPath backupPath)
-                {
-                    return backupPath.isRecursive() ? ZKPaths.makePath(backupPath.getPath(), RECURSIVE_FLAG) : backupPath.getPath();
-                }
-            }
-        );
-
         String                      response = new FourLetterWord(FourLetterWord.Word.RUOK, context.getExhibitor().getConfig()).getResponse();
         ConfigPojo                  config = new ConfigPojo
         (
             localServers,
             (us != null) ? us.getId() : -1,
-            context.getExhibitor().getConfig().getHostname(),
-            localBackupPaths,
-            localAvailableRestores
+            context.getExhibitor().getConfig().getHostname()
         );
         SystemState state = new SystemState
         (
@@ -317,66 +263,6 @@ public class UIResource
         Collection<ServerInfo>  filtered = Collections2.filter(servers, Predicates.notNull());
         
         context.getExhibitor().getGlobalSharedConfig().setServers(filtered);
-        return Response.ok(new ResultPojo("OK", true)).build();
-    }
-
-    @Path("set/backup-paths")
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response setBackupPaths(List<PathPojo> paths) throws Exception
-    {
-        Collection<BackupPath>      localPaths = Collections2.transform
-        (
-            paths,
-            new Function<PathPojo, BackupPath>()
-            {
-                @Override
-                public BackupPath apply(PathPojo pojo)
-                {
-                    String      path = pojo.getPath();
-                    String      originalPath = path;
-                    boolean     isRecursive = path.endsWith(RECURSIVE_FLAG);
-                    if ( isRecursive )
-                    {
-                        path = trimEnding(path, RECURSIVE_FLAG);
-                        if ( path == null )
-                        {
-                            return null;
-                        }
-                    }
-                    if ( path.endsWith("/") )
-                    {
-                        path = trimEnding(path, "/");
-                        if ( path == null )
-                        {
-                            return null;
-                        }
-                    }
-                    try
-                    {
-                        return new BackupPath(path, isRecursive);
-                    }
-                    catch ( IllegalArgumentException ignore )
-                    {
-                        // ignore
-                    }
-                    return null;
-                }
-            }
-        );
-        localPaths = Collections2.filter(localPaths, Predicates.notNull());
-
-        context.getExhibitor().getGlobalSharedConfig().setBackupPaths(localPaths);
-        return Response.ok(new ResultPojo("OK", true)).build();
-    }
-
-    @Path("start-backup")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response startBackup() throws Exception
-    {
-        context.getExhibitor().getBackupManager().forceBackup();
         return Response.ok(new ResultPojo("OK", true)).build();
     }
 

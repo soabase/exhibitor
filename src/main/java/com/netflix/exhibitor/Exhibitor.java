@@ -8,9 +8,7 @@ import com.netflix.curator.retry.ExponentialBackoffRetry;
 import com.netflix.exhibitor.activity.ActivityLog;
 import com.netflix.exhibitor.activity.ActivityQueue;
 import com.netflix.exhibitor.imps.StandardProcessOperations;
-import com.netflix.exhibitor.maintenance.BackupManager;
 import com.netflix.exhibitor.maintenance.CleanupManager;
-import com.netflix.exhibitor.spi.BackupSource;
 import com.netflix.exhibitor.spi.GlobalSharedConfig;
 import com.netflix.exhibitor.spi.ProcessOperations;
 import com.netflix.exhibitor.state.InstanceStateManager;
@@ -40,7 +38,6 @@ public class Exhibitor implements Closeable
     private final GlobalSharedConfig        globalSharedConfig;
     private final ProcessOperations         processOperations;
     private final CleanupManager            cleanupManager;
-    private final BackupManager             backupManager;
     private final AtomicBoolean             restartsEnabled = new AtomicBoolean(true);
     private final AtomicBoolean             backupCleanupEnabled = new AtomicBoolean(true);
     private final AtomicReference<State>    state = new AtomicReference<State>(State.LATENT);
@@ -58,9 +55,8 @@ public class Exhibitor implements Closeable
      * @param instanceConfig static config for this instance
      * @param globalSharedConfig Configuration values that are <strong>global</strong> and <strong>mutable</strong>
      * @param processOperations Various inject-able operations. In most cases, you can use {@link StandardProcessOperations}
-     * @param backupSource Abstraction for managing backups
      */
-    public Exhibitor(InstanceConfig instanceConfig, GlobalSharedConfig globalSharedConfig, ProcessOperations processOperations, BackupSource backupSource)
+    public Exhibitor(InstanceConfig instanceConfig, GlobalSharedConfig globalSharedConfig, ProcessOperations processOperations)
     {
         this.instanceConfig = instanceConfig;
         this.globalSharedConfig = globalSharedConfig;
@@ -68,7 +64,6 @@ public class Exhibitor implements Closeable
         instanceStateManager = new InstanceStateManager(this);
         monitorRunningInstance = new MonitorRunningInstance(this);
         cleanupManager = new CleanupManager(this);
-        backupManager = new BackupManager(this, backupSource);
     }
 
     public ActivityLog getLog()
@@ -87,7 +82,6 @@ public class Exhibitor implements Closeable
         instanceStateManager.start();
         monitorRunningInstance.start();
         cleanupManager.start();
-        backupManager.start();
     }
 
     @Override
@@ -95,7 +89,6 @@ public class Exhibitor implements Closeable
     {
         Preconditions.checkState(state.compareAndSet(State.STARTED, State.STOPPED));
 
-        Closeables.closeQuietly(backupManager);
         Closeables.closeQuietly(cleanupManager);
         Closeables.closeQuietly(monitorRunningInstance);
         Closeables.closeQuietly(instanceStateManager);
@@ -156,11 +149,6 @@ public class Exhibitor implements Closeable
     public void         setBackupCleanupEnabled(boolean newValue)
     {
         backupCleanupEnabled.set(newValue);
-    }
-
-    public BackupManager getBackupManager()
-    {
-        return backupManager;
     }
 
     private synchronized void closeLocalConnection()
