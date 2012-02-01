@@ -148,6 +148,24 @@ public class UIResource
         return Response.ok(entity).build();
     }
 
+    @Path("4ltr/{word}")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response getFourLetterWord(@PathParam("word") String word) throws Exception
+    {
+        String      value;
+        try
+        {
+            FourLetterWord.Word wordEnum = FourLetterWord.Word.valueOf(word.toUpperCase());
+            value = new FourLetterWord(wordEnum, context.getExhibitor().getConfig()).getResponse();
+        }
+        catch ( IllegalArgumentException e )
+        {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        return Response.ok(value).build();
+    }
+
     @Path("tab/{index}")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
@@ -463,21 +481,6 @@ public class UIResource
         return str.toString();
     }
 
-    private String getZKStats()
-    {
-        StringBuilder       str = new StringBuilder();
-        for ( FourLetterWord.Word word : FourLetterWord.Word.values() )
-        {
-            String  value = new FourLetterWord(word, context.getExhibitor().getConfig()).getResponse();
-            str.append(word.name()).append("\n");
-            str.append("====").append("\n");
-            str.append(value).append("\n");
-            str.append("________________________________________________________________________________").append("\n\n");
-        }
-
-        return str.toString();
-    }
-
     private ImmutableList<UITab> buildTabs()
     {
         ImmutableList.Builder<UITab> builder = ImmutableList.builder();
@@ -490,15 +493,6 @@ public class UIResource
                 public String getContent() throws Exception
                 {
                     return getLog();
-                }
-            },
-
-            new UITab("4LTR")
-            {
-                @Override
-                public String getContent() throws Exception
-                {
-                    return getZKStats();
                 }
             }
         );

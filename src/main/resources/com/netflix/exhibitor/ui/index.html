@@ -13,7 +13,7 @@
 		<script type="text/javascript" src="js/jquery.tools.min.js"></script>
         <script type="text/javascript" src="dynatree/jquery.dynatree.min.js"></script>
 		<script type="text/javascript">
-            var BUILTIN_TAB_QTY = 3;
+            var BUILTIN_TAB_QTY = 5;
             var AUTO_REFRESH_PERIOD = 10000;
             var UPDATE_STATE_PERIOD = 10000;
 
@@ -262,9 +262,10 @@
 
 			$(function(){
                 $.getJSON('tabs', function(data) {
-                    for ( var i = 0; i < data.uiTabSpec.length; ++i )
+                    var uiTabSpec = $.makeArray(data.uiTabSpec);
+                    for ( var i = 0; i < uiTabSpec.length; ++i )
                     {
-                        $('#tabs-list').append('<li><a href="' + data.uiTabSpec[i].url  + '">' + data.uiTabSpec[i].name + '</a></li>');
+                        $('#tabs-list').append('<li><a href="' + uiTabSpec[i].url  + '">' + uiTabSpec[i].name + '</a></li>');
                     }
                     $('#tabs').tabs({
                         panelTemplate: '<div class="text"></div>',
@@ -490,6 +491,12 @@
 
                 $('#restore-path-selectable').selectable();
 
+                $('#4ltr-button').button().click(function() {
+                    var word = $('#4ltr-word').val();
+                    $('#4ltr-content').load('4ltr/' + encodeURIComponent(word));
+                    return false;
+                });
+
                 window.setInterval("updateState()", UPDATE_STATE_PERIOD);
                 updateState();
 			});
@@ -679,7 +686,9 @@
             <ul id="tabs-list">
                 <li><a href="#tabs-main">Control Panel</a></li>
                 <li><a href="#tabs-explorer">Explorer</a></li>
+                <li><a href="#tabs-config">Config</a></li>
                 <li><a href="#tabs-backups">Backups</a></li>
+                <li><a href="#tabs-4ltr">4LTR</a></li>
             </ul>
 
 
@@ -735,6 +744,10 @@
                 </div>
             </div>
 
+            <div id="tabs-config" class="ui-helper-hidden">
+                TBD
+            </div>
+
             <div id="tabs-backups" class="ui-helper-hidden">
                 <div id="backup-cleanups">
                     <strong>Old backup cleaning: </strong>
@@ -761,6 +774,16 @@
                         <button id="backup-button">Backup Now</button>
                     </span>
                 </div>
+            </div>
+
+            <div id="tabs-4ltr" class="ui-helper-hidden">
+                <div>
+                    <label for="4ltr-word"><strong>Word: </strong></label>
+                    <input type="text" id="4ltr-word" name="4ltr-word" size="5">
+                    <button id="4ltr-button">Submit</button>
+                </div>
+
+                <div id="4ltr-content" class="text"></div>
             </div>
         </div>
 
