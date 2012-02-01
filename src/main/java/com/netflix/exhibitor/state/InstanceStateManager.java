@@ -7,6 +7,7 @@ import com.netflix.exhibitor.Exhibitor;
 import com.netflix.exhibitor.pojos.ServerInfo;
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 
 public class InstanceStateManager implements Closeable
@@ -42,17 +43,20 @@ public class InstanceStateManager implements Closeable
 
     public InstanceState getInstanceState()
     {
+/*
         Collection<ServerInfo>  servers = exhibitor.getGlobalSharedConfig().getServers();
         if ( servers == null )
         {
             servers = Lists.newArrayList();
         }
         ServerInfo us = Iterables.find(servers, isUs, null);
+*/
+        ServerInfo us = null;   // TODO
 
         InstanceStateTypes state = (us != null) ? checker.getState() : InstanceStateTypes.WAITING;
         return new InstanceState
         (
-            servers,
+            new ArrayList<ServerInfo>(),    // TODO
             exhibitor.getConfig().getConnectPort(),
             exhibitor.getConfig().getElectionPort(),
             (us != null) ? us.getId() : -1,

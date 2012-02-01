@@ -75,4 +75,9 @@ public class InstanceConfig
     {
         return builder.maxBackups;
     }
+    
+    public String getServerConnectionSpec()
+    {
+        return builder().serverConnectionSpec;
+    }
 }

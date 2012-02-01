@@ -2,12 +2,12 @@ package com.netflix.exhibitor;
 
 import com.google.common.collect.ImmutableList;
 import com.netflix.exhibitor.pojos.UITab;
-import com.netflix.exhibitor.spi.GlobalSharedConfig;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 public class InstanceConfigBuilder
 {
+    final String    serverConnectionSpec;
     final String    hostname;
     final int       connectPort;
     final int       electionPort;
@@ -21,6 +21,7 @@ public class InstanceConfigBuilder
 
     InstanceConfigBuilder()
     {
+        this.serverConnectionSpec = "";
         this.hostname = "";
         this.connectPort = 2888;
         this.electionPort = 3888;
@@ -38,8 +39,22 @@ public class InstanceConfigBuilder
         return new InstanceConfig(this);
     }
 
-    private InstanceConfigBuilder(String hostname, int connectPort, int electionPort, int checkSeconds, int clientPort, int connectionTimeoutMs, int backupPeriodMs, int cleanupPeriodMs, int maxBackups, Collection<UITab> additionalUITabs)
+    private InstanceConfigBuilder
+        (
+            String serverConnectionSpec,
+            String hostname,
+            int connectPort,
+            int electionPort,
+            int checkSeconds,
+            int clientPort,
+            int connectionTimeoutMs,
+            int backupPeriodMs,
+            int cleanupPeriodMs,
+            int maxBackups,
+            Collection<UITab> additionalUITabs
+        )
     {
+        this.serverConnectionSpec = serverConnectionSpec;
         this.hostname = hostname;
         this.connectPort = connectPort;
         this.electionPort = electionPort;
@@ -53,14 +68,23 @@ public class InstanceConfigBuilder
     }
 
     /**
-     * @param hostname The hostname of the instance this JVM is running on. Must match a value
-     *                 returned by {@link GlobalSharedConfig#getServers()} otherwise this instance
-     *                 will be considered to to be out of service
+     * @param serverConnectionSpec the connection list to set in the zookeeper server config file
+     * @return modified builder
+     */
+    public InstanceConfigBuilder serverConnectionSpec(String serverConnectionSpec)
+    {
+        return new InstanceConfigBuilder(serverConnectionSpec, hostname, connectPort, electionPort, checkSeconds, clientPort, connectionTimeoutMs, backupPeriodMs, cleanupPeriodMs, maxBackups, additionalUITabs);
+    }
+
+    /**
+     * @param hostname The hostname of the instance this JVM is running on. Must match a host in the list
+     *                 returned by {@link InstanceConfig#getServerConnectionSpec()} otherwise this instance
+     *                 will be considered to be out of service
      * @return modified builder
      */
     public InstanceConfigBuilder hostname(String hostname)
     {
-        return new InstanceConfigBuilder(hostname, connectPort, electionPort, checkSeconds, clientPort, connectionTimeoutMs, backupPeriodMs, cleanupPeriodMs, maxBackups, additionalUITabs);
+        return new InstanceConfigBuilder(serverConnectionSpec, hostname, connectPort, electionPort, checkSeconds, clientPort, connectionTimeoutMs, backupPeriodMs, cleanupPeriodMs, maxBackups, additionalUITabs);
     }
 
     /**
@@ -69,7 +93,7 @@ public class InstanceConfigBuilder
      */
     public InstanceConfigBuilder connectPort(int connectPort)
     {
-        return new InstanceConfigBuilder(hostname, connectPort, electionPort, checkSeconds, clientPort, connectionTimeoutMs, backupPeriodMs, cleanupPeriodMs, maxBackups, additionalUITabs);
+        return new InstanceConfigBuilder(serverConnectionSpec, hostname, connectPort, electionPort, checkSeconds, clientPort, connectionTimeoutMs, backupPeriodMs, cleanupPeriodMs, maxBackups, additionalUITabs);
     }
 
     /**
@@ -78,7 +102,7 @@ public class InstanceConfigBuilder
      */
     public InstanceConfigBuilder electionPort(int electionPort)
     {
-        return new InstanceConfigBuilder(hostname, connectPort, electionPort, checkSeconds, clientPort, connectionTimeoutMs, backupPeriodMs, cleanupPeriodMs, maxBackups, additionalUITabs);
+        return new InstanceConfigBuilder(serverConnectionSpec, hostname, connectPort, electionPort, checkSeconds, clientPort, connectionTimeoutMs, backupPeriodMs, cleanupPeriodMs, maxBackups, additionalUITabs);
     }
 
     /**
@@ -87,7 +111,7 @@ public class InstanceConfigBuilder
      */
     public InstanceConfigBuilder clientPort(int clientPort)
     {
-        return new InstanceConfigBuilder(hostname, connectPort, electionPort, checkSeconds, clientPort, connectionTimeoutMs, backupPeriodMs, cleanupPeriodMs, maxBackups, additionalUITabs);
+        return new InstanceConfigBuilder(serverConnectionSpec, hostname, connectPort, electionPort, checkSeconds, clientPort, connectionTimeoutMs, backupPeriodMs, cleanupPeriodMs, maxBackups, additionalUITabs);
     }
 
     /**
@@ -96,7 +120,7 @@ public class InstanceConfigBuilder
      */
     public InstanceConfigBuilder checkSeconds(int checkSeconds)
     {
-        return new InstanceConfigBuilder(hostname, connectPort, electionPort, checkSeconds, clientPort, connectionTimeoutMs, backupPeriodMs, cleanupPeriodMs, maxBackups, additionalUITabs);
+        return new InstanceConfigBuilder(serverConnectionSpec, hostname, connectPort, electionPort, checkSeconds, clientPort, connectionTimeoutMs, backupPeriodMs, cleanupPeriodMs, maxBackups, additionalUITabs);
     }
 
     /**
@@ -105,7 +129,7 @@ public class InstanceConfigBuilder
      */
     public InstanceConfigBuilder connectionTimeoutMs(int connectionTimeoutMs)
     {
-        return new InstanceConfigBuilder(hostname, connectPort, electionPort, checkSeconds, clientPort, connectionTimeoutMs, backupPeriodMs, cleanupPeriodMs, maxBackups, additionalUITabs);
+        return new InstanceConfigBuilder(serverConnectionSpec, hostname, connectPort, electionPort, checkSeconds, clientPort, connectionTimeoutMs, backupPeriodMs, cleanupPeriodMs, maxBackups, additionalUITabs);
     }
 
     /**
@@ -115,7 +139,7 @@ public class InstanceConfigBuilder
     public InstanceConfigBuilder backupPeriodSeconds(int backupPeriodSeconds)
     {
         int     backupPeriodMs = (int)TimeUnit.MILLISECONDS.convert(backupPeriodSeconds, TimeUnit.SECONDS);
-        return new InstanceConfigBuilder(hostname, connectPort, electionPort, checkSeconds, clientPort, connectionTimeoutMs, backupPeriodMs, cleanupPeriodMs, maxBackups, additionalUITabs);
+        return new InstanceConfigBuilder(serverConnectionSpec, hostname, connectPort, electionPort, checkSeconds, clientPort, connectionTimeoutMs, backupPeriodMs, cleanupPeriodMs, maxBackups, additionalUITabs);
     }
 
     /**
@@ -125,7 +149,7 @@ public class InstanceConfigBuilder
     public InstanceConfigBuilder cleanupPeriodSeconds(int cleanupPeriodSeconds)
     {
         int     cleanupPeriodMs = (int)TimeUnit.MILLISECONDS.convert(cleanupPeriodSeconds, TimeUnit.SECONDS);
-        return new InstanceConfigBuilder(hostname, connectPort, electionPort, checkSeconds, clientPort, connectionTimeoutMs, backupPeriodMs, cleanupPeriodSeconds, maxBackups, additionalUITabs);
+        return new InstanceConfigBuilder(serverConnectionSpec, hostname, connectPort, electionPort, checkSeconds, clientPort, connectionTimeoutMs, backupPeriodMs, cleanupPeriodSeconds, maxBackups, additionalUITabs);
     }
 
     /**
@@ -134,7 +158,7 @@ public class InstanceConfigBuilder
      */
     public InstanceConfigBuilder maxBackups(int maxBackups)
     {
-        return new InstanceConfigBuilder(hostname, connectPort, electionPort, checkSeconds, clientPort, connectionTimeoutMs, backupPeriodMs, cleanupPeriodMs, maxBackups, additionalUITabs);
+        return new InstanceConfigBuilder(serverConnectionSpec, hostname, connectPort, electionPort, checkSeconds, clientPort, connectionTimeoutMs, backupPeriodMs, cleanupPeriodMs, maxBackups, additionalUITabs);
     }
 
     /**
@@ -143,6 +167,6 @@ public class InstanceConfigBuilder
      */
     public InstanceConfigBuilder additionalUITabs(Collection<UITab> additionalUITabs)
     {
-        return new InstanceConfigBuilder(hostname, connectPort, electionPort, checkSeconds, clientPort, connectionTimeoutMs, backupPeriodMs, cleanupPeriodMs, maxBackups, additionalUITabs);
+        return new InstanceConfigBuilder(serverConnectionSpec, hostname, connectPort, electionPort, checkSeconds, clientPort, connectionTimeoutMs, backupPeriodMs, cleanupPeriodMs, maxBackups, additionalUITabs);
     }
 }

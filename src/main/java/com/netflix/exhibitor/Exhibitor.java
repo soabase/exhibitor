@@ -9,7 +9,6 @@ import com.netflix.exhibitor.activity.ActivityLog;
 import com.netflix.exhibitor.activity.ActivityQueue;
 import com.netflix.exhibitor.imps.StandardProcessOperations;
 import com.netflix.exhibitor.maintenance.CleanupManager;
-import com.netflix.exhibitor.spi.GlobalSharedConfig;
 import com.netflix.exhibitor.spi.ProcessOperations;
 import com.netflix.exhibitor.state.InstanceStateManager;
 import com.netflix.exhibitor.state.MonitorRunningInstance;
@@ -35,7 +34,6 @@ public class Exhibitor implements Closeable
     private final MonitorRunningInstance    monitorRunningInstance;
     private final InstanceStateManager      instanceStateManager;
     private final InstanceConfig            instanceConfig;
-    private final GlobalSharedConfig        globalSharedConfig;
     private final ProcessOperations         processOperations;
     private final CleanupManager            cleanupManager;
     private final AtomicBoolean             restartsEnabled = new AtomicBoolean(true);
@@ -53,13 +51,11 @@ public class Exhibitor implements Closeable
 
     /**
      * @param instanceConfig static config for this instance
-     * @param globalSharedConfig Configuration values that are <strong>global</strong> and <strong>mutable</strong>
      * @param processOperations Various inject-able operations. In most cases, you can use {@link StandardProcessOperations}
      */
-    public Exhibitor(InstanceConfig instanceConfig, GlobalSharedConfig globalSharedConfig, ProcessOperations processOperations)
+    public Exhibitor(InstanceConfig instanceConfig, ProcessOperations processOperations)
     {
         this.instanceConfig = instanceConfig;
-        this.globalSharedConfig = globalSharedConfig;
         this.processOperations = processOperations;
         instanceStateManager = new InstanceStateManager(this);
         monitorRunningInstance = new MonitorRunningInstance(this);
@@ -114,11 +110,6 @@ public class Exhibitor implements Closeable
     public ProcessOperations getProcessOperations()
     {
         return processOperations;
-    }
-
-    public GlobalSharedConfig getGlobalSharedConfig()
-    {
-        return globalSharedConfig;
     }
 
     public synchronized CuratorFramework getLocalConnection() throws IOException

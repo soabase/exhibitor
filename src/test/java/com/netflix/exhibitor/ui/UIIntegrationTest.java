@@ -6,8 +6,6 @@ import com.netflix.exhibitor.InstanceConfig;
 import com.netflix.exhibitor.UIContext;
 import com.netflix.exhibitor.UIResource;
 import com.netflix.exhibitor.imps.StandardProcessOperations;
-import com.netflix.exhibitor.mocks.MockGlobalSharedConfig;
-import com.netflix.exhibitor.spi.GlobalSharedConfig;
 import com.netflix.exhibitor.spi.ProcessOperations;
 import com.sun.jersey.api.core.DefaultResourceConfig;
 import com.sun.jersey.spi.container.servlet.ServletContainer;
@@ -27,11 +25,10 @@ public class UIIntegrationTest
         }
 
         ProcessOperations   processOperations = new StandardProcessOperations(null, args[0], args[1]);
-        GlobalSharedConfig  globalSharedConfig = new MockGlobalSharedConfig();
 
         InstanceConfig      config = InstanceConfig.builder().hostname("localhost").build();
 
-        Exhibitor           exhibitor = new Exhibitor(config, globalSharedConfig, processOperations);
+        Exhibitor           exhibitor = new Exhibitor(config, processOperations);
         exhibitor.start();
 
         final UIContext   context = new UIContext(exhibitor);

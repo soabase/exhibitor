@@ -85,8 +85,6 @@
                     $('#not-connected-alert').hide();
                     $('#instance-hostname').html(systemState.config.thisHostname);
                     $('#instance-id').html((systemState.config.thisServerId > 0) ? systemState.config.thisServerId : "n/a");
-
-                    updateConfig();
                 }).error(function() {
                   if ( connectedToExhibitor )
                   {
@@ -97,23 +95,6 @@
                 });
             }
             updateState();
-
-            function updateConfig()
-            {
-                var serversTab = $.makeArray(systemState.config.servers);
-                var servers = "";
-                for ( i = 0; i < serversTab.length; ++i )
-                {
-                    servers += '<li>hostname: <strong>' + serversTab[i].hostname + "</strong> - Server ID: <strong>" + serversTab[i].serverId + '</strong></li>';
-                }
-                if ( servers.length == 0 )
-                {
-                    servers = "<i>none</i>";
-                }
-
-                $('#config-section').show();
-                $('#servers').html(servers);
-            }
 
             function refreshCurrentTab()
             {
@@ -196,21 +177,6 @@
                 };
             }
 
-            function submitServers(paths)
-            {
-                var pojo = makePathsPojo(paths);
-                $.ajax({
-                    type: 'POST',
-                    url: "set/servers",
-                    data: JSON.stringify(pojo),
-                    contentType: "application/json",
-                    success: function()
-                    {
-                        updateState();
-                    }
-                });
-            }
-
 			$(function(){
                 $.getJSON('tabs', function(data) {
                     var uiTabSpec = $.makeArray(data.uiTabSpec);
@@ -268,46 +234,9 @@
                     return false;
                 });
 
-                $('#main-config-button').button({
-                    icons: {
-                        primary: "ui-icon-pencil"
-                    }
-                }).click(function() {
-                   updateConfigDialogValues();
-                   $("#config-servers-dialog").dialog("open");
-                   return false;
-                });
-
                 $("#message-dialog").dialog({
                     modal: true,
                     autoOpen: false
-                });
-
-                $("#config-dialog").dialog({
-                    minWidth: 500,
-                    modal: true,
-                    autoOpen: false
-                });
-
-                $("#config-servers-dialog").dialog({
-                    minWidth: 500,
-                    modal: true,
-                    autoOpen: false,
-                    title: "Change Servers",
-                    buttons:
-                    {
-                        "Cancel": function() {
-                            $(this).dialog("close");
-                        },
-
-                        "Submit...": function() {
-                            okCancelDialog("Change Servers", "Are you sure? This will cause the instances to be reconfigured and restarted.", function(){
-                                    submitServers($('#config-servers').val());
-                                }
-                            );
-                            $(this).dialog("close");
-                        }
-                    }
                 });
 
                 $("#instance-restarts").buttonset({
@@ -355,8 +284,6 @@
 
                 $('#not-connected-message').html("Not connected to " + $('#app-name').html() + " server");
                 $('#page-title').html($('#app-name').html() + " for ZooKeeper");
-
-                $('#help-config-servers').tooltip();
 
                 $('#4ltr-button').button().click(function() {
                     var word = $('#4ltr-word').val();
@@ -416,21 +343,6 @@
                 width: 200px;
                 padding: 8px;
                 z-index: 65535;
-            }
-
-            #config-dialog label
-            {
-                margin-bottom: 6px;
-                font-size: 90%;
-                font-weight: bold;
-            }
-
-            #config-dialog input
-            {
-                margin-bottom: 6px;
-                font-size: 90%;
-                font-family: monospace;
-                font-weight: normal;
             }
 
             #not-connected-alert
@@ -497,15 +409,6 @@
                 text-align: right;
             }
 
-            #servers
-            {
-                margin-top: 3px;
-                margin-bottom: 15px;
-                border: 1px solid black;
-                padding: 5px;
-                width: 500px;
-            }
-
             #start-stop-button-container
             {
                 margin-top: 20px;
@@ -555,14 +458,6 @@
                             <button id="start-button">Start ZooKeeper</button>
                         </span>
                         <span style="margin-left: 10px;">ZooKeeper appears to be <strong>not</strong> running</span>
-                    </div>
-                </div>
-
-                <div class="ui-helper-hidden ui-widget" id="config-section">
-                    <strong>Servers:</strong>
-                    <div id="servers"></div>
-                    <div id="main-edit-config-button-container">
-                        <button id="main-config-button">Change Servers...</button>
                     </div>
                 </div>
             </div>
@@ -621,36 +516,6 @@
             <span class="ui-icon ui-icon-alert" style="float: left; margin:0 7px 50px 0;"></span>
             <span id="message-dialog-text"></span>
             </p>
-        </div>
-
-        <div id="config-servers-dialog" class="ui-helper-hidden">
-            <form action="#" name="config-servers-form">
-                <label for="config-servers"><strong>Servers:</strong></label><br/>
-                <textarea rows="4" cols="60" id="config-servers" class="ui-widget-content ui-corner-all"></textarea>
-                <span id="help-config-servers" class="ui-icon ui-icon-help" style="float: right" title="List of servers in the cluster in the form: id:host, id:host, ... IMPORTANT: Changing this list will cause ZK instance, starts/restarts, etc."></span><br/>
-            </form>
-        </div>
-
-        <div id="config-dialog" class="ui-helper-hidden">
-            <form action="#" name="config-form">
-                <script type="text/javascript">
-                    function updateConfigDialogValues()
-                    {
-                        var serversTab = $.makeArray(systemState.config.servers);
-                        var servers = "";
-                        for ( i = 0; i < serversTab.length; ++i )
-                        {
-                            if ( servers.length > 0 )
-                            {
-                                servers += ", ";
-                            }
-                            servers += serversTab[i].serverId + ":" + serversTab[i].hostname;
-                        }
-
-                        $('#config-servers').val(servers);
-                    }
-                </script>
-            </form>
         </div>
     </body>
 </html>

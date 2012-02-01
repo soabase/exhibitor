@@ -1,13 +1,11 @@
 package com.netflix.exhibitor.imps;
 
-import com.google.common.collect.Iterables;
 import com.google.common.io.Closeables;
 import com.google.common.io.Files;
 import com.netflix.exhibitor.Exhibitor;
 import com.netflix.exhibitor.activity.ActivityLog;
 import com.netflix.exhibitor.pojos.ServerInfo;
 import com.netflix.exhibitor.spi.ProcessOperations;
-import com.netflix.exhibitor.state.InstanceStateManager;
 import java.io.*;
 import java.util.Date;
 import java.util.Properties;
@@ -203,7 +201,7 @@ public class StandardProcessOperations implements ProcessOperations
 
     private File prepConfigFile(Exhibitor exhibitor) throws IOException
     {
-        ServerInfo      us = Iterables.find(exhibitor.getGlobalSharedConfig().getServers(), InstanceStateManager.isUs);
+        ServerInfo      us = new ServerInfo("", -1, false); // TODO
         
         File            idFile = new File(dataDirectory, "myid");
         Files.createParentDirs(idFile);
@@ -216,10 +214,12 @@ public class StandardProcessOperations implements ProcessOperations
         localProperties.setProperty("clientPort", Integer.toString(exhibitor.getConfig().getClientPort()));
 
         String          portSpec = String.format(":%d:%d", exhibitor.getConfig().getConnectPort(), exhibitor.getConfig().getElectionPort());
+/*  TODO
         for ( ServerInfo server : exhibitor.getGlobalSharedConfig().getServers() )
         {
             localProperties.setProperty("server." + server.getId(), server.getHostname() + portSpec);
         }
+*/
 
         File            configFile = new File(configDirectory, MODIFIED_CONFIG_NAME);
         OutputStream out = new BufferedOutputStream(new FileOutputStream(configFile));
