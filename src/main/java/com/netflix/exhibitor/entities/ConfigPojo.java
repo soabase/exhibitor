@@ -7,20 +7,28 @@ public class ConfigPojo
 {
     private String                  thisHostname;
     private int                     thisServerId;
+    private String                  serversSpec;
 
     public ConfigPojo()
     {
-        this(-1, "");
+        this("", "", -1);
     }
 
-    public ConfigPojo
-        (
-            int thisServerId,
-            String thisHostname
-        )
+    public ConfigPojo(String serversSpec, String thisHostname, int thisServerId)
     {
+        this.serversSpec = serversSpec;
         this.thisHostname = thisHostname;
         this.thisServerId = thisServerId;
+    }
+
+    public String getServersSpec()
+    {
+        return serversSpec;
+    }
+
+    public void setServersSpec(String serversSpec)
+    {
+        this.serversSpec = serversSpec;
     }
 
     public int getThisServerId()

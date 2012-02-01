@@ -2,19 +2,19 @@ package com.netflix.exhibitor;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
 import com.netflix.curator.utils.ZKPaths;
 import com.netflix.exhibitor.activity.ActivityLog;
 import com.netflix.exhibitor.activity.QueueGroups;
 import com.netflix.exhibitor.entities.ConfigPojo;
-import com.netflix.exhibitor.entities.PathPojo;
 import com.netflix.exhibitor.entities.ResultPojo;
 import com.netflix.exhibitor.entities.SystemState;
 import com.netflix.exhibitor.entities.UITabSpec;
-import com.netflix.exhibitor.pojos.UITab;
 import com.netflix.exhibitor.state.FourLetterWord;
 import com.netflix.exhibitor.state.KillRunningInstance;
+import com.netflix.exhibitor.state.ServerList;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.data.Stat;
 import org.codehaus.jackson.node.ArrayNode;
@@ -48,15 +48,6 @@ public class UIResource
 
     private static final String         ERROR_KEY = "*";
     private static final String         RECURSIVE_FLAG = "*";
-
-    private static final Function<PathPojo,String> toPojo = new Function<PathPojo, String>()
-    {
-        @Override
-        public String apply(PathPojo pojo)
-        {
-            return pojo.getPath();
-        }
-    };
 
     public UIResource(@Context ContextResolver<UIContext> resolver)
     {
@@ -166,18 +157,15 @@ public class UIResource
     public Response getSystemState() throws Exception
     {
         String                      response = new FourLetterWord(FourLetterWord.Word.RUOK, context.getExhibitor().getConfig()).getResponse();
-        ConfigPojo                  config = new ConfigPojo
-        (
-            -1, // TODO
-            context.getExhibitor().getConfig().getHostname()
-        );
+        ServerList                  serverList = new ServerList(context.getExhibitor().getConfig().getServerSpec());
+        ServerList.ServerSpec       us = Iterables.find(serverList.getSpecs(), ServerList.isUs(context.getExhibitor().getConfig().getHostname()), null);
+        ConfigPojo                  config = new ConfigPojo(context.getExhibitor().getConfig().getServerSpec(), context.getExhibitor().getConfig().getHostname(), (us != null) ? us.getServerId() : -1);
         SystemState state = new SystemState
         (
             config,
             "imok".equals(response),
             context.getExhibitor().restartsAreEnabled(),
-            "v0.0.1",       // TODO - correct version
-            context.getExhibitor().backupCleanupEnabled()
+            "v0.0.1"       // TODO - correct version
         );
         return Response.ok(state).build();
     }

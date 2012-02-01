@@ -5,11 +5,11 @@ import com.google.common.collect.ImmutableList;
 import javax.annotation.Nullable;
 import java.util.List;
 
-class ServerList
+public class ServerList
 {
     private final List<ServerSpec>      specs;
 
-    static class ServerSpec
+    public static class ServerSpec
     {
         private final String    hostname;
         private final int       serverId;
@@ -20,12 +20,12 @@ class ServerList
             this.serverId = serverId;
         }
 
-        String getHostname()
+        public String getHostname()
         {
             return hostname;
         }
 
-        int getServerId()
+        public int getServerId()
         {
             return serverId;
         }
@@ -66,7 +66,7 @@ class ServerList
         }
     }
 
-    ServerList(String serverSpec)
+    public ServerList(String serverSpec)
     {
         ImmutableList.Builder<ServerSpec> builder = ImmutableList.builder();
 
@@ -100,12 +100,12 @@ class ServerList
         specs = builder.build();
     }
 
-    List<ServerSpec> getSpecs()
+    public List<ServerSpec> getSpecs()
     {
         return specs;
     }
-    
-    static Predicate<ServerSpec>  isUs(final String hostname)
+
+    public static Predicate<ServerSpec>  isUs(final String hostname)
     {
         return new Predicate<ServerSpec>()
         {

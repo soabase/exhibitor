@@ -1,4 +1,4 @@
-package com.netflix.exhibitor.pojos;
+package com.netflix.exhibitor;
 
 /**
  * Used to add additional tabs to the Exhibitor UI

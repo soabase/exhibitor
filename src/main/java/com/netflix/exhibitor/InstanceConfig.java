@@ -1,6 +1,5 @@
 package com.netflix.exhibitor;
 
-import com.netflix.exhibitor.pojos.UITab;
 import java.util.Collection;
 
 /**
@@ -61,21 +60,11 @@ public class InstanceConfig
         return builder.connectionTimeoutMs;
     }
 
-    public int getBackupPeriodMs()
-    {
-        return builder.backupPeriodMs;
-    }
-
     public int getCleanupPeriodMs()
     {
         return builder.cleanupPeriodMs;
     }
 
-    public int getMaxBackups()
-    {
-        return builder.maxBackups;
-    }
-    
     public String getServerSpec()
     {
         return builder().serversSpec;
