@@ -18,7 +18,7 @@ public interface InstanceConfig
      *
      * @return spec
      */
-    public String getServerSpec();
+    public String getServersSpec();
 
     /**
      * Return the port used by clients to connect to the ZooKeeper instance. This is usually <code>2181</code>.

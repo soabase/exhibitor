@@ -47,6 +47,12 @@ public class ConfigPojo
         this.serversSpec = serversSpec;
         this.thisHostname = thisHostname;
         this.thisServerId = thisServerId;
+        this.clientPort = clientPort;
+        this.connectPort = connectPort;
+        this.electionPort = electionPort;
+        this.checkMs = checkMs;
+        this.connectionTimeoutMs = connectionTimeoutMs;
+        this.cleanupPeriodMs = cleanupPeriodMs;
     }
 
     public String getServersSpec()

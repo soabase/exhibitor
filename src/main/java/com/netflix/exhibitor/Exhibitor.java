@@ -35,7 +35,7 @@ public class Exhibitor implements Closeable
     private final ActivityQueue             activityQueue = new ActivityQueue();
     private final MonitorRunningInstance    monitorRunningInstance;
     private final InstanceStateManager      instanceStateManager;
-    private final InstanceConfig            instanceConfig;
+    private final AtomicReference<InstanceConfig> instanceConfig = new AtomicReference<InstanceConfig>();
     private final Collection<UITab>         additionalUITabs;
     private final ProcessOperations         processOperations;
     private final CleanupManager            cleanupManager;
@@ -62,7 +62,7 @@ public class Exhibitor implements Closeable
     public Exhibitor(ConfigProvider configProvider, Collection<UITab> additionalUITabs, String zooKeeperDirectory, String dataDirectory) throws Exception
     {
         this.configProvider = configProvider;
-        this.instanceConfig = configProvider.loadConfig();
+        this.instanceConfig.set(configProvider.loadConfig());
         this.additionalUITabs = (additionalUITabs != null) ? ImmutableList.copyOf(additionalUITabs) : ImmutableList.<UITab>of();
         this.processOperations = new StandardProcessOperations(this, zooKeeperDirectory, dataDirectory);
         instanceStateManager = new InstanceStateManager(this);
@@ -107,7 +107,14 @@ public class Exhibitor implements Closeable
 
     public InstanceConfig getConfig()
     {
-        return instanceConfig;
+        return instanceConfig.get();
+    }
+
+    public synchronized void updateConfig(InstanceConfig newConfig) throws Exception
+    {
+        closeLocalConnection();
+        instanceConfig.set(newConfig);
+        configProvider.storeConfig(newConfig);
     }
 
     public InstanceStateManager getInstanceStateManager()
@@ -129,7 +136,13 @@ public class Exhibitor implements Closeable
     {
         if ( localConnection == null )
         {
-            localConnection = CuratorFrameworkFactory.newClient("localhost:" + instanceConfig.getClientPort(), 30000, 5000, new ExponentialBackoffRetry(10, 3));
+            localConnection = CuratorFrameworkFactory.newClient
+            (
+                "localhost:" + instanceConfig.get().getClientPort(),
+                instanceConfig.get().getConnectionTimeoutMs() * 10,
+                instanceConfig.get().getConnectionTimeoutMs(),
+                new ExponentialBackoffRetry(10, 3)
+            );
             localConnection.start();
         }
         return localConnection;
@@ -143,11 +156,6 @@ public class Exhibitor implements Closeable
     public void         setRestartsEnabled(boolean newValue)
     {
         restartsEnabled.set(newValue);
-    }
-
-    public ConfigProvider getConfigProvider()
-    {
-        return configProvider;
     }
 
     private synchronized void closeLocalConnection()

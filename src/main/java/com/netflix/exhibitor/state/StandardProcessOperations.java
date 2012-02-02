@@ -200,7 +200,7 @@ public class StandardProcessOperations implements ProcessOperations
 
     private File prepConfigFile(Exhibitor exhibitor) throws IOException
     {
-        ServerList              serverList = new ServerList(exhibitor.getConfig().getServerSpec());
+        ServerList              serverList = new ServerList(exhibitor.getConfig().getServersSpec());
 
         ServerList.ServerSpec   us = Iterables.find(serverList.getSpecs(), ServerList.isUs(exhibitor.getConfig().getHostname()), null);
         if ( us != null )

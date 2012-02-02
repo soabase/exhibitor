@@ -158,20 +158,20 @@ public class UIResource
     public Response getSystemState() throws Exception
     {
         String                      response = new FourLetterWord(FourLetterWord.Word.RUOK, context.getExhibitor().getConfig()).getResponse();
-        ServerList                  serverList = new ServerList(context.getExhibitor().getConfig().getServerSpec());
+        ServerList                  serverList = new ServerList(context.getExhibitor().getConfig().getServersSpec());
         ServerList.ServerSpec       us = Iterables.find(serverList.getSpecs(), ServerList.isUs(context.getExhibitor().getConfig().getHostname()), null);
         ConfigPojo                  config = new ConfigPojo
-            (
-                context.getExhibitor().getConfig().getServerSpec(),
-                context.getExhibitor().getConfig().getHostname(),
-                (us != null) ? us.getServerId() : -1,
-                context.getExhibitor().getConfig().getClientPort(),
-                context.getExhibitor().getConfig().getConnectPort(),
-                context.getExhibitor().getConfig().getElectionPort(),
-                context.getExhibitor().getConfig().getCheckMs(),
-                context.getExhibitor().getConfig().getConnectionTimeoutMs(),
-                context.getExhibitor().getConfig().getCleanupPeriodMs()
-            );
+        (
+            context.getExhibitor().getConfig().getServersSpec(),
+            context.getExhibitor().getConfig().getHostname(),
+            (us != null) ? us.getServerId() : -1,
+            context.getExhibitor().getConfig().getClientPort(),
+            context.getExhibitor().getConfig().getConnectPort(),
+            context.getExhibitor().getConfig().getElectionPort(),
+            context.getExhibitor().getConfig().getCheckMs(),
+            context.getExhibitor().getConfig().getConnectionTimeoutMs(),
+            context.getExhibitor().getConfig().getCleanupPeriodMs()
+        );
         SystemState state = new SystemState
         (
             config,
@@ -185,9 +185,59 @@ public class UIResource
     @Path("set/config")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public Response setConfig(ConfigPojo newConfig) throws Exception
+    public Response setConfig(final ConfigPojo newConfig) throws Exception
     {
-        // TODO
+        InstanceConfig      wrapped = new InstanceConfig()
+        {
+            @Override
+            public String getHostname()
+            {
+                return newConfig.getThisHostname();
+            }
+
+            @Override
+            public String getServersSpec()
+            {
+                return newConfig.getServersSpec();
+            }
+
+            @Override
+            public int getClientPort()
+            {
+                return newConfig.getClientPort();
+            }
+
+            @Override
+            public int getConnectPort()
+            {
+                return newConfig.getConnectPort();
+            }
+
+            @Override
+            public int getElectionPort()
+            {
+                return newConfig.getElectionPort();
+            }
+
+            @Override
+            public int getCheckMs()
+            {
+                return newConfig.getCheckMs();
+            }
+
+            @Override
+            public int getConnectionTimeoutMs()
+            {
+                return newConfig.getConnectionTimeoutMs();
+            }
+
+            @Override
+            public int getCleanupPeriodMs()
+            {
+                return newConfig.getCleanupPeriodMs();
+            }
+        };
+        context.getExhibitor().updateConfig(wrapped);
         return Response.ok(new ResultPojo("OK", true)).build();
     }
 

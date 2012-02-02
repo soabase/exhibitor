@@ -40,7 +40,8 @@ function okCancelDialog(title, message, okFunction)
     $("#message-dialog").dialog("open");
 }
 
-var systemState;
+var systemState = {};
+var systemConfig = {};
 var connectedToExhibitor = true;
 function updateState()
 {
@@ -48,6 +49,9 @@ function updateState()
         function (data)
         {
             systemState = data;
+            if ( doConfigUpdates ) {
+                systemConfig = systemState.config;
+            }
             systemState.running = (
                 data.running === "true"
                 );    // it comes down as a string
@@ -76,10 +80,10 @@ function updateState()
 
             $('#version').html(systemState.version);
             $('#not-connected-alert').hide();
-            $('#instance-hostname').html(systemState.config.thisHostname);
+            $('#instance-hostname').html(systemConfig.thisHostname);
             $('#instance-id').html((
-                systemState.config.thisServerId > 0
-                ) ? systemState.config.thisServerId : "n/a");
+                systemConfig.thisServerId > 0
+                ) ? systemConfig.thisServerId : "n/a");
 
             updateConfig();
         }).error(function ()
@@ -101,12 +105,14 @@ function submitConfigChanges()
     newConfig.serversSpec = $('#config-servers-spec').val();
     newConfig.clientPort = $('#config-client-port').val();
     newConfig.connectPort = $('#config-connect-port').val();
-    newConfig.electionPort = $('#config-check-ms').val();
-    newConfig.checkMs = $('#config-cleanup-ms').val();
+    newConfig.electionPort = $('#config-election-port').val();
+    newConfig.checkMs = $('#config-check-ms').val();
     newConfig.cleanupPeriodMs = $('#config-cleanup-ms').val();
 
-    newConfig.connectionTimeoutMs = systemState.config.connectionTimeoutMs;
-    newConfig.thisServerId = systemState.config.thisServerId;
+    newConfig.connectionTimeoutMs = systemConfig.connectionTimeoutMs;
+    newConfig.thisServerId = systemConfig.thisServerId;
+
+    systemConfig = newConfig;
 
     var payload = JSON.stringify(newConfig);
     $.ajax({
@@ -136,13 +142,13 @@ function updateConfig()
         return;
     }
 
-    $('#config-hostname').val(systemState.config.thisHostname);
-    $('#config-servers-spec').val(systemState.config.serversSpec);
-    $('#config-client-port').val(systemState.config.clientPort);
-    $('#config-connect-port').val(systemState.config.connectPort);
-    $('#config-election-port').val(systemState.config.electionPort);
-    $('#config-check-ms').val(systemState.config.checkMs);
-    $('#config-cleanup-ms').val(systemState.config.cleanupPeriodMs);
+    $('#config-hostname').val(systemConfig.thisHostname);
+    $('#config-servers-spec').val(systemConfig.serversSpec);
+    $('#config-client-port').val(systemConfig.clientPort);
+    $('#config-connect-port').val(systemConfig.connectPort);
+    $('#config-election-port').val(systemConfig.electionPort);
+    $('#config-check-ms').val(systemConfig.checkMs);
+    $('#config-cleanup-ms').val(systemConfig.cleanupPeriodMs);
 }
 
 function refreshCurrentTab()
@@ -269,16 +275,6 @@ $(function ()
         return false;
     });
 
-    $("#config-button").button().click(function ()
-    {
-        return false;
-    }).click(function(){
-            okCancelDialog("Update", "Are you sure? If you've changed the Hostname or Servers it can cause instance restarts.", function() {
-                submitConfigChanges();
-            });
-            return false;
-        });
-
     $("#message-dialog").dialog({
         modal:true,
         autoOpen:false
@@ -314,6 +310,16 @@ $(function ()
             updateConfig();
         }
     });
+
+    $("#config-button").button().click(function ()
+    {
+        return false;
+    }).click(function(){
+            okCancelDialog("Update", "Are you sure? If you've changed the Hostname or Servers it can cause instance restarts.", function() {
+                submitConfigChanges();
+            });
+            return false;
+        });
 
     var refreshInterval = null;
     $('#refresh-state-container').buttonset();

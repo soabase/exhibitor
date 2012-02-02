@@ -29,7 +29,7 @@ public class InstanceStateManager implements Closeable
 
     public InstanceState getInstanceState()
     {
-        ServerList              serverList = new ServerList(exhibitor.getConfig().getServerSpec());
+        ServerList              serverList = new ServerList(exhibitor.getConfig().getServersSpec());
         ServerList.ServerSpec   us = Iterables.find(serverList.getSpecs(), ServerList.isUs(exhibitor.getConfig().getHostname()), null);
         InstanceStateTypes      state = (us != null) ? checker.getState() : InstanceStateTypes.WAITING;
         return new InstanceState
