@@ -1,72 +1,66 @@
 package com.netflix.exhibitor;
 
-import java.util.Collection;
-
 /**
  * Static configuration needed by Exhibitor
  */
-public class InstanceConfig
+public interface InstanceConfig
 {
-    private final InstanceConfigBuilder builder;
+    /**
+     * Return the hostname of this server (the JVM Exhibitor is running in)
+     *
+     * @return hostname
+     */
+    public String getHostname();
 
     /**
-     * Start a builder for instance config
+     * Return the set of servers in the ensemble (should include this instance if appropriate). The
+     * set is in the form: <code>host:id,host:id...</code>
      *
-     * @return builder
+     * @return spec
      */
-    public static InstanceConfigBuilder builder()
-    {
-        return new InstanceConfigBuilder();
-    }
+    public String getServerSpec();
 
-    InstanceConfig(InstanceConfigBuilder builder)
-    {
-        //To change body of created methods use File | Settings | File Templates.
-        this.builder = builder;
-    }
+    /**
+     * Return the port used by clients to connect to the ZooKeeper instance. This is usually <code>2181</code>.
+     *
+     * @return client port
+     */
+    public int getClientPort();
 
-    public String getHostname()
-    {
-        return builder.hostname;
-    }
+    /**
+     * Return the port used by other instances in the ensemble to connect to the ZooKeeper instance.
+     * This is usually <code>2888</code>.
+     *
+     * @return client port
+     */
+    public int getConnectPort();
 
-    public int getConnectPort()
-    {
-        return builder.connectPort;
-    }
+    /**
+     * Return the port used by other instances in the ensemble to connect to the ZooKeeper instance
+     * for elections. This is usually <code>3888</code>.
+     *
+     * @return client port
+     */
+    public int getElectionPort();
 
-    public int getElectionPort()
-    {
-        return builder.electionPort;
-    }
+    /**
+     * Return the period in milliseconds between live-ness checks on the ZooKeeper instance
+     *
+     * @return check period milliseconds
+     */
+    public int getCheckMs();
 
-    public int getCheckSeconds()
-    {
-        return builder.checkSeconds;
-    }
+    /**
+     * Return the max connection timeout in milliseconds when connecting to the ZooKeeper instance
+     *
+     * @return connection timeout milliseconds
+     */
+    public int getConnectionTimeoutMs();
 
-    public int getClientPort()
-    {
-        return builder.clientPort;
-    }
-
-    public Collection<UITab> getAdditionalUITabs()
-    {
-        return builder.additionalUITabs;
-    }
-
-    public int getConnectionTimeoutMs()
-    {
-        return builder.connectionTimeoutMs;
-    }
-
-    public int getCleanupPeriodMs()
-    {
-        return builder.cleanupPeriodMs;
-    }
-
-    public String getServerSpec()
-    {
-        return builder().serversSpec;
-    }
+    /**
+     * Return the period in milliseconds between ZooKeeper log file cleaning
+     *
+     * @return cleanup period milliseconds
+     */
+    public int getCleanupPeriodMs();
 }

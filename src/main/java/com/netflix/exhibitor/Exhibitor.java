@@ -1,19 +1,21 @@
 package com.netflix.exhibitor;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.io.Closeables;
 import com.netflix.curator.framework.CuratorFramework;
 import com.netflix.curator.framework.CuratorFrameworkFactory;
 import com.netflix.curator.retry.ExponentialBackoffRetry;
 import com.netflix.exhibitor.activity.ActivityLog;
 import com.netflix.exhibitor.activity.ActivityQueue;
-import com.netflix.exhibitor.state.StandardProcessOperations;
 import com.netflix.exhibitor.maintenance.CleanupManager;
-import com.netflix.exhibitor.state.ProcessOperations;
 import com.netflix.exhibitor.state.InstanceStateManager;
 import com.netflix.exhibitor.state.MonitorRunningInstance;
+import com.netflix.exhibitor.state.ProcessOperations;
+import com.netflix.exhibitor.state.StandardProcessOperations;
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -34,11 +36,12 @@ public class Exhibitor implements Closeable
     private final MonitorRunningInstance    monitorRunningInstance;
     private final InstanceStateManager      instanceStateManager;
     private final InstanceConfig            instanceConfig;
+    private final Collection<UITab>         additionalUITabs;
     private final ProcessOperations         processOperations;
     private final CleanupManager            cleanupManager;
     private final AtomicBoolean             restartsEnabled = new AtomicBoolean(true);
-    private final AtomicBoolean             backupCleanupEnabled = new AtomicBoolean(true);
     private final AtomicReference<State>    state = new AtomicReference<State>(State.LATENT);
+    private final ConfigProvider            configProvider;
 
     private CuratorFramework    localConnection;    // protected by synchronization
 
@@ -50,15 +53,17 @@ public class Exhibitor implements Closeable
     }
 
     /**
-     * @param instanceConfig static config for this instance
-     *
+     * @param configProvider config source
+     * @param additionalUITabs any additional tabs in the UI (can be null)
      * @param zooKeeperDirectory path to the ZooKeeper distribution
      * @param dataDirectory path to where your ZooKeeper data is stored
      * @throws IOException errors
      */
-    public Exhibitor(InstanceConfig instanceConfig, String zooKeeperDirectory, String dataDirectory) throws IOException
+    public Exhibitor(ConfigProvider configProvider, Collection<UITab> additionalUITabs, String zooKeeperDirectory, String dataDirectory) throws Exception
     {
-        this.instanceConfig = instanceConfig;
+        this.configProvider = configProvider;
+        this.instanceConfig = configProvider.loadConfig();
+        this.additionalUITabs = (additionalUITabs != null) ? ImmutableList.copyOf(additionalUITabs) : ImmutableList.<UITab>of();
         this.processOperations = new StandardProcessOperations(this, zooKeeperDirectory, dataDirectory);
         instanceStateManager = new InstanceStateManager(this);
         monitorRunningInstance = new MonitorRunningInstance(this);
@@ -93,6 +98,11 @@ public class Exhibitor implements Closeable
         Closeables.closeQuietly(instanceStateManager);
         Closeables.closeQuietly(activityQueue);
         closeLocalConnection();
+    }
+
+    public Collection<UITab> getAdditionalUITabs()
+    {
+        return additionalUITabs;
     }
 
     public InstanceConfig getConfig()
@@ -135,14 +145,9 @@ public class Exhibitor implements Closeable
         restartsEnabled.set(newValue);
     }
 
-    public boolean backupCleanupEnabled()
+    public ConfigProvider getConfigProvider()
     {
-        return backupCleanupEnabled.get();
-    }
-
-    public void         setBackupCleanupEnabled(boolean newValue)
-    {
-        backupCleanupEnabled.set(newValue);
+        return configProvider;
     }
 
     private synchronized void closeLocalConnection()
@@ -150,4 +155,5 @@ public class Exhibitor implements Closeable
         Closeables.closeQuietly(localConnection);
         localConnection = null;
     }
+
 }

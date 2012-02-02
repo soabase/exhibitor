@@ -1,0 +1,139 @@
+body
+{
+    font-family: "Arial", "Helvetica", "Verdana", sans-serif;
+    margin: 5px;
+    padding: 5px;
+    font-size: 14px;
+    background-color: #777;
+}
+
+td
+{
+    overflow: scroll;
+    padding:  5px;
+}
+
+td, .info
+{
+    font-size: 75%;
+}
+
+.info
+{
+    padding: 5px;
+}
+
+.text
+{
+    font-family: monospace;
+    font-size: 80%;
+    padding: 3px;
+    width: 100%;
+    height: 75%;
+    overflow: scroll;
+    white-space: pre;
+    border: 1px solid black;
+}
+
+.tooltip
+{
+    display: none;
+    background-color: #f5f5b5;
+    font-size: 90%;
+    height: 75px;
+    width: 200px;
+    padding: 8px;
+    z-index: 65535;
+}
+
+#not-connected-alert
+{
+    width: 300px;
+    position: absolute;
+    top: 5px;
+    left: 50%;
+    margin-left: -150px;
+}
+
+#instance-info
+{
+    width: 300px;
+    position: absolute;
+    top: 150px;
+    left: 50%;
+    margin-left: -150px;
+}
+
+#title
+{
+    font-size: 200%;
+    font-weight: bold;
+    padding: 3px;
+    text-shadow: 2px 2px #888;
+    color: #C00;
+}
+
+#version
+{
+    font-size: 50%;
+    font-weight: normal;
+    font-style: italic;
+    position: relative;
+    left: 100%;
+    margin-left: -40px;
+    top: -1.5em;
+}
+
+#tree
+{
+    width: 100%;
+    height: 60%;
+    overflow: scroll;
+    border: 1px solid gray;
+}
+
+#path, #stat, #data-bytes, #data-str
+{
+    font-family: monospace;
+    font-size: 125%;
+}
+
+#instance-restarts
+{
+    margin-bottom: 5px;
+}
+
+#refresh-state-container
+{
+    margin-top: 7px;
+    margin-bottom: 5px;
+    text-align: right;
+}
+
+#start-stop-button-container
+{
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+#config-group
+{
+    line-height: 2em;
+}
+
+#config-group label
+{
+    float: left;
+    width: 175px;
+}
+
+#config-group input
+{
+    float: left;
+}
+
+#config-editable-label
+{
+    float: left;
+    padding-right: 8px;
+}

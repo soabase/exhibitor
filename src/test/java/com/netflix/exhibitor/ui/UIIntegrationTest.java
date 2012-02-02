@@ -2,7 +2,6 @@ package com.netflix.exhibitor.ui;
 
 import com.google.common.collect.Sets;
 import com.netflix.exhibitor.Exhibitor;
-import com.netflix.exhibitor.InstanceConfig;
 import com.netflix.exhibitor.UIContext;
 import com.netflix.exhibitor.UIResource;
 import com.sun.jersey.api.core.DefaultResourceConfig;
@@ -22,9 +21,7 @@ public class UIIntegrationTest
             return;
         }
 
-        InstanceConfig      config = InstanceConfig.builder().hostname("localhost").build();
-
-        Exhibitor           exhibitor = new Exhibitor(config, args[0], args[1]);
+        Exhibitor           exhibitor = new Exhibitor(null, null, args[0], args[1]);  // TODO
         exhibitor.start();
 
         final UIContext   context = new UIContext(exhibitor);

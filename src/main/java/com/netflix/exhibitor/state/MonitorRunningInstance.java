@@ -7,7 +7,6 @@ import com.netflix.exhibitor.activity.QueueGroups;
 import com.netflix.exhibitor.activity.RepeatingActivity;
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -38,7 +37,7 @@ public class MonitorRunningInstance implements Closeable
                 return true;
             }
         };
-        repeatingActivity = new RepeatingActivity(exhibitor.getActivityQueue(), QueueGroups.MAIN, activity, TimeUnit.MILLISECONDS.convert(exhibitor.getConfig().getCheckSeconds(), TimeUnit.SECONDS));
+        repeatingActivity = new RepeatingActivity(exhibitor.getActivityQueue(), QueueGroups.MAIN, activity, exhibitor.getConfig().getCheckMs());
     }
 
     public void start()
@@ -144,7 +143,7 @@ public class MonitorRunningInstance implements Closeable
         long localMs = notServingStartMs.get();
         if ( localMs > 0 )
         {
-            long        endOfHold = localMs + (ON_HOLD_FACTOR * exhibitor.getConfig().getCheckSeconds() * 1000);
+            long        endOfHold = localMs + (ON_HOLD_FACTOR * exhibitor.getConfig().getCheckMs());
             if ( (instanceState.getState() != InstanceStateTypes.SERVING) && (System.currentTimeMillis() < endOfHold) )
             {
                 return true;

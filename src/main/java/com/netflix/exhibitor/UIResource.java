@@ -22,6 +22,7 @@ import org.codehaus.jackson.node.JsonNodeFactory;
 import org.codehaus.jackson.node.ObjectNode;
 import javax.activation.MimetypesFileTypeMap;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -159,7 +160,18 @@ public class UIResource
         String                      response = new FourLetterWord(FourLetterWord.Word.RUOK, context.getExhibitor().getConfig()).getResponse();
         ServerList                  serverList = new ServerList(context.getExhibitor().getConfig().getServerSpec());
         ServerList.ServerSpec       us = Iterables.find(serverList.getSpecs(), ServerList.isUs(context.getExhibitor().getConfig().getHostname()), null);
-        ConfigPojo                  config = new ConfigPojo(context.getExhibitor().getConfig().getServerSpec(), context.getExhibitor().getConfig().getHostname(), (us != null) ? us.getServerId() : -1);
+        ConfigPojo                  config = new ConfigPojo
+            (
+                context.getExhibitor().getConfig().getServerSpec(),
+                context.getExhibitor().getConfig().getHostname(),
+                (us != null) ? us.getServerId() : -1,
+                context.getExhibitor().getConfig().getClientPort(),
+                context.getExhibitor().getConfig().getConnectPort(),
+                context.getExhibitor().getConfig().getElectionPort(),
+                context.getExhibitor().getConfig().getCheckMs(),
+                context.getExhibitor().getConfig().getConnectionTimeoutMs(),
+                context.getExhibitor().getConfig().getCleanupPeriodMs()
+            );
         SystemState state = new SystemState
         (
             config,
@@ -170,12 +182,12 @@ public class UIResource
         return Response.ok(state).build();
     }
 
-    @Path("set/backup-cleanups/{value}")
-    @GET
+    @Path("set/config")
+    @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public Response setBackupCleanupState(@PathParam("value") boolean newValue) throws Exception
+    public Response setConfig(ConfigPojo newConfig) throws Exception
     {
-        context.getExhibitor().setBackupCleanupEnabled(newValue);
+        // TODO
         return Response.ok(new ResultPojo("OK", true)).build();
     }
 
@@ -304,7 +316,7 @@ public class UIResource
                 }
             }
         );
-        Collection<UITab> additionalUITabs = context.getExhibitor().getConfig().getAdditionalUITabs();
+        Collection<UITab> additionalUITabs = context.getExhibitor().getAdditionalUITabs();
         if ( additionalUITabs != null )
         {
             builder.addAll(additionalUITabs);

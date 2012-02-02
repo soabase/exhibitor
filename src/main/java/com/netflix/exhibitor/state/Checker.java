@@ -7,7 +7,6 @@ import com.netflix.exhibitor.activity.RepeatingActivity;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Checker implements Closeable
@@ -34,7 +33,7 @@ public class Checker implements Closeable
                 return true;
             }
         };
-        repeatingActivity = new RepeatingActivity(exhibitor.getActivityQueue(), QueueGroups.MAIN, activity, TimeUnit.MILLISECONDS.convert(exhibitor.getConfig().getCheckSeconds(), TimeUnit.SECONDS));
+        repeatingActivity = new RepeatingActivity(exhibitor.getActivityQueue(), QueueGroups.MAIN, activity, exhibitor.getConfig().getCheckMs());
     }
 
     public void     start()
