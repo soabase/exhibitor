@@ -170,7 +170,10 @@ public class UIResource
             context.getExhibitor().getConfig().getElectionPort(),
             context.getExhibitor().getConfig().getCheckMs(),
             context.getExhibitor().getConfig().getConnectionTimeoutMs(),
-            context.getExhibitor().getConfig().getCleanupPeriodMs()
+            context.getExhibitor().getConfig().getCleanupPeriodMs(),
+            context.getExhibitor().getConfig().getZooKeeperInstallDirectory(),
+            context.getExhibitor().getConfig().getZooKeeperDataDirectory(),
+            context.getExhibitor().getConfig().getCleanupMaxFiles()
         );
         SystemState state = new SystemState
         (
@@ -189,6 +192,18 @@ public class UIResource
     {
         InstanceConfig      wrapped = new InstanceConfig()
         {
+            @Override
+            public String getZooKeeperInstallDirectory()
+            {
+                return newConfig.getZooKeeperInstallDir();
+            }
+
+            @Override
+            public String getZooKeeperDataDirectory()
+            {
+                return newConfig.getZooKeeperDataDir();
+            }
+
             @Override
             public String getHostname()
             {
@@ -235,6 +250,12 @@ public class UIResource
             public int getCleanupPeriodMs()
             {
                 return newConfig.getCleanupPeriodMs();
+            }
+
+            @Override
+            public int getCleanupMaxFiles()
+            {
+                return newConfig.getCleanupMaxFiles();
             }
         };
         context.getExhibitor().updateConfig(wrapped);

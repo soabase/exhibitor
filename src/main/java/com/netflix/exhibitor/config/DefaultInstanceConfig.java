@@ -1,10 +1,22 @@
-package com.netflix.exhibitor.standard_config;
+package com.netflix.exhibitor.config;
 
 import com.netflix.exhibitor.InstanceConfig;
 import java.util.concurrent.TimeUnit;
 
 class DefaultInstanceConfig implements InstanceConfig
 {
+    @Override
+    public String getZooKeeperInstallDirectory()
+    {
+        return "/";
+    }
+
+    @Override
+    public String getZooKeeperDataDirectory()
+    {
+        return "/";
+    }
+
     @Override
     public String getHostname()
     {
@@ -51,5 +63,11 @@ class DefaultInstanceConfig implements InstanceConfig
     public int getCleanupPeriodMs()
     {
         return (int)TimeUnit.MILLISECONDS.convert(6, TimeUnit.HOURS);
+    }
+
+    @Override
+    public int getCleanupMaxFiles()
+    {
+        return 3;
     }
 }

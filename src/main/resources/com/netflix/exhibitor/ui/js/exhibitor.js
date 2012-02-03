@@ -73,11 +73,6 @@ function updateState()
                 $('#tabs-main-not-running').show();
             }
 
-            $('#instance-restarts-enabled')[0].checked = systemState.restartsEnabled === "true";
-            $('#instance-restarts-disabled')[0].checked = systemState.restartsEnabled != "true";
-            $('#instance-restarts-enabled').button("refresh");
-            $('#instance-restarts-disabled').button("refresh");
-
             $('#version').html(systemState.version);
             $('#not-connected-alert').hide();
             $('#instance-hostname').html(systemConfig.thisHostname);
@@ -101,6 +96,8 @@ updateState();
 function submitConfigChanges()
 {
     var newConfig = {};
+    newConfig.zooKeeperInstallDir = $('#config-zookeeper-install-dir').val();
+    newConfig.zooKeeperDataDir = $('#config-zookeeper-data-dir').val();
     newConfig.thisHostname = $('#config-hostname').val();
     newConfig.serversSpec = $('#config-servers-spec').val();
     newConfig.clientPort = $('#config-client-port').val();
@@ -108,6 +105,7 @@ function submitConfigChanges()
     newConfig.electionPort = $('#config-election-port').val();
     newConfig.checkMs = $('#config-check-ms').val();
     newConfig.cleanupPeriodMs = $('#config-cleanup-ms').val();
+    newConfig.cleanupMaxFiles = $('#config-cleanup-max-files').val();
 
     newConfig.connectionTimeoutMs = systemConfig.connectionTimeoutMs;
     newConfig.thisServerId = systemConfig.thisServerId;
@@ -125,6 +123,8 @@ function submitConfigChanges()
 
 function ableConfig(enable)
 {
+    $('#config-zookeeper-install-dir').prop('disabled', !enable);
+    $('#config-zookeeper-data-dir').prop('disabled', !enable);
     $('#config-hostname').prop('disabled', !enable);
     $('#config-servers-spec').prop('disabled', !enable);
     $('#config-client-port').prop('disabled', !enable);
@@ -132,6 +132,7 @@ function ableConfig(enable)
     $('#config-election-port').prop('disabled', !enable);
     $('#config-check-ms').prop('disabled', !enable);
     $('#config-cleanup-ms').prop('disabled', !enable);
+    $('#config-cleanup-max-files').prop('disabled', !enable);
 
     $("#config-button").button(enable ? "enable" : "disable");
 }
@@ -142,6 +143,8 @@ function updateConfig()
         return;
     }
 
+    $('#config-zookeeper-install-dir').val(systemConfig.zooKeeperInstallDir);
+    $('#config-zookeeper-data-dir').val(systemConfig.zooKeeperDataDir);
     $('#config-hostname').val(systemConfig.thisHostname);
     $('#config-servers-spec').val(systemConfig.serversSpec);
     $('#config-client-port').val(systemConfig.clientPort);
@@ -149,6 +152,7 @@ function updateConfig()
     $('#config-election-port').val(systemConfig.electionPort);
     $('#config-check-ms').val(systemConfig.checkMs);
     $('#config-cleanup-ms').val(systemConfig.cleanupPeriodMs);
+    $('#config-cleanup-max-files').val(systemConfig.cleanupMaxFiles);
 }
 
 function refreshCurrentTab()
@@ -213,6 +217,27 @@ function initExplorer()
     });
 }
 
+var refreshInterval = null;
+
+function startAutoRefresh()
+{
+    if ( !refreshInterval )
+    {
+        refreshInterval = window.setInterval("refreshCurrentTab()", AUTO_REFRESH_PERIOD);
+    }
+    $.cookie("refresh-state-auto", "1");
+}
+
+function stopAutoRefresh()
+{
+    if ( refreshInterval )
+    {
+        window.clearInterval(refreshInterval);
+        refreshInterval = null;
+    }
+    $.cookie("refresh-state-auto", "0");
+}
+
 $(function ()
 {
     $.getJSON('tabs', function (data)
@@ -228,15 +253,6 @@ $(function ()
             show:function (event, ui)
             {
                 var selected = $("#tabs").tabs("option", "selected");
-                if ( selected == 0 )
-                {
-                    $('#instance-info').show();
-                }
-                else
-                {
-                    $('#instance-info').hide();
-                }
-
                 if ( selected < BUILTIN_TAB_QTY )
                 {
                     $("#refresh-state-container").hide();
@@ -280,20 +296,16 @@ $(function ()
         autoOpen:false
     });
 
-    $("#instance-restarts").buttonset({
-        create:function (event, ui)
-        {
-            $("#instance-restarts-enabled").button().click(function ()
-            {
-                $.get("set/restarts/true");
-                return false;
-            });
-            $("#instance-restarts-disabled").button().click(function ()
-            {
-                $.get("set/restarts/false");
-                return false;
-            });
-        }
+    $('#instance-restarts-enabled').lightSwitch({
+        switchImgCover: 'lightSwitch/switchplate.png',
+        switchImg : 'lightSwitch/switch.png',
+        disabledImg : 'lightSwitch/disabled.png'
+    });
+
+    $('#cleanup-enabled').lightSwitch({
+        switchImgCover: 'lightSwitch/switchplate.png',
+        switchImg : 'lightSwitch/switch.png',
+        disabledImg : 'lightSwitch/disabled.png'
     });
 
     $('#config-editable').lightSwitch({
@@ -321,36 +333,27 @@ $(function ()
             return false;
         });
 
-    var refreshInterval = null;
-    $('#refresh-state-container').buttonset();
-    $("#refresh-state-auto").button().click(function ()
-    {
-        if ( !refreshInterval )
-        {
-            refreshInterval = window.setInterval("refreshCurrentTab()", AUTO_REFRESH_PERIOD);
-        }
-        $.cookie("refresh-state-auto", "1");
-        return false;
-    });
-    $("#refresh-state-manual").button().click(function ()
-    {
-        if ( refreshInterval )
-        {
-            window.clearInterval(refreshInterval);
-            refreshInterval = null;
-        }
-        $.cookie("refresh-state-auto", "0");
-        return false;
-    });
-
     if ( $.cookie("refresh-state-auto") )
     {
-        refreshInterval = window.setInterval("refreshCurrentTab()", AUTO_REFRESH_PERIOD);
+        startAutoRefresh();
+        $('#refresh-state-checkbox').prop("checked", true);
     }
-    $('#refresh-state-auto')[0].checked = $.cookie("refresh-state-auto");
-    $('#refresh-state-manual')[0].checked = !$.cookie("refresh-state-auto");
-    $('#refresh-state-auto').button("refresh");
-    $('#refresh-state-manual').button("refresh");
+    $("#refresh-state-checkbox").lightSwitch({
+        switchImgCover: 'lightSwitch/switchplate.png',
+        switchImg : 'lightSwitch/switch.png',
+        disabledImg : 'lightSwitch/disabled.png'
+    });
+    $('#refresh-state-checkbox').next('span.switch').click(function(){
+        var isChecked = $('#refresh-state-checkbox').is(':checked');
+        if ( isChecked )
+        {
+            startAutoRefresh();
+        }
+        else
+        {
+            stopAutoRefresh();
+        }
+    });
 
     $('#not-connected-message').html("Not connected to " + $('#app-name').html() + " server");
     $('#page-title').html($('#app-name').html() + " for ZooKeeper");
@@ -365,4 +368,6 @@ $(function ()
     window.setInterval("updateState()", UPDATE_STATE_PERIOD);
     updateState();
     ableConfig(false);
+
+    $('#config-group').colorTip();
 });

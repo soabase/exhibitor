@@ -4,7 +4,7 @@ import com.google.common.collect.Sets;
 import com.netflix.exhibitor.Exhibitor;
 import com.netflix.exhibitor.UIContext;
 import com.netflix.exhibitor.UIResource;
-import com.netflix.exhibitor.standard_config.LocalFileConfigProvider;
+import com.netflix.exhibitor.config.LocalFileConfigProvider;
 import com.sun.jersey.api.core.DefaultResourceConfig;
 import com.sun.jersey.spi.container.servlet.ServletContainer;
 import org.mortbay.jetty.Server;
@@ -23,7 +23,7 @@ public class UIIntegrationTest
             return;
         }
 
-        Exhibitor           exhibitor = new Exhibitor(new LocalFileConfigProvider(new File("exhibitor.properties")), null, args[0], args[1]);
+        Exhibitor           exhibitor = new Exhibitor(new LocalFileConfigProvider(new File("exhibitor.properties")), null);
         exhibitor.start();
 
         final UIContext   context = new UIContext(exhibitor);

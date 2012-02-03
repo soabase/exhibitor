@@ -6,6 +6,20 @@ package com.netflix.exhibitor;
 public interface InstanceConfig
 {
     /**
+     * Return the local path to the ZooKeeper server directory
+     *
+     * @return zookeeper dir
+     */
+    public String getZooKeeperInstallDirectory();
+
+    /**
+     * Return the path to the ZooKeeper data directory
+     *
+     * @return data dir
+     */
+    public String getZooKeeperDataDirectory();
+
+    /**
      * Return the hostname of this server (the JVM Exhibitor is running in)
      *
      * @return hostname
@@ -63,4 +77,11 @@ public interface InstanceConfig
      * @return cleanup period milliseconds
      */
     public int getCleanupPeriodMs();
+
+    /**
+     * Return the max ZooKeeper log files to keep during cleanup
+     *
+     * @return max files
+     */
+    public int getCleanupMaxFiles();
 }

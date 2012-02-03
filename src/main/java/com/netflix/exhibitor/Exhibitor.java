@@ -53,18 +53,17 @@ public class Exhibitor implements Closeable
     }
 
     /**
+     *
      * @param configProvider config source
      * @param additionalUITabs any additional tabs in the UI (can be null)
-     * @param zooKeeperDirectory path to the ZooKeeper distribution
-     * @param dataDirectory path to where your ZooKeeper data is stored
      * @throws IOException errors
      */
-    public Exhibitor(ConfigProvider configProvider, Collection<UITab> additionalUITabs, String zooKeeperDirectory, String dataDirectory) throws Exception
+    public Exhibitor(ConfigProvider configProvider, Collection<UITab> additionalUITabs) throws Exception
     {
         this.configProvider = configProvider;
         this.instanceConfig.set(configProvider.loadConfig());
         this.additionalUITabs = (additionalUITabs != null) ? ImmutableList.copyOf(additionalUITabs) : ImmutableList.<UITab>of();
-        this.processOperations = new StandardProcessOperations(this, zooKeeperDirectory, dataDirectory);
+        this.processOperations = new StandardProcessOperations(this);
         instanceStateManager = new InstanceStateManager(this);
         monitorRunningInstance = new MonitorRunningInstance(this);
         cleanupManager = new CleanupManager(this);

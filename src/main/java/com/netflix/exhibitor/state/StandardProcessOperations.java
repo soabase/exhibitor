@@ -14,56 +14,64 @@ import java.util.concurrent.Executors;
 
 public class StandardProcessOperations implements ProcessOperations
 {
-    private final File zooKeeperDirectory;
-    private final File dataDirectory;
-    private final File configDirectory;
-    private final File log4jJarPath;
-    private final File zooKeeperJarPath;
-    private final Properties properties;
     private final Exhibitor exhibitor;
 
     private static final String     MODIFIED_CONFIG_NAME = "exhibitor.cfg";
     private static final String     SNAPSHOT_PREFIX = "snapshot.";
 
-    private static final int        LOG_BACKUP_COUNT = 3;   // TODO - make configurable
+    private static class Details
+    {
+        final File zooKeeperDirectory;
+        final File dataDirectory;
+        final File configDirectory;
+        final File log4jJarPath;
+        final File zooKeeperJarPath;
+        final Properties properties;
 
-    public StandardProcessOperations(Exhibitor exhibitor, String zooKeeperDirectory, String dataDirectory) throws IOException
+        private Details(Exhibitor exhibitor) throws IOException
+        {
+            this.zooKeeperDirectory = new File(exhibitor.getConfig().getZooKeeperInstallDirectory());
+            this.dataDirectory = new File(exhibitor.getConfig().getZooKeeperDataDirectory());
+
+            configDirectory = new File(zooKeeperDirectory, "conf");
+            log4jJarPath = findJar(new File(zooKeeperDirectory, "lib"), "log4j");
+            zooKeeperJarPath = findJar(this.zooKeeperDirectory, "zookeeper");
+
+            properties = new Properties();
+            InputStream     in = new BufferedInputStream(new FileInputStream(new File(configDirectory, "zoo.cfg")));
+            try
+            {
+                properties.load(in);
+            }
+            finally
+            {
+                Closeables.closeQuietly(in);
+            }
+            properties.setProperty("dataDir", dataDirectory.getPath());
+        }
+    }
+
+    public StandardProcessOperations(Exhibitor exhibitor) throws IOException
     {
         this.exhibitor = exhibitor;
-        this.zooKeeperDirectory = new File(zooKeeperDirectory);
-        this.dataDirectory = new File(dataDirectory);
-
-        configDirectory = new File(zooKeeperDirectory, "conf");
-        log4jJarPath = findJar(new File(zooKeeperDirectory, "lib"), "log4j");
-        zooKeeperJarPath = findJar(this.zooKeeperDirectory, "zookeeper");
-
-        properties = new Properties();
-        InputStream     in = new BufferedInputStream(new FileInputStream(new File(configDirectory, "zoo.cfg")));
-        try
-        {
-            properties.load(in);
-        }
-        finally
-        {
-            Closeables.closeQuietly(in);
-        }
-        properties.setProperty("dataDir", dataDirectory);
     }
 
     @Override
     public void cleanupInstance() throws Exception
     {
+        Details             details = new Details(exhibitor);
+
         // see http://zookeeper.apache.org/doc/r3.3.3/zookeeperAdmin.html#Ongoing+Data+Directory+Cleanup
         ProcessBuilder      builder = new ProcessBuilder
         (
             "java",
             "-cp",
-            String.format("%s:%s:%s", zooKeeperJarPath.getPath(), log4jJarPath.getPath(), configDirectory.getPath()),
+            String.format("%s:%s:%s", details.zooKeeperJarPath.getPath(), details.log4jJarPath.getPath(), details.configDirectory.getPath()),
             "org.apache.zookeeper.server.PurgeTxnLog",
-            dataDirectory.getPath(),
-            dataDirectory.getPath(),
+            details.dataDirectory.getPath(),
+            details.dataDirectory.getPath(),
             "-n",
-            Integer.toString(LOG_BACKUP_COUNT)
+            Integer.toString(exhibitor.getConfig().getCleanupMaxFiles())
         );
 
         ExecutorService errorService = Executors.newSingleThreadExecutor();
@@ -168,8 +176,10 @@ public class StandardProcessOperations implements ProcessOperations
     @Override
     public void startInstance() throws Exception
     {
-        File            configFile = prepConfigFile(exhibitor);
-        File            binDirectory = new File(zooKeeperDirectory, "bin");
+        Details         details = new Details(exhibitor);
+
+        File            configFile = prepConfigFile(details);
+        File            binDirectory = new File(details.zooKeeperDirectory, "bin");
         File            startScript = new File(binDirectory, "zkServer.sh");
         ProcessBuilder  builder = new ProcessBuilder(startScript.getPath(), "start").directory(binDirectory.getParentFile());
         builder.environment().put("ZOOCFG", configFile.getName());
@@ -178,7 +188,7 @@ public class StandardProcessOperations implements ProcessOperations
         exhibitor.getLog().add(ActivityLog.Type.INFO, "Process started via: " + startScript.getPath());
     }
 
-    private File findJar(File dir, final String name) throws IOException
+    private static File findJar(File dir, final String name) throws IOException
     {
         File[]          snapshots = dir.listFiles
         (
@@ -198,21 +208,21 @@ public class StandardProcessOperations implements ProcessOperations
         return snapshots[0];
     }
 
-    private File prepConfigFile(Exhibitor exhibitor) throws IOException
+    private File prepConfigFile(Details details) throws IOException
     {
         ServerList              serverList = new ServerList(exhibitor.getConfig().getServersSpec());
 
         ServerList.ServerSpec   us = Iterables.find(serverList.getSpecs(), ServerList.isUs(exhibitor.getConfig().getHostname()), null);
         if ( us != null )
         {
-            File                    idFile = new File(dataDirectory, "myid");
+            File                    idFile = new File(details.dataDirectory, "myid");
             Files.createParentDirs(idFile);
             String                  id = String.format("%d\n", us.getServerId());
             Files.write(id.getBytes(), idFile);
         }
 
         Properties      localProperties = new Properties();
-        localProperties.putAll(properties);
+        localProperties.putAll(details.properties);
 
         localProperties.setProperty("clientPort", Integer.toString(exhibitor.getConfig().getClientPort()));
 
@@ -222,7 +232,7 @@ public class StandardProcessOperations implements ProcessOperations
             localProperties.setProperty("server." + spec.getServerId(), spec.getHostname() + portSpec);
         }
 
-        File            configFile = new File(configDirectory, MODIFIED_CONFIG_NAME);
+        File            configFile = new File(details.configDirectory, MODIFIED_CONFIG_NAME);
         OutputStream out = new BufferedOutputStream(new FileOutputStream(configFile));
         try
         {

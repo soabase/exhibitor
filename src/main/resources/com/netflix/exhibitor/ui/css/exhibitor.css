@@ -7,6 +7,11 @@ body
     background-color: #777;
 }
 
+label
+{
+    font-weight: bold;
+}
+
 td
 {
     overflow: scroll;
@@ -58,10 +63,7 @@ td, .info
 #instance-info
 {
     width: 300px;
-    position: absolute;
-    top: 150px;
-    left: 50%;
-    margin-left: -150px;
+    margin-bottom: 25px;
 }
 
 #title
@@ -98,18 +100,6 @@ td, .info
     font-size: 125%;
 }
 
-#instance-restarts
-{
-    margin-bottom: 5px;
-}
-
-#refresh-state-container
-{
-    margin-top: 7px;
-    margin-bottom: 5px;
-    text-align: right;
-}
-
 #start-stop-button-container
 {
     margin-top: 20px;
@@ -124,7 +114,7 @@ td, .info
 #config-group label
 {
     float: left;
-    width: 175px;
+    width: 200px;
 }
 
 #config-group input
@@ -136,4 +126,39 @@ td, .info
 {
     float: left;
     padding-right: 8px;
+}
+
+#refresh-state-container
+{
+    position: relative;
+    width: 180px;
+    background-color: white;
+    left: 100%;
+    margin-top: 5px;
+    margin-left: -200px;
+    text-align: right;
+    padding: 10px;
+}
+
+#refresh-state-container label
+{
+    padding-right: 8px;
+    float: left;
+}
+
+#control-panel label
+{
+    float: left;
+    width: 250px;
+    margin-bottom: 8px;
+}
+
+#control-panel input
+{
+    margin-bottom: 8px;
+}
+
+#control-panel br
+{
+    clear: both;
 }

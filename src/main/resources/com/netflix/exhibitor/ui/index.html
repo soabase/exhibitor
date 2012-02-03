@@ -6,6 +6,7 @@
 		<link rel="stylesheet" type="text/css" href="css/blitzer/jquery-ui-1.8.16.custom.css" />
         <link rel="stylesheet" type="text/css" href="dynatree/skin/ui.dynatree.css">
         <link rel="stylesheet" type="text/css" href="css/exhibitor.css">
+        <link rel="stylesheet" type="text/css" href="colortip-1.0/colortip-1.0-jquery.css">
 
 		<script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
 		<script type="text/javascript" src="js/jquery.cookie.js"></script>
@@ -15,6 +16,7 @@
         <script type="text/javascript" src="dynatree/jquery.dynatree.min.js"></script>
 		<script type="text/javascript" src="js/exhibitor.js"></script>
 		<script type="text/javascript" src="lightSwitch/jquery.lightswitch.js"></script>
+		<script type="text/javascript" src="colortip-1.0/colortip-1.0-jquery.js"></script>
 	</head>
 
 	<body>
@@ -40,10 +42,16 @@
 
 
             <div id="tabs-main" class="ui-helper-hidden">
-                <div id="instance-restarts">
-                    <strong>Auto-restart instance: </strong>
-                    <input type="radio" id="instance-restarts-enabled" name="instance-restarts" value="enabled"/><label for="instance-restarts-enabled">Enabled</label>
-                    <input type="radio" id="instance-restarts-disabled" name="instance-restarts" value="disabled"/><label for="instance-restarts-disabled">Disabled</label>
+                <div class="ui-widget" id="instance-info">
+                    <div class="ui-state-highlight ui-corner-all" style="padding: 10px;">
+                        This Instance <span id="instance-hostname" style="font-weight: bold;"></span><br/>
+                        This Server ID <span id="instance-id" style="font-weight: bold;"></span><br/>
+                    </div>
+                </div>
+
+                <div id="control-panel">
+                    <label for="instance-restarts-enabled">Automatic Instance Restarts </label><input type="checkbox" id="instance-restarts-enabled" name="instance-restarts-enabled"/><br/>
+                    <label for="cleanup-enabled">Log Cleanup Task </label><input type="checkbox" id="cleanup-enabled" name="cleanup-enabled"/><br/>
                 </div>
 
                 <div class="ui-widget" id="start-stop-button-container">
@@ -84,17 +92,20 @@
             </div>
 
             <div id="tabs-config" class="ui-helper-hidden">
-                <label id="config-editable-label" for="config-editable"><strong>Editing: </strong></label><input type="checkbox" id="config-editable" name="config-editable" value="yes"><br/>
+                <label id="config-editable-label" for="config-editable">Editing </label><input type="checkbox" id="config-editable" name="config-editable" value="yes"><br/>
                 <br/>
 
                 <div id="config-group">
-                <label for="config-hostname"><strong>This Hostname</strong></label><input type="text" id="config-hostname" name="config-hostname" size="20"><br clear="all"/>
-                <label for="config-servers-spec"><strong>Servers</strong></label><input type="text" id="config-servers-spec" name="config-servers-spec" size="40"><br clear="all"/>
-                <label for="config-client-port"><strong>Client Port</strong></label><input type="text" id="config-client-port" class="mask-pint" name="config-client-port" size="8"><br clear="all"/>
-                <label for="config-connect-port"><strong>Connect Port</strong></label><input type="text" id="config-connect-port" class="mask-pint" name="config-connect-port" size="8"><br clear="all"/>
-                <label for="config-election-port"><strong>Election Port</strong></label><input type="text" id="config-election-port" class="mask-pint" name="config-election-port" size="8"><br clear="all"/>
-                <label for="config-check-ms"><strong>Live Check (ms)</strong></label><input type="text" id="config-check-ms" class="mask-pint" name="config-check-ms" size="8"><br clear="all"/>
-                <label for="config-cleanup-ms"><strong>Cleanup Period (ms)</strong></label><input type="text" id="config-cleanup-ms" class="mask-pint" name="config-cleanup-ms" size="8"><br clear="all"/>
+                <label for="config-zookeeper-install-dir">ZooKeeper Install Dir</label><input type="text" id="config-zookeeper-install-dir" name="config-zookeeper-install-dir" size="60" title="The directory where the ZooKeeper server is installed"><br clear="all"/>
+                <label for="config-zookeeper-data-dir">ZooKeeper Data Dir</label><input type="text" id="config-zookeeper-data-dir" name="config-zookeeper-data-dir" size="60" title="The directory where the ZooKeeper data is stored"><br clear="all"/>
+                <label for="config-hostname">This Hostname</label><input type="text" id="config-hostname" name="config-hostname" size="20" title="The hostname of this instance"><br clear="all"/>
+                <label for="config-servers-spec">Servers</label><input type="text" id="config-servers-spec" name="config-servers-spec" size="60" title="List of all servers in the ensemble (including this one) in the form: host:id,host:id,..."><br clear="all"/>
+                <label for="config-client-port">Client Port</label><input type="text" id="config-client-port" class="mask-pint" name="config-client-port" size="8" title="The port that clients connect to ZooKeeper (usually 2181)"><br clear="all"/>
+                <label for="config-connect-port">Connect Port</label><input type="text" id="config-connect-port" class="mask-pint" name="config-connect-port" size="8" title="The port that other ZooKeeper instances connect to ZooKeeper (usually 2888)"><br clear="all"/>
+                <label for="config-election-port">Election Port</label><input type="text" id="config-election-port" class="mask-pint" name="config-election-port" size="8" title="The port that other ZooKeeper instances connect for election to ZooKeeper (usually 3888)"><br clear="all"/>
+                <label for="config-check-ms">Live Check (ms)</label><input type="text" id="config-check-ms" class="mask-pint" name="config-check-ms" size="8" title="The number of milliseconds between live-ness checks on the ZooKeeper server"><br clear="all"/>
+                <label for="config-cleanup-ms">Cleanup Period (ms)</label><input type="text" id="config-cleanup-ms" class="mask-pint" name="config-cleanup-ms" size="8" title="The number of milliseconds between ZooKeeper log file cleanups"><br clear="all"/>
+                <label for="config-cleanup-max-files">Cleanup: Max Log Files</label><input type="text" id="config-cleanup-max-files" class="mask-pint" name="config-cleanup-max-files" size="2" title="The max number of ZooKeeper log files to keep when cleaning up"><br clear="all"/>
                 </div>
                 <br/>
 
@@ -103,7 +114,7 @@
 
             <div id="tabs-4ltr" class="ui-helper-hidden">
                 <div>
-                    <label for="4ltr-word"><strong>Word: </strong></label>
+                    <label for="4ltr-word">Word </label>
                     <input type="text" id="4ltr-word" name="4ltr-word" size="5">
                     <button id="4ltr-button">Submit</button>
                 </div>
@@ -112,17 +123,8 @@
             </div>
         </div>
 
-        <div id="refresh-state-container" class="ui-helper-hidden">
-            <input type="radio" id="refresh-state-auto" name="refresh-state" value="auto"/><label for="refresh-state-auto">Auto Reload</label>
-            <input type="radio" id="refresh-state-manual" name="refresh-state" value="manual"/><label for="refresh-state-manual">Manual Reload</label>
-        </div>
-
-        <div class="ui-widget ui-helper-hidden" id="instance-info">
-            <div class="ui-state-highlight ui-corner-all" style="padding: 10px;">
-                This Instance: <span id="instance-hostname" style="font-weight: bold;"></span><br/>
-                This Server ID: <span id="instance-id" style="font-weight: bold;"></span><br/>
-                <span id="instance-inactive-message" class="ui-helper-hidden">This instance is <strong>inactive</strong></span><br/>
-            </div>
+        <div id="refresh-state-container" class="ui-helper-hidden ui-corner-all">
+            <label for="refresh-state-checkbox">Auto Reload </label><input type="checkbox" id="refresh-state-checkbox" name="refresh-state-checkbox" value="yes"><br/>
         </div>
 
         <div id="message-dialog" class="ui-helper-hidden">

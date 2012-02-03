@@ -14,6 +14,9 @@ public class ConfigPojo
     private int       checkMs;
     private int       connectionTimeoutMs;
     private int       cleanupPeriodMs;
+    private String    zooKeeperInstallDir;
+    private String    zooKeeperDataDir;
+    private int       cleanupMaxFiles;
 
     public ConfigPojo()
     {
@@ -27,6 +30,9 @@ public class ConfigPojo
             0,
             0,
             0,
+            0,
+            "",
+            "",
             0
         );
     }
@@ -41,7 +47,10 @@ public class ConfigPojo
             int electionPort,
             int checkMs,
             int connectionTimeoutMs,
-            int cleanupPeriodMs
+            int cleanupPeriodMs,
+            String zooKeeperInstallDir,
+            String zooKeeperDataDir,
+            int cleanupMaxFiles
         )
     {
         this.serversSpec = serversSpec;
@@ -53,6 +62,9 @@ public class ConfigPojo
         this.checkMs = checkMs;
         this.connectionTimeoutMs = connectionTimeoutMs;
         this.cleanupPeriodMs = cleanupPeriodMs;
+        this.zooKeeperInstallDir = zooKeeperInstallDir;
+        this.zooKeeperDataDir = zooKeeperDataDir;
+        this.cleanupMaxFiles = cleanupMaxFiles;
     }
 
     public String getServersSpec()
@@ -143,5 +155,35 @@ public class ConfigPojo
     public void setCleanupPeriodMs(int cleanupPeriodMs)
     {
         this.cleanupPeriodMs = cleanupPeriodMs;
+    }
+
+    public String getZooKeeperInstallDir()
+    {
+        return zooKeeperInstallDir;
+    }
+
+    public void setZooKeeperInstallDir(String zooKeeperInstallDir)
+    {
+        this.zooKeeperInstallDir = zooKeeperInstallDir;
+    }
+
+    public String getZooKeeperDataDir()
+    {
+        return zooKeeperDataDir;
+    }
+
+    public void setZooKeeperDataDir(String zooKeeperDataDir)
+    {
+        this.zooKeeperDataDir = zooKeeperDataDir;
+    }
+
+    public int getCleanupMaxFiles()
+    {
+        return cleanupMaxFiles;
+    }
+
+    public void setCleanupMaxFiles(int cleanupMaxFiles)
+    {
+        this.cleanupMaxFiles = cleanupMaxFiles;
     }
 }
