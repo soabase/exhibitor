@@ -18,12 +18,6 @@ public class ExhibitorMain
 {
     public static void main(String[] args) throws Exception
     {
-        if ( args.length != 2 )
-        {
-            System.err.println("Exhibitor [path to ZooKeeper root] [path to data directory]");
-            return;
-        }
-
         Exhibitor exhibitor = new Exhibitor(new LocalFileConfigProvider(new File("exhibitor.properties")), null);
         exhibitor.start();
 
