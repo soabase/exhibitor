@@ -15,6 +15,7 @@ import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 
 // based on ~/.m2/repository/org/apache/zookeeper/zookeeper/3.3.3/zookeeper-3.3.3-sources.jar!/org/apache/zookeeper/server/LogFormatter.java
+// idea suggested by Kishore Gopalakrishna <kgopalakrishna@linkedin.com>
 public class LogParser
 {
     private final InputStream log;
