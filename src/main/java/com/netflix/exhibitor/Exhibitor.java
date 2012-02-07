@@ -8,6 +8,7 @@ import com.netflix.curator.framework.CuratorFrameworkFactory;
 import com.netflix.curator.retry.ExponentialBackoffRetry;
 import com.netflix.exhibitor.activity.ActivityLog;
 import com.netflix.exhibitor.activity.ActivityQueue;
+import com.netflix.exhibitor.index.IndexCache;
 import com.netflix.exhibitor.maintenance.CleanupManager;
 import com.netflix.exhibitor.state.InstanceStateManager;
 import com.netflix.exhibitor.state.MonitorRunningInstance;
@@ -42,6 +43,7 @@ public class Exhibitor implements Closeable
     private final AtomicBoolean             restartsEnabled = new AtomicBoolean(true);
     private final AtomicReference<State>    state = new AtomicReference<State>(State.LATENT);
     private final ConfigProvider            configProvider;
+    private final IndexCache                indexCache = new IndexCache();  // TODO - needs closing?
 
     private CuratorFramework    localConnection;    // protected by synchronization
 
@@ -72,6 +74,11 @@ public class Exhibitor implements Closeable
     public ActivityLog getLog()
     {
         return log;
+    }
+
+    public IndexCache getIndexCache()
+    {
+        return indexCache;
     }
 
     /**
@@ -155,6 +162,11 @@ public class Exhibitor implements Closeable
     public void         setRestartsEnabled(boolean newValue)
     {
         restartsEnabled.set(newValue);
+    }
+
+    public CleanupManager getCleanupManager()
+    {
+        return cleanupManager;
     }
 
     private synchronized void closeLocalConnection()

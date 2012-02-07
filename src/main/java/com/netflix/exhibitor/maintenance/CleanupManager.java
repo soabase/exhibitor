@@ -7,10 +7,12 @@ import com.netflix.exhibitor.activity.QueueGroups;
 import com.netflix.exhibitor.activity.RepeatingActivity;
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CleanupManager implements Closeable
 {
     private final RepeatingActivity repeatingActivity;
+    private final AtomicBoolean     enabled = new AtomicBoolean(true);
 
     public CleanupManager(final Exhibitor exhibitor)
     {
@@ -25,17 +27,22 @@ public class CleanupManager implements Closeable
             @Override
             public Boolean call() throws Exception
             {
-                try
+                if ( enabled.get() )
                 {
-                    exhibitor.getProcessOperations().cleanupInstance();
-                }
-                catch ( Exception e )
-                {
-                    exhibitor.getLog().add(ActivityLog.Type.ERROR, "Doing cleanup", e);
+                    try
+                    {
+                        exhibitor.getProcessOperations().cleanupInstance();
+                    }
+                    catch ( Exception e )
+                    {
+                        exhibitor.getLog().add(ActivityLog.Type.ERROR, "Doing cleanup", e);
+                    }
                 }
                 return true;
             }
         };
+
+        // TODO - notice change in cleanup period
         repeatingActivity = new RepeatingActivity(exhibitor.getActivityQueue(), QueueGroups.IO, activity, exhibitor.getConfig().getCleanupPeriodMs());
     }
 
@@ -47,5 +54,15 @@ public class CleanupManager implements Closeable
     public void close() throws IOException
     {
         repeatingActivity.close();
+    }
+    
+    public void setEnable(boolean newValue)
+    {
+        enabled.set(newValue);
+    }
+    
+    public boolean isEnabled()
+    {
+        return enabled.get();
     }
 }

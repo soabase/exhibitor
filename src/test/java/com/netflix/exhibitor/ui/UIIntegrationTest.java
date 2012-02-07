@@ -2,6 +2,7 @@ package com.netflix.exhibitor.ui;
 
 import com.google.common.collect.Sets;
 import com.netflix.exhibitor.Exhibitor;
+import com.netflix.exhibitor.IndexResource;
 import com.netflix.exhibitor.UIContext;
 import com.netflix.exhibitor.UIResource;
 import com.netflix.exhibitor.config.LocalFileConfigProvider;
@@ -34,6 +35,7 @@ public class UIIntegrationTest
             {
                 Set<Class<?>>       classes = Sets.newHashSet();
                 classes.add(UIResource.class);
+                classes.add(IndexResource.class);
                 return classes;
             }
 

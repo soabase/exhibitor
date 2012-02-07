@@ -18,6 +18,12 @@ class DefaultInstanceConfig implements InstanceConfig
     }
 
     @Override
+    public String getLogIndexDirectory()
+    {
+        return "/";
+    }
+
+    @Override
     public String getHostname()
     {
         return "localhost";

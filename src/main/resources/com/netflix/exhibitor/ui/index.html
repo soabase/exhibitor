@@ -7,6 +7,7 @@
         <link rel="stylesheet" type="text/css" href="dynatree/skin/ui.dynatree.css">
         <link rel="stylesheet" type="text/css" href="css/exhibitor.css">
         <link rel="stylesheet" type="text/css" href="colortip-1.0/colortip-1.0-jquery.css">
+        <link rel="stylesheet" type="text/css" href="css/jquery.dataTables_themeroller.css">
 
 		<script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
 		<script type="text/javascript" src="js/jquery.cookie.js"></script>
@@ -14,10 +15,14 @@
 		<script type="text/javascript" src="js/jquery-ui-1.8.16.custom.min.js"></script>
 		<script type="text/javascript" src="js/jquery.tools.min.js"></script>
         <script type="text/javascript" src="dynatree/jquery.dynatree.min.js"></script>
-		<script type="text/javascript" src="js/exhibitor.js"></script>
 		<script type="text/javascript" src="lightSwitch/jquery.lightswitch.js"></script>
-		<script type="text/javascript" src="colortip-1.0/colortip-1.0-jquery.js"></script>
-	</head>
+        <script type="text/javascript" src="colortip-1.0/colortip-1.0-jquery.js"></script>
+        <script type="text/javascript" src="js/jquery.appear-1.1.1.js"></script>
+        <script type="text/javascript" src="js/exhibitor.js"></script>
+        <script type="text/javascript" src="js/exhibitor-index.js"></script>
+        <script type="text/javascript" src="js/jquery.dataTables.js"></script>
+        <script type="text/javascript" src="js/Scroller.js"></script>
+    </head>
 
 	<body>
         <div id="tabs" class="ui-tabs">
@@ -37,6 +42,7 @@
                 <li><a href="#tabs-main">Control Panel</a></li>
                 <li><a href="#tabs-explorer">Explorer</a></li>
                 <li><a href="#tabs-config">Config</a></li>
+                <li><a href="#tabs-restore">Restore</a></li>
                 <li><a href="#tabs-4ltr">4LTR</a></li>
             </ul>
 
@@ -98,6 +104,7 @@
                 <div id="config-group">
                 <label for="config-zookeeper-install-dir">ZooKeeper Install Dir</label><input type="text" id="config-zookeeper-install-dir" name="config-zookeeper-install-dir" size="60" title="The directory where the ZooKeeper server is installed"><br clear="all"/>
                 <label for="config-zookeeper-data-dir">ZooKeeper Data Dir</label><input type="text" id="config-zookeeper-data-dir" name="config-zookeeper-data-dir" size="60" title="The directory where the ZooKeeper data is stored"><br clear="all"/>
+                <label for="config-log-index-dir">Log Index Dir</label><input type="text" id="config-log-index-dir" name="config-log-index-dir" size="60" title="The directory where indexed ZooKeeper logs should be kept."><br clear="all"/>
                 <label for="config-hostname">This Hostname</label><input type="text" id="config-hostname" name="config-hostname" size="20" title="The hostname of this instance"><br clear="all"/>
                 <label for="config-servers-spec">Servers</label><input type="text" id="config-servers-spec" name="config-servers-spec" size="60" title="List of all servers in the ensemble (including this one) in the form: host:id,host:id,..."><br clear="all"/>
                 <label for="config-client-port">Client Port</label><input type="text" id="config-client-port" class="mask-pint" name="config-client-port" size="8" title="The port that clients connect to ZooKeeper (usually 2181)"><br clear="all"/>
@@ -110,6 +117,14 @@
                 <br/>
 
                 <button id="config-button">Update...</button>
+            </div>
+
+            <div id="tabs-restore" class="ui-helper-hidden">
+                <div><strong>Available Indexes:</strong></div>
+                <div id="restore-items"></div><br clear="all"/><br/>
+                <button id="restore-open-button">Open...</button>
+                <button id="restore-delete-button">Delete...</button>
+                <button id="restore-index-button">New Index...</button>
             </div>
 
             <div id="tabs-4ltr" class="ui-helper-hidden">
@@ -132,6 +147,54 @@
             <span class="ui-icon ui-icon-alert" style="float: left; margin:0 7px 50px 0;"></span>
             <span id="message-dialog-text"></span>
             </p>
+        </div>
+
+        <div id="index-query-dialog" class="ui-helper-hidden">
+            <label for="index-query-path">Partial Path</label><input type="text" id="index-query-path" name="index-query-path" size="30"><br clear="all"/>
+            <label for="index-query-from">Date Range</label><input type="text" id="index-query-from" name="index-query-from" size="10">-<input type="text" id="index-query-to" name="index-query-to" size="10"><br clear="all"/>
+            <label for="index-query-type">Type</label><select id="index-query-type" name="index-query-type" size="1">
+                <option value="-1">Any</option>
+                <option value="0">Create</option>
+                <option value="1">Delete</option>
+                <option value="2">Set Data</option>
+            </select><br clear="all"/>
+            <label for="index-query-ephemeral">Ephemeral</label><select id="index-query-ephemeral" name="index-query-ephemeral" size="1">
+                <option value="">Any</option>
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+            </select><br clear="all"/>
+            <label for="index-query-max">Max Results</label><select id="index-query-max" name="index-query-max" size="1">
+                <option value="100">100</option>
+                <option value="500">500</option>
+                <option value="1000">1000</option>
+                <option value="5000">5000</option>
+            </select><br clear="all"/>
+        </div>
+
+        <div id="new-index-dialog" class="ui-helper-hidden">
+            <input type="radio" id="new-index-radio-default" name="new-index-specified" value="no" checked><label for="new-index-radio-default">Use Current Logs</label><br clear="all"/>
+            <input type="radio" id="new-index-radio-path" name="new-index-specified" value="yes"><label for="new-index-radio-path">Log File Path</label><input type="text" id="new-index-path" name="index-query-path" size="30">
+        </div>
+
+        <div id="index-query-results-dialog" class="ui-helper-hidden">
+            <table id="index-query-results-table">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Date</th>
+                        <th>Path</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table><br clear="all"/><br/>
+            <button id="index-query-filter-button">Filter...</button>
+            <button id="index-query-clear-filter-button">Clear Filter</button>
         </div>
     </body>
 </html>

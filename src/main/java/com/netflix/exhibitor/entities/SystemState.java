@@ -7,20 +7,29 @@ public class SystemState
 {
     private boolean         running;
     private boolean         restartsEnabled;
+    private boolean         cleanupEnabled;
     private String          version;
-    private ConfigPojo      config;
+    private Config config;
 
     public SystemState()
     {
-        this(new ConfigPojo(), false, false, "");
+        this(new Config(), false, false, "", true);
     }
 
-    public SystemState(ConfigPojo config, boolean running, boolean restartsEnabled, String version)
+    public SystemState
+        (
+            Config config,
+            boolean running,
+            boolean restartsEnabled,
+            String version,
+            boolean cleanupEnabled
+        )
     {
         this.config = config;
         this.running = running;
         this.restartsEnabled = restartsEnabled;
         this.version = version;
+        this.cleanupEnabled = cleanupEnabled;
     }
 
     public boolean isRunning()
@@ -53,13 +62,23 @@ public class SystemState
         this.version = version;
     }
 
-    public ConfigPojo getConfig()
+    public Config getConfig()
     {
         return config;
     }
 
-    public void setConfig(ConfigPojo config)
+    public void setConfig(Config config)
     {
         this.config = config;
+    }
+
+    public boolean isCleanupEnabled()
+    {
+        return cleanupEnabled;
+    }
+
+    public void setCleanupEnabled(boolean cleanupEnabled)
+    {
+        this.cleanupEnabled = cleanupEnabled;
     }
 }

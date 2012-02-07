@@ -15,6 +15,12 @@ public class PropertyBasedInstanceConfig implements InstanceConfig
     }
 
     @Override
+    public String getLogIndexDirectory()
+    {
+        return PropertyBasedConfigNames.LOG_INDEX_DIRECTORY.getValue(properties, defaults);
+    }
+
+    @Override
     public String getZooKeeperInstallDirectory()
     {
         return PropertyBasedConfigNames.ZOOKEEPER_INSTALL_DIRECTORY.getValue(properties, defaults);

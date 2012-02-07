@@ -12,17 +12,6 @@ label
     font-weight: bold;
 }
 
-td
-{
-    overflow: scroll;
-    padding:  5px;
-}
-
-td, .info
-{
-    font-size: 75%;
-}
-
 .info
 {
     padding: 5px;
@@ -161,4 +150,69 @@ td, .info
 #control-panel br
 {
     clear: both;
+}
+
+#index-query-dialog label
+{
+    float: left;
+    width: 100px;
+    margin: 3px;
+}
+
+#index-query-dialog input
+{
+    margin: 3px;
+}
+
+#new-index-dialog input
+{
+    margin: 3px;
+}
+
+#new-index-dialog label
+{
+    margin: 3px;
+}
+
+#index-query-results
+{
+    height: 400px;
+    overflow: scroll;
+    border: 1px solid black;
+    padding: 3px;
+    margin: 5px;
+}
+
+.selectable .ui-selecting
+{
+    background: #FECA40;
+}
+.selectable .ui-selected
+{
+    background: #F39814;
+    color: white;
+}
+.selectable
+{
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    width: 100%;
+}
+.selectable li
+{
+    margin: 3px;
+    padding: 0.4em;
+    font-size: 1em;
+    height: 1.1em;
+    white-space: nowrap;
+    font-family: monospace;
+
+}
+
+#index-query-results-table td
+{
+    font-family: monospace;
+    white-space: nowrap;
 }

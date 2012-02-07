@@ -3,7 +3,7 @@ package com.netflix.exhibitor.entities;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
-public class ConfigPojo
+public class Config
 {
     private String    thisHostname;
     private int       thisServerId;
@@ -17,8 +17,9 @@ public class ConfigPojo
     private String    zooKeeperInstallDir;
     private String    zooKeeperDataDir;
     private int       cleanupMaxFiles;
+    private String    logIndexDirectory;
 
-    public ConfigPojo()
+    public Config()
     {
         this
         (
@@ -33,11 +34,12 @@ public class ConfigPojo
             0,
             "",
             "",
-            0
+            0,
+            ""
         );
     }
 
-    public ConfigPojo
+    public Config
         (
             String serversSpec,
             String thisHostname,
@@ -50,7 +52,8 @@ public class ConfigPojo
             int cleanupPeriodMs,
             String zooKeeperInstallDir,
             String zooKeeperDataDir,
-            int cleanupMaxFiles
+            int cleanupMaxFiles,
+            String logIndexDirectory
         )
     {
         this.serversSpec = serversSpec;
@@ -65,6 +68,7 @@ public class ConfigPojo
         this.zooKeeperInstallDir = zooKeeperInstallDir;
         this.zooKeeperDataDir = zooKeeperDataDir;
         this.cleanupMaxFiles = cleanupMaxFiles;
+        this.logIndexDirectory = logIndexDirectory;
     }
 
     public String getServersSpec()
@@ -185,5 +189,15 @@ public class ConfigPojo
     public void setCleanupMaxFiles(int cleanupMaxFiles)
     {
         this.cleanupMaxFiles = cleanupMaxFiles;
+    }
+
+    public String getLogIndexDirectory()
+    {
+        return logIndexDirectory;
+    }
+
+    public void setLogIndexDirectory(String logIndexDirectory)
+    {
+        this.logIndexDirectory = logIndexDirectory;
     }
 }

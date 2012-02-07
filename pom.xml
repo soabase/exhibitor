@@ -54,6 +54,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-core</artifactId>
+            <version>3.5.0</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.netflix.curator</groupId>
             <artifactId>curator-test</artifactId>
             <version>1.0.0</version>

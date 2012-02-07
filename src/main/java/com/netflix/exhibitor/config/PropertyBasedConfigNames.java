@@ -26,6 +26,15 @@ public enum PropertyBasedConfigNames
         }
     },
 
+    LOG_INDEX_DIRECTORY("exhibitor.log-index.directory")
+    {
+        @Override
+        protected String getValueFromConfig(InstanceConfig config)
+        {
+            return config.getLogIndexDirectory();
+        }
+    },
+
     HOSTNAME("exhibitor.hostname")
     {
         @Override

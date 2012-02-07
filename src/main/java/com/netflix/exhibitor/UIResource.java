@@ -8,8 +8,8 @@ import com.google.common.io.Resources;
 import com.netflix.curator.utils.ZKPaths;
 import com.netflix.exhibitor.activity.ActivityLog;
 import com.netflix.exhibitor.activity.QueueGroups;
-import com.netflix.exhibitor.entities.ConfigPojo;
-import com.netflix.exhibitor.entities.ResultPojo;
+import com.netflix.exhibitor.entities.Config;
+import com.netflix.exhibitor.entities.Result;
 import com.netflix.exhibitor.entities.SystemState;
 import com.netflix.exhibitor.entities.UITabSpec;
 import com.netflix.exhibitor.state.FourLetterWord;
@@ -160,7 +160,7 @@ public class UIResource
         String                      response = new FourLetterWord(FourLetterWord.Word.RUOK, context.getExhibitor().getConfig()).getResponse();
         ServerList                  serverList = new ServerList(context.getExhibitor().getConfig().getServersSpec());
         ServerList.ServerSpec       us = Iterables.find(serverList.getSpecs(), ServerList.isUs(context.getExhibitor().getConfig().getHostname()), null);
-        ConfigPojo                  config = new ConfigPojo
+        Config config = new Config
         (
             context.getExhibitor().getConfig().getServersSpec(),
             context.getExhibitor().getConfig().getHostname(),
@@ -173,14 +173,16 @@ public class UIResource
             context.getExhibitor().getConfig().getCleanupPeriodMs(),
             context.getExhibitor().getConfig().getZooKeeperInstallDirectory(),
             context.getExhibitor().getConfig().getZooKeeperDataDirectory(),
-            context.getExhibitor().getConfig().getCleanupMaxFiles()
+            context.getExhibitor().getConfig().getCleanupMaxFiles(),
+            context.getExhibitor().getConfig().getLogIndexDirectory()
         );
         SystemState state = new SystemState
         (
             config,
             "imok".equals(response),
             context.getExhibitor().restartsAreEnabled(),
-            "v0.0.1"       // TODO - correct version
+            "v0.0.1",       // TODO - correct version
+            context.getExhibitor().getCleanupManager().isEnabled()
         );
         return Response.ok(state).build();
     }
@@ -188,10 +190,18 @@ public class UIResource
     @Path("set/config")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public Response setConfig(final ConfigPojo newConfig) throws Exception
+    public Response setConfig(final Config newConfig) throws Exception
     {
+        // TODO - should flush caches as needed
+
         InstanceConfig      wrapped = new InstanceConfig()
         {
+            @Override
+            public String getLogIndexDirectory()
+            {
+                return newConfig.getLogIndexDirectory();
+            }
+
             @Override
             public String getZooKeeperInstallDirectory()
             {
@@ -259,7 +269,7 @@ public class UIResource
             }
         };
         context.getExhibitor().updateConfig(wrapped);
-        return Response.ok(new ResultPojo("OK", true)).build();
+        return Response.ok(new Result("OK", true)).build();
     }
 
     @Path("set/restarts/{value}")
@@ -268,7 +278,16 @@ public class UIResource
     public Response setRestartsState(@PathParam("value") boolean newValue) throws Exception
     {
         context.getExhibitor().setRestartsEnabled(newValue);
-        return Response.ok(new ResultPojo("OK", true)).build();
+        return Response.ok(new Result("OK", true)).build();
+    }
+
+    @Path("set/cleanup/{value}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response setCleanupState(@PathParam("value") boolean newValue) throws Exception
+    {
+        context.getExhibitor().getCleanupManager().setEnable(newValue);
+        return Response.ok(new Result("OK", true)).build();
     }
 
     @Path("stop")
@@ -288,7 +307,7 @@ public class UIResource
             }
         );
 
-        return Response.ok(new ResultPojo("OK", true)).build();
+        return Response.ok(new Result("OK", true)).build();
     }
 
     @GET

@@ -1,4 +1,4 @@
-var BUILTIN_TAB_QTY = 4;
+var BUILTIN_TAB_QTY = 5;
 var AUTO_REFRESH_PERIOD = 10000;
 var UPDATE_STATE_PERIOD = 10000;
 
@@ -73,6 +73,12 @@ function updateState()
                 $('#tabs-main-not-running').show();
             }
 
+            $('#instance-restarts-enabled').prop("checked", systemState.restartsEnabled === "true");
+            $('#instance-restarts-enabled').trigger("change");
+
+            $('#cleanup-enabled').prop("checked", systemState.cleanupEnabled === "true");
+            $('#cleanup-enabled').trigger("change");
+
             $('#version').html(systemState.version);
             $('#not-connected-alert').hide();
             $('#instance-hostname').html(systemConfig.thisHostname);
@@ -98,6 +104,7 @@ function submitConfigChanges()
     var newConfig = {};
     newConfig.zooKeeperInstallDir = $('#config-zookeeper-install-dir').val();
     newConfig.zooKeeperDataDir = $('#config-zookeeper-data-dir').val();
+    newConfig.logIndexDirectory = $('#config-log-index-dir').val();
     newConfig.thisHostname = $('#config-hostname').val();
     newConfig.serversSpec = $('#config-servers-spec').val();
     newConfig.clientPort = $('#config-client-port').val();
@@ -125,6 +132,7 @@ function ableConfig(enable)
 {
     $('#config-zookeeper-install-dir').prop('disabled', !enable);
     $('#config-zookeeper-data-dir').prop('disabled', !enable);
+    $('#config-log-index-dir').prop('disabled', !enable);
     $('#config-hostname').prop('disabled', !enable);
     $('#config-servers-spec').prop('disabled', !enable);
     $('#config-client-port').prop('disabled', !enable);
@@ -145,6 +153,7 @@ function updateConfig()
 
     $('#config-zookeeper-install-dir').val(systemConfig.zooKeeperInstallDir);
     $('#config-zookeeper-data-dir').val(systemConfig.zooKeeperDataDir);
+    $('#config-log-index-dir').val(systemConfig.logIndexDirectory);
     $('#config-hostname').val(systemConfig.thisHostname);
     $('#config-servers-spec').val(systemConfig.serversSpec);
     $('#config-client-port').val(systemConfig.clientPort);
@@ -261,6 +270,11 @@ $(function ()
                 {
                     $("#refresh-state-container").show();
                 }
+
+                if ( selected == 3 )
+                {
+                    updateRestoreItems();
+                }
             },
 
             create:function (event, ui)
@@ -301,11 +315,19 @@ $(function ()
         switchImg : 'lightSwitch/switch.png',
         disabledImg : 'lightSwitch/disabled.png'
     });
+    $('#instance-restarts-enabled').next('span.switch').click(function(){
+        var isChecked = $('#instance-restarts-enabled').is(':checked');
+        $.get("set/restarts/" + (isChecked ? "true" : "false"));
+    });
 
     $('#cleanup-enabled').lightSwitch({
         switchImgCover: 'lightSwitch/switchplate.png',
         switchImg : 'lightSwitch/switch.png',
         disabledImg : 'lightSwitch/disabled.png'
+    });
+    $('#cleanup-enabled').next('span.switch').click(function(){
+        var isChecked = $('#cleanup-enabled').is(':checked');
+        $.get("set/cleanup/" + (isChecked ? "true" : "false"));
     });
 
     $('#config-editable').lightSwitch({
@@ -370,4 +392,6 @@ $(function ()
     ableConfig(false);
 
     $('#config-group').colorTip();
+
+    initRestoreUI();
 });

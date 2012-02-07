@@ -3,17 +3,17 @@ package com.netflix.exhibitor.entities;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
-public class ResultPojo
+public class Result
 {
     private String      message;
     private boolean     succeeded;
 
-    public ResultPojo()
+    public Result()
     {
         this("", false);
     }
 
-    public ResultPojo(String message, boolean succeeded)
+    public Result(String message, boolean succeeded)
     {
         this.message = message;
         this.succeeded = succeeded;

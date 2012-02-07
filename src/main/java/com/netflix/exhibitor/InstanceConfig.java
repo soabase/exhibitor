@@ -20,6 +20,13 @@ public interface InstanceConfig
     public String getZooKeeperDataDirectory();
 
     /**
+     * Return the path where indexed ZooKeeper logs should be kept
+     *
+     * @return log index dir
+     */
+    public String getLogIndexDirectory();
+
+    /**
      * Return the hostname of this server (the JVM Exhibitor is running in)
      *
      * @return hostname

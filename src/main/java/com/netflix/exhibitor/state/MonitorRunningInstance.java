@@ -37,6 +37,8 @@ public class MonitorRunningInstance implements Closeable
                 return true;
             }
         };
+
+        // TODO - notice change in check ms
         repeatingActivity = new RepeatingActivity(exhibitor.getActivityQueue(), QueueGroups.MAIN, activity, exhibitor.getConfig().getCheckMs());
     }
 
