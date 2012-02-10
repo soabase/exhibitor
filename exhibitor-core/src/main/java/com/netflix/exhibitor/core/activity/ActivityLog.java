@@ -6,6 +6,11 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.Date;
 import java.util.List;
 import java.util.Queue;
@@ -23,10 +28,12 @@ public class ActivityLog
     {
         final Date      date = new Date();
         final String    text;
+        final Type      type;
 
-        private Message(String text)
+        private Message(String text, Type type)
         {
             this.text = text;
+            this.type = type;
         }
     }
 
@@ -39,7 +46,7 @@ public class ActivityLog
             {
                 public String apply(Message message)
                 {
-                    return message.date + separator + message.text;
+                    return message.date + separator + message.type + separator + message.text;
                 }
             }
         );
@@ -95,14 +102,39 @@ public class ActivityLog
         String          queueMessage = message;
         if ( (type == Type.ERROR) && (exception != null) )
         {
-            queueMessage += " (" + exception.getMessage() + ")";
+            String  exceptionMessage = exception.getMessage();
+            if ( exceptionMessage == null )
+            {
+                exceptionMessage = getExceptionMessage(exception);
+            }
+            queueMessage += " (" + exceptionMessage + ")";
         }
 
         while ( queue.size() > MAX_ENTRIES )  // NOTE: due to concurrency, this may make the queue shorter than MAX - that's OK (and in some cases longer)
         {
             queue.remove();
         }
-        queue.add(new Message(queueMessage));
+        queue.add(new Message(queueMessage, type));
         type.log(message, exception);
+    }
+
+    private String getExceptionMessage(Throwable exception)
+    {
+        StringWriter        out = new StringWriter();
+        exception.printStackTrace(new PrintWriter(out));
+        BufferedReader      in = new BufferedReader(new StringReader(out.toString()));
+        try
+        {
+            String              firstLine = in.readLine();
+            if ( firstLine != null )
+            {
+                return firstLine;
+            }
+        }
+        catch ( IOException e )
+        {
+            // ignore
+        }
+        return "n/a";
     }
 }

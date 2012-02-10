@@ -128,19 +128,6 @@ function initRestoreUI()
         title: 'Results',
         minWidth: 800
     });
-
-    $('#index-query-results-table').dataTable({
-        "bProcessing": true,
-        "bServerSide": true,
-        "bStateSave": false,
-        "bFilter": false,
-        "bJQueryUI": true,
-        "bSort": false,
-        "sScrollY": "300px",
-        "sDom": "frtiS",
-        "bDeferRender": true,
-        "iDeferLoading": false
-    });
 }
 
 function updateRestoreItems(selectedRadio)
@@ -200,15 +187,42 @@ function updateRestoreItems(selectedRadio)
 
 function viewIndex(indexName, indexHandle, isFromFilter)
 {
-    $('#index-query-results-table').scrollTop(0);
-    var settings = $('#index-query-results-table').dataTable().fnSettings();
-    settings.sAjaxSource = "index/dataTable/" + indexName + "/" + indexHandle;
-    settings.bServerSide = true;
-    $('#index-query-results-table').dataTable().fnDraw();
-    settings.oScroller.fnScrollToRow(0);
-
     $('#index-query-dialog').attr("indexName", indexName);
     $('#index-query-dialog').attr("indexHandle", indexHandle);
+
+    var selectedRows = [];
+    $('#index-query-results-table').dataTable({
+        sAjaxSource: "index/dataTable/" + indexName + "/" + indexHandle,
+        bDestroy: true,
+        bProcessing: true,
+        bServerSide: true,
+        bStateSave: false,
+        bFilter: false,
+        bSort: false,
+        sScrollY: "300px",
+        sDom: "frtiS",
+        bDeferRender: true,
+        iDeferLoading: false,
+        fnRowCallback: function( nRow, aData, iDisplayIndex ) {
+            if ( jQuery.inArray(aData.DT_RowId, selectedRows) !== -1 ) {
+                $(nRow).addClass('row_selected');
+            }
+            return nRow;
+        }
+    });
+
+    $('#index-query-results-table tbody tr').live('click', function () {
+        var id = this.id;
+        var index = jQuery.inArray(id, selectedRows);
+
+        if ( index === -1 ) {
+            selectedRows.push( id );
+        } else {
+            selectedRows.splice( index, 1 );
+        }
+
+        $(this).toggleClass('row_selected');
+    } );
 
     $('#index-query-clear-filter-button').button("option", "disabled", !isFromFilter);
 
