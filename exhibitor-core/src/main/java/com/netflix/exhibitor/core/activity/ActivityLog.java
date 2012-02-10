@@ -125,11 +125,21 @@ public class ActivityLog
         BufferedReader      in = new BufferedReader(new StringReader(out.toString()));
         try
         {
-            String              firstLine = in.readLine();
-            if ( firstLine != null )
+            StringBuilder       str = new StringBuilder();
+            for(;;)
             {
-                return firstLine;
+                String  line = in.readLine();
+                if ( line == null )
+                {
+                    break;
+                }
+                if ( str.length() > 0 )
+                {
+                    str.append(", ");
+                }
+                str.append(line);
             }
+            return str.toString();
         }
         catch ( IOException e )
         {
