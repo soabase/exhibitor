@@ -164,12 +164,6 @@ function updateConfig()
     $('#config-cleanup-max-files').val(systemConfig.cleanupMaxFiles);
 }
 
-function refreshCurrentTab()
-{
-    var selected = $("#tabs").tabs("option", "selected");
-    $("#tabs").tabs("load", selected);
-}
-
 function initExplorer()
 {
     $("#tree").dynatree({
@@ -226,25 +220,18 @@ function initExplorer()
     });
 }
 
-var refreshInterval = null;
-
-function startAutoRefresh()
+function refreshCurrentTab()
 {
-    if ( !refreshInterval )
+    var selected = $("#tabs").tabs("option", "selected");
+    if ( selected == 3 )
     {
-        refreshInterval = window.setInterval("refreshCurrentTab()", AUTO_REFRESH_PERIOD);
+        var radio = $('input:radio:checked[name="restore-item-radio"]');
+        updateRestoreItems(radio.val());
     }
-    $.cookie("refresh-state-auto", "1");
-}
-
-function stopAutoRefresh()
-{
-    if ( refreshInterval )
+    else if ( selected >= BUILTIN_TAB_QTY )
     {
-        window.clearInterval(refreshInterval);
-        refreshInterval = null;
+        $("#tabs").tabs("load", selected);
     }
-    $.cookie("refresh-state-auto", "0");
 }
 
 $(function ()
@@ -261,20 +248,7 @@ $(function ()
 
             show:function (event, ui)
             {
-                var selected = $("#tabs").tabs("option", "selected");
-                if ( selected < BUILTIN_TAB_QTY )
-                {
-                    $("#refresh-state-container").hide();
-                }
-                else
-                {
-                    $("#refresh-state-container").show();
-                }
-
-                if ( selected == 3 )
-                {
-                    updateRestoreItems();
-                }
+                refreshCurrentTab();
             },
 
             create:function (event, ui)
@@ -355,28 +329,6 @@ $(function ()
             return false;
         });
 
-    if ( $.cookie("refresh-state-auto") )
-    {
-        startAutoRefresh();
-        $('#refresh-state-checkbox').prop("checked", true);
-    }
-    $("#refresh-state-checkbox").lightSwitch({
-        switchImgCover: 'lightSwitch/switchplate.png',
-        switchImg : 'lightSwitch/switch.png',
-        disabledImg : 'lightSwitch/disabled.png'
-    });
-    $('#refresh-state-checkbox').next('span.switch').click(function(){
-        var isChecked = $('#refresh-state-checkbox').is(':checked');
-        if ( isChecked )
-        {
-            startAutoRefresh();
-        }
-        else
-        {
-            stopAutoRefresh();
-        }
-    });
-
     $('#not-connected-message').html("Not connected to " + $('#app-name').html() + " server");
     $('#page-title').html($('#app-name').html() + " for ZooKeeper");
 
@@ -394,4 +346,5 @@ $(function ()
     $('#config-group').colorTip();
 
     initRestoreUI();
+    window.setInterval("refreshCurrentTab()", AUTO_REFRESH_PERIOD);
 });

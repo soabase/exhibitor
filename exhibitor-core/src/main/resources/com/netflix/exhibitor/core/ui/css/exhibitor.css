@@ -117,24 +117,6 @@ label
     padding-right: 8px;
 }
 
-#refresh-state-container
-{
-    position: relative;
-    width: 180px;
-    background-color: white;
-    left: 100%;
-    margin-top: 5px;
-    margin-left: -200px;
-    text-align: right;
-    padding: 10px;
-}
-
-#refresh-state-container label
-{
-    padding-right: 8px;
-    float: left;
-}
-
 #control-panel label
 {
     float: left;

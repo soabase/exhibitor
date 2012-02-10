@@ -17,6 +17,12 @@ function initRestoreUI()
     }).click(function(){
             okCancelDialog("Delete Index", "Are you sure you to delete the selected index? This CANNOT be un-done.", function ()
             {
+                var radio = $('input:radio:checked[name="restore-item-radio"]');
+                $.ajax({
+                    type: 'DELETE',
+                    url: 'index/' + radio.val()
+                });
+                messageDialog('Index', 'Index is marked for deletion. Check the log for details.');
             });
             return false;
         });
@@ -126,6 +132,7 @@ function initRestoreUI()
     $('#index-query-results-table').dataTable({
         "bProcessing": true,
         "bServerSide": true,
+        "bStateSave": false,
         "bFilter": false,
         "bJQueryUI": true,
         "bSort": false,
@@ -136,7 +143,7 @@ function initRestoreUI()
     });
 }
 
-function updateRestoreItems()
+function updateRestoreItems(selectedRadio)
 {
     $.getJSON('index/indexed-logs', function(data){
         var itemsTab = data ? $.makeArray(data.index) : new Array();
@@ -148,14 +155,19 @@ function updateRestoreItems()
             items += '<tr><td></td><td></td><td></td><td></td><td></td></tr>';
         }
 
+        var needsCheck = true;
         for ( var i = 0; i < itemsTab.length; ++i )
         {
             var item = itemsTab[i];
             items += '<tr>';
-            items += '<td><input type="radio" name="restore-item-radio" value="' + item.name + '"';
-            if ( i == 0 )
+            items += '<td><input type="radio" id="restore-item-radio-' + i + '" name="restore-item-radio" value="' + item.name + '"';
+            if ( selectedRadio )
             {
-                items += " CHECKED";
+                if ( selectedRadio === item.name )
+                {
+                    items += " CHECKED";
+                    needsCheck = false;
+                }
             }
             items += '></td>';
             items += '<td>' + item.name + '</td>';
@@ -176,6 +188,11 @@ function updateRestoreItems()
             "bAutoWidth": false
         });
 
+        if ( needsCheck && (itemsTab.length > 0) )
+        {
+            $('#restore-item-radio-0').prop("checked", true);
+        }
+
         $("#restore-open-button").button((itemsTab.length > 0) ? "enable" : "disable");
         $("#restore-delete-button").button((itemsTab.length > 0) ? "enable" : "disable");
     });
@@ -188,11 +205,16 @@ function viewIndex(indexName, indexHandle, isFromFilter)
     settings.sAjaxSource = "index/dataTable/" + indexName + "/" + indexHandle;
     settings.bServerSide = true;
     $('#index-query-results-table').dataTable().fnDraw();
+    settings.oScroller.fnScrollToRow(0);
 
     $('#index-query-dialog').attr("indexName", indexName);
     $('#index-query-dialog').attr("indexHandle", indexHandle);
 
     $('#index-query-clear-filter-button').button("option", "disabled", !isFromFilter);
+
+    $('#index-query-results-dialog').bind('dialogclose', function(event, ui) {
+        $.get('index/release-cache/' + indexName + '/' + indexHandle);
+    });
 
     $('#index-query-results-dialog').dialog("option", "title", 'Results for ' + indexName);
     $('#index-query-results-dialog').dialog("option", "maxHeight", 600);

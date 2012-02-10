@@ -15,6 +15,7 @@ import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.JsonNodeFactory;
 import org.codehaus.jackson.node.ObjectNode;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -103,6 +104,16 @@ public class IndexResource
         return Response.ok(new Result("OK", true)).build();
     }
 
+    @Path("{index-name}")
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deleteIndex(@PathParam("index-name") String indexName)
+    {
+        File        indexFile = getLogFile(indexName);
+        context.getExhibitor().getIndexCache().markForDeletion(indexFile);
+        return Response.ok(new Result("OK", true)).build();
+    }
+
     @Path("dataTable/{index-name}/{search-handle}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -120,30 +131,38 @@ public class IndexResource
         {
             return "{}";
         }
-        CachedSearch cachedSearch = logSearch.getCachedSearch(searchHandle);
-
-        DateFormat          dateFormatter = new SimpleDateFormat("MM/dd/yyyy-HH:ss");
-        ArrayNode           dataTab = JsonNodeFactory.instance.arrayNode();
-        for ( int i = iDisplayStart; i < (iDisplayStart + iDisplayLength); ++i )
+        ObjectNode          node;
+        try
         {
-            if ( i < cachedSearch.getTotalHits() )
+            CachedSearch cachedSearch = logSearch.getCachedSearch(searchHandle);
+
+            DateFormat          dateFormatter = new SimpleDateFormat("MM/dd/yyyy-HH:ss");
+            ArrayNode           dataTab = JsonNodeFactory.instance.arrayNode();
+            for ( int i = iDisplayStart; i < (iDisplayStart + iDisplayLength); ++i )
             {
-                ArrayNode       data = JsonNodeFactory.instance.arrayNode();
-                int             docId = cachedSearch.getNthDocId(i);
-                SearchItem item = logSearch.toResult(docId);
-                data.add(getTypeName(EntryTypes.getFromId(item.getType())));
-                data.add(dateFormatter.format(item.getDate()));
-                data.add(trimPath(item.getPath()));
+                if ( i < cachedSearch.getTotalHits() )
+                {
+                    ArrayNode       data = JsonNodeFactory.instance.arrayNode();
+                    int             docId = cachedSearch.getNthDocId(i);
+                    SearchItem item = logSearch.toResult(docId);
+                    data.add(getTypeName(EntryTypes.getFromId(item.getType())));
+                    data.add(dateFormatter.format(item.getDate()));
+                    data.add(trimPath(item.getPath()));
 
-                dataTab.add(data);
+                    dataTab.add(data);
+                }
             }
-        }
 
-        ObjectNode          node = JsonNodeFactory.instance.objectNode();
-        node.put("sEcho", sEcho);
-        node.put("iTotalRecords", logSearch.getDocQty());
-        node.put("iTotalDisplayRecords", cachedSearch.getTotalHits());
-        node.put("aaData", dataTab);
+            node = JsonNodeFactory.instance.objectNode();
+            node.put("sEcho", sEcho);
+            node.put("iTotalRecords", logSearch.getDocQty());
+            node.put("iTotalDisplayRecords", cachedSearch.getTotalHits());
+            node.put("aaData", dataTab);
+        }
+        finally
+        {
+            context.getExhibitor().getIndexCache().releaseLogSearch(logSearch.getFile());
+        }
 
         return node.toString();
     }
@@ -190,6 +209,27 @@ public class IndexResource
         return Response.ok(entity).build();
     }
 
+    @Path("release-cache/{index-name}/{search-handle}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response releaseCache(@PathParam("index-name") String indexName, @PathParam("search-handle") String searchHandle) throws Exception
+    {
+        LogSearch   logSearch = getLogSearch(indexName);
+        if ( logSearch == null )
+        {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        try
+        {
+            logSearch.releaseCache(searchHandle);
+        }
+        finally
+        {
+            context.getExhibitor().getIndexCache().releaseLogSearch(logSearch.getFile());
+        }
+        return Response.ok(new Result("OK", true)).build();
+    }
+
     @Path("cache-search")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -202,44 +242,52 @@ public class IndexResource
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        boolean         hasTerms = false;
-        QueryBuilder    builder = QueryBuilder.builder();
-        if ( request.getPathPrefix().length() > 0 )
+        SearchId    searchId;
+        try
         {
-            hasTerms = true;
-            builder.pathPrefix(request.getPathPrefix());
-        }
-        if ( request.getOperationType() >= 0 )
-        {
-            hasTerms = true;
-            builder.operationType(request.getOperationType());
-        }
-        if ( (request.getFirstDate() != null) && (request.getSecondDate() != null) )
-        {
-            hasTerms = true;
-            Date        startDate;
-            Date        endDate;
-            if ( request.getFirstDate().before(request.getSecondDate()) )
+            boolean         hasTerms = false;
+            QueryBuilder    builder = QueryBuilder.builder();
+            if ( request.getPathPrefix().length() > 0 )
             {
-                startDate = request.getFirstDate();
-                endDate = request.getSecondDate();
+                hasTerms = true;
+                builder.pathPrefix(request.getPathPrefix());
             }
-            else
+            if ( request.getOperationType() >= 0 )
             {
-                startDate = request.getSecondDate();
-                endDate = request.getFirstDate();
+                hasTerms = true;
+                builder.operationType(request.getOperationType());
             }
-            Calendar      endOfDayEndDate = Calendar.getInstance();
-            endOfDayEndDate.setTime(endDate);
-            endOfDayEndDate.set(Calendar.HOUR_OF_DAY, 23);
-            endOfDayEndDate.set(Calendar.MINUTE, 59);
-            endOfDayEndDate.set(Calendar.SECOND, 59);
-            endDate = endOfDayEndDate.getTime();
-            builder.dateRange(startDate, endDate);
+            if ( (request.getFirstDate() != null) && (request.getSecondDate() != null) )
+            {
+                hasTerms = true;
+                Date        startDate;
+                Date        endDate;
+                if ( request.getFirstDate().before(request.getSecondDate()) )
+                {
+                    startDate = request.getFirstDate();
+                    endDate = request.getSecondDate();
+                }
+                else
+                {
+                    startDate = request.getSecondDate();
+                    endDate = request.getFirstDate();
+                }
+                Calendar      endOfDayEndDate = Calendar.getInstance();
+                endOfDayEndDate.setTime(endDate);
+                endOfDayEndDate.set(Calendar.HOUR_OF_DAY, 23);
+                endOfDayEndDate.set(Calendar.MINUTE, 59);
+                endOfDayEndDate.set(Calendar.SECOND, 59);
+                endDate = endOfDayEndDate.getTime();
+                builder.dateRange(startDate, endDate);
+            }
+            Query       query = hasTerms ? builder.build(QueryBuilder.Type.AND) : null;
+            String      id = logSearch.cacheSearch(query, request.getReuseHandle(), request.getMaxResults());
+            searchId = new SearchId(id);
         }
-        Query       query = hasTerms ? builder.build(QueryBuilder.Type.AND) : null;
-        String      id = logSearch.cacheSearch(query, request.getReuseHandle(), request.getMaxResults());
-        SearchId    searchId = new SearchId(id);
+        finally
+        {
+            context.getExhibitor().getIndexCache().releaseLogSearch(logSearch.getFile());
+        }
         return Response.ok(searchId).build();
     }
 

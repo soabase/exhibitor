@@ -43,7 +43,7 @@ public class Exhibitor implements Closeable
     private final AtomicBoolean             restartsEnabled = new AtomicBoolean(true);
     private final AtomicReference<State>    state = new AtomicReference<State>(State.LATENT);
     private final ConfigProvider            configProvider;
-    private final IndexCache                indexCache = new IndexCache();  // TODO - needs closing?
+    private final IndexCache                indexCache;
 
     private CuratorFramework    localConnection;    // protected by synchronization
 
@@ -69,6 +69,7 @@ public class Exhibitor implements Closeable
         instanceStateManager = new InstanceStateManager(this);
         monitorRunningInstance = new MonitorRunningInstance(this);
         cleanupManager = new CleanupManager(this);
+        indexCache = new IndexCache(log);
     }
 
     public ActivityLog getLog()
@@ -99,6 +100,7 @@ public class Exhibitor implements Closeable
     {
         Preconditions.checkState(state.compareAndSet(State.STARTED, State.STOPPED));
 
+        Closeables.closeQuietly(indexCache);
         Closeables.closeQuietly(cleanupManager);
         Closeables.closeQuietly(monitorRunningInstance);
         Closeables.closeQuietly(instanceStateManager);

@@ -5,13 +5,18 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Maps;
+import com.netflix.exhibitor.core.activity.ActivityLog;
+import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
-public class IndexCache
+public class IndexCache implements Closeable
 {
     private final LoadingCache<File, IndexMetaData>     metaDataCache = CacheBuilder
         .newBuilder()
@@ -29,6 +34,8 @@ public class IndexCache
         );
 
     private final ConcurrentMap<File, LogSearchHolder>  indexCache = Maps.newConcurrentMap();
+    private final AtomicBoolean                         isOpen = new AtomicBoolean(true);
+    private final ActivityLog                           log;
 
     private static class LogSearchHolder
     {
@@ -36,45 +43,74 @@ public class IndexCache
         private LogSearch               logSearch;
         private int                     useCount = 0;
         private long                    lastUse = System.currentTimeMillis();
+        private boolean                 markedForDeletion = false;
     }
 
     private static final int        MAX_CACHE_MS = (int)TimeUnit.MILLISECONDS.convert(5, TimeUnit.MINUTES);
 
+    public IndexCache(ActivityLog log)
+    {
+        this.log = log;
+    }
+
+    @Override
+    public void close() throws IOException
+    {
+        Preconditions.checkArgument(isOpen.compareAndSet(true, false), "Cache is closed");
+        clean();
+    }
+
     public IndexMetaData    getMetaData(File indexDirectory) throws Exception
     {
+        Preconditions.checkArgument(isOpen.get(), "Cache is closed");
+
         return metaDataCache.get(indexDirectory);
+    }
+
+    public void     markForDeletion(File indexDirectory)
+    {
+        Preconditions.checkArgument(isOpen.get(), "Cache is closed");
+
+        LogSearchHolder     holder = getHolder(indexDirectory);
+        synchronized(holder)
+        {
+            holder.markedForDeletion = true;
+        }
+        clean();
     }
 
     public LogSearch        getLogSearch(File indexDirectory) throws Exception
     {
+        Preconditions.checkArgument(isOpen.get(), "Cache is closed");
+
         clean();
-        
-        LogSearchHolder           newHolder = new LogSearchHolder();
-        LogSearchHolder           oldHolder = indexCache.putIfAbsent(indexDirectory, newHolder);
-        final LogSearchHolder     useHolder = (oldHolder != null) ? oldHolder : newHolder;
+
+        final LogSearchHolder     holder = getHolder(indexDirectory);
 
         LogSearch                 logSearch;
-        synchronized(useHolder)
+        synchronized(holder)
         {
-            if ( useHolder.logSearch == null )
+            if ( holder.logSearch == null )
             {
-                Preconditions.checkArgument(useHolder.useCount == 0, "use count is non zero but instance is null: " + useHolder.useCount);
-                useHolder.logSearch = new LogSearch(indexDirectory);
+                Preconditions.checkArgument(holder.useCount == 0, "use count is non zero but instance is null: " + holder.useCount);
+                holder.logSearch = new LogSearch(indexDirectory);
             }
 
-            ++useHolder.useCount;
-            Preconditions.checkArgument(useHolder.useCount > 0, "use count has rolled over: " + useHolder.useCount);
+            ++holder.useCount;
+            Preconditions.checkArgument(holder.useCount > 0, "use count has rolled over: " + holder.useCount);
 
-            useHolder.lastUse = System.currentTimeMillis();
+            holder.lastUse = System.currentTimeMillis();
 
-            logSearch = useHolder.logSearch;
+            logSearch = holder.logSearch;
         }
-        
+
         return logSearch;
     }
 
     public void             releaseLogSearch(File indexDirectory)
     {
+        Preconditions.checkArgument(isOpen.get(), "Cache is closed");
+
         LogSearchHolder     holder = indexCache.get(indexDirectory);
         holder = Preconditions.checkNotNull(holder, "No entry found for index being released: " + indexDirectory);
 
@@ -85,29 +121,61 @@ public class IndexCache
         }
     }
 
+    private LogSearchHolder getHolder(File indexDirectory)
+    {
+        LogSearchHolder newHolder = new LogSearchHolder();
+        LogSearchHolder oldHolder = indexCache.putIfAbsent(indexDirectory, newHolder);
+        return (oldHolder != null) ? oldHolder : newHolder;
+    }
+
+    private void delete(File indexDirectory)
+    {
+        for ( File f : indexDirectory.listFiles() )
+        {
+            if ( !f.delete() )
+            {
+                log.add(ActivityLog.Type.ERROR, "Could not delete: " + f);
+            }
+        }
+        if ( !indexDirectory.delete() )
+        {
+            log.add(ActivityLog.Type.ERROR, "Could not delete: " + indexDirectory);
+        }
+        File    metaDataFile = IndexMetaData.getMetaDataFile(indexDirectory);
+        if ( !metaDataFile.delete() )
+        {
+            log.add(ActivityLog.Type.ERROR, "Could not delete: " + metaDataFile);
+        }
+
+        log.add(ActivityLog.Type.INFO, "Index deleted: " + indexDirectory.getName());
+    }
+
     private void        clean()
     {
-        Iterator<LogSearchHolder> iterator = indexCache.values().iterator();
+        Iterator<Map.Entry<File, LogSearchHolder>> iterator = indexCache.entrySet().iterator();
         while ( iterator.hasNext() )
         {
-            LogSearch                 evicted = null;
-            final LogSearchHolder     holder = iterator.next();
+            final Map.Entry<File, LogSearchHolder> entry = iterator.next();
+            final LogSearchHolder     holder = entry.getValue();
             synchronized(holder)
             {
                 if ( holder.useCount == 0 )
                 {
-                    if ( (System.currentTimeMillis() - holder.lastUse) > MAX_CACHE_MS )
+                    if ( !isOpen.get() || holder.markedForDeletion || ((System.currentTimeMillis() - holder.lastUse) > MAX_CACHE_MS) )
                     {
-                        evicted = holder.logSearch;
-                        holder.logSearch = null;
+                        if ( holder.logSearch != null )
+                        {
+                            holder.logSearch.close();
+                            holder.logSearch = null;
+                        }
                         iterator.remove();
+
+                        if ( holder.markedForDeletion )
+                        {
+                            delete(entry.getKey());
+                        }
                     }
                 }
-            }
-
-            if ( evicted != null )
-            {
-                evicted.close();
             }
         }
     }

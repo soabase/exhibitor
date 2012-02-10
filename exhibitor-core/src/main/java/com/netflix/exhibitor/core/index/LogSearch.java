@@ -9,6 +9,8 @@ import org.apache.lucene.document.NumericField;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.NIOFSDirectory;
@@ -25,22 +27,34 @@ public class LogSearch implements Closeable
     private final Directory directory;
     private final IndexReader reader;
     private final IndexSearcher searcher;
+    private final File file;
     private final Cache<String, TopDocs> cache = CacheBuilder.newBuilder()
         .expireAfterAccess(5, TimeUnit.MINUTES) // does this need to be configurable?
         .build();
 
     private static final int            MAX_RESULTS = 5000; // does this need to be configurable?
 
-    public LogSearch(File indexDirectory) throws Exception
+    public LogSearch(File file) throws Exception
     {
-        directory = new NIOFSDirectory(indexDirectory, new NativeFSLockFactory());
+        this.file = file;
+        directory = new NIOFSDirectory(file, new NativeFSLockFactory());
         reader = IndexReader.open(directory);
         searcher = new IndexSearcher(reader);
+    }
+
+    public File getFile()
+    {
+        return file;
     }
 
     public int      getDocQty()
     {
         return reader.numDocs();
+    }
+
+    public void     releaseCache(String id)
+    {
+        cache.invalidate(id);
     }
 
     public String    cacheSearch(Query query, String reuseId, int maxResults) throws IOException
@@ -67,7 +81,8 @@ public class LogSearch implements Closeable
 
     public TopDocs   search(Query query, int maxResults) throws IOException
     {
-        return searcher.search(query, maxResults);
+        Sort sort = new Sort(new SortField(FieldNames.DATE, SortField.LONG, true));
+        return searcher.search(query, maxResults, sort);
     }
 
     public SearchItem toResult(int documentId) throws IOException
