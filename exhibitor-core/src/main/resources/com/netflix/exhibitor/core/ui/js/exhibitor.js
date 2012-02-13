@@ -79,6 +79,7 @@ function updateState()
             $('#cleanup-enabled').prop("checked", systemState.cleanupEnabled === "true");
             $('#cleanup-enabled').trigger("change");
 
+            $('#exhibitor-valence').hide();
             $('#version').html(systemState.version);
             $('#not-connected-alert').hide();
             $('#instance-hostname').html(systemConfig.thisHostname);
@@ -91,6 +92,7 @@ function updateState()
         {
             if ( connectedToExhibitor )
             {
+                $('#exhibitor-valence').show();
                 $('#not-connected-alert').show();
                 connectedToExhibitor = false;
                 messageDialog("Error", "The browser lost connection with the " + $('#app-name').html() + " server.");
@@ -280,8 +282,9 @@ $(function ()
     });
 
     $("#message-dialog").dialog({
-        modal:true,
-        autoOpen:false
+        modal: true,
+        autoOpen: false,
+        zIndex: 99999
     });
 
     $('#instance-restarts-enabled').lightSwitch({
