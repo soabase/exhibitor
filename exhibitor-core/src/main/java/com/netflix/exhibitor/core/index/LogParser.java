@@ -11,6 +11,7 @@ import java.io.ByteArrayInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 
@@ -18,20 +19,26 @@ import java.util.zip.Checksum;
 // idea suggested by Kishore Gopalakrishna <kgopalakrishna@linkedin.com>
 public class LogParser
 {
-    private final InputStream log;
+    private final BinaryInputArchive logStream;
+    private final AtomicBoolean      validHeader = new AtomicBoolean();
 
-    public LogParser(InputStream log)
+    public LogParser(InputStream log) throws IOException
     {
-        this.log = log;
+        logStream = BinaryInputArchive.getArchive(log);
+
+        FileHeader fhdr = new FileHeader();
+        fhdr.deserialize(logStream, "fileheader");
+        validHeader.set(fhdr.getMagic() == FileTxnLog.TXNLOG_MAGIC);
+    }
+
+    public boolean isValid()
+    {
+        return validHeader.get();
     }
 
     public void parse(LogEntryReceiver receiver) throws Exception
     {
-        BinaryInputArchive logStream = BinaryInputArchive.getArchive(log);
-
-        FileHeader fhdr = new FileHeader();
-        fhdr.deserialize(logStream, "fileheader");
-        if ( fhdr.getMagic() != FileTxnLog.TXNLOG_MAGIC )
+        if ( !validHeader.get() )
         {
             throw new Exception("Invalid magic number for");
         }

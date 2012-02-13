@@ -129,9 +129,11 @@
 
             <div id="tabs-4ltr" class="ui-helper-hidden">
                 <div>
-                    <label for="4ltr-word">Word </label>
-                    <input type="text" id="4ltr-word" name="4ltr-word" size="5">
-                    <button id="4ltr-button">Submit</button>
+                    <div>
+                        <label for="4ltr-word">Word </label>
+                        <input type="text" id="4ltr-word" name="4ltr-word" size="5">
+                        <button id="4ltr-button">Submit</button>
+                    </div>
                 </div>
 
                 <div id="4ltr-content" class="text"></div>
@@ -184,9 +186,16 @@
                         <td></td>
                     </tr>
                 </tbody>
-            </table><br clear="all"/><br/>
+            </table><br clear="all"/>
+            <div id="index-query-results-selected">
+                <span class="label">Path</span><span id="index-query-results-selected-path" class="value"></span><br clear="all"/>
+                <span class="label">Date</span><span id="index-query-results-selected-date" class="value"></span><br clear="all"/>
+                <span class="label">Data Bytes</span><span id="index-query-results-selected-data-bytes" class="value"></span><br clear="all"/>
+                <span class="label">Data as String</span><span id="index-query-results-selected-data-string" class="value"></span><br clear="all"/>
+            </div>
             <button id="index-query-filter-button">Filter...</button>
             <button id="index-query-clear-filter-button">Clear Filter</button>
+            <button id="index-query-clear-restore-button">Restore...</button>
         </div>
     </body>
 </html>

@@ -40,6 +40,23 @@ label
     z-index: 65535;
 }
 
+.row_selected {
+    background-color: #B0BED9;
+}
+
+#index-query-results-table
+{
+   cursor: pointer;
+}
+
+#index-query-results-table tr.even.row_selected td {
+    background-color: #B0BED9;
+}
+
+#index-query-results-table tr.odd.row_selected td {
+    background-color: #9FAFD1;
+}
+
 #not-connected-alert
 {
     width: 300px;
@@ -197,4 +214,28 @@ label
 {
     font-family: monospace;
     white-space: nowrap;
+}
+
+#tabs-4ltr div div
+{
+    margin-bottom: 3px;
+}
+
+#index-query-results-selected
+{
+    margin-top: 8px;
+    margin-bottom: 16px;
+    white-space: nowrap;
+}
+
+#index-query-results-selected .label
+{
+    float: left;
+    width: 150px;
+    font-weight: bold;
+}
+
+#index-query-results-selected .value
+{
+    font-family: monospace;
 }

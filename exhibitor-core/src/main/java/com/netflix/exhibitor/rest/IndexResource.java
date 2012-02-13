@@ -1,4 +1,4 @@
-package com.netflix.exhibitor.core;
+package com.netflix.exhibitor.rest;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
@@ -9,6 +9,7 @@ import com.netflix.exhibitor.core.entities.NewIndexRequest;
 import com.netflix.exhibitor.core.entities.Result;
 import com.netflix.exhibitor.core.entities.SearchId;
 import com.netflix.exhibitor.core.entities.SearchRequest;
+import com.netflix.exhibitor.core.entities.SearchResult;
 import com.netflix.exhibitor.core.index.*;
 import org.apache.lucene.search.Query;
 import org.codehaus.jackson.node.ArrayNode;
@@ -28,7 +29,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ContextResolver;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -42,6 +42,7 @@ public class IndexResource
     private final UIContext context;
 
     private static final int        MAX_PATH = 50;
+    private static final String     DATE_FORMAT_STR = "MM/dd/yyyy-HH:ss";
 
     public IndexResource(@Context ContextResolver<UIContext> resolver)
     {
@@ -62,17 +63,7 @@ public class IndexResource
         else
         {
             File        f = new File(context.getExhibitor().getConfig().getZooKeeperDataDirectory(), "version-2");
-            File[]      logs = f.listFiles
-            (
-                new FilenameFilter()
-                {
-                    @Override
-                    public boolean accept(File dir, String name)
-                    {
-                        return name.startsWith("log.");
-                    }
-                }
-            );
+            File[]      logs = f.listFiles();
             if ( logs != null )
             {
                 paths.addAll(Arrays.asList(logs));
@@ -84,13 +75,19 @@ public class IndexResource
             File            indexDirectory = new File(context.getExhibitor().getConfig().getLogIndexDirectory(), "exhibitor-" + System.currentTimeMillis());
             for ( File logFile : paths )
             {
+                boolean     wasIndexed = false;
                 if ( logFile.exists() && !logFile.isDirectory() )
                 {
                     LogIndexer      logIndexer = new LogIndexer(logFile, indexDirectory);
-                    IndexActivity   activity = new IndexActivity(logIndexer, context.getExhibitor().getLog());
-                    context.getExhibitor().getActivityQueue().add(QueueGroups.MAIN, activity);
+                    if ( logIndexer.isValid() )
+                    {
+                        IndexActivity   activity = new IndexActivity(logIndexer, context.getExhibitor().getLog());
+                        context.getExhibitor().getActivityQueue().add(QueueGroups.MAIN, activity);
+                        wasIndexed = true;
+                    }
                 }
-                else
+
+                if ( !wasIndexed )
                 {
                     context.getExhibitor().getLog().add(ActivityLog.Type.INFO, "Ignoring non-log file: " + logFile);
                 }
@@ -114,6 +111,33 @@ public class IndexResource
         return Response.ok(new Result("OK", true)).build();
     }
 
+    @Path("{index-name}/{search-handle}/{doc-id}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getRow(@PathParam("index-name") String indexName, @PathParam("search-handle") String searchHandle, @PathParam("doc-id")  int docId) throws Exception
+    {
+        LogSearch logSearch = getLogSearch(indexName);
+        if ( logSearch == null )
+        {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        DateFormat      dateFormatter = new SimpleDateFormat(DATE_FORMAT_STR);
+        SearchItem      item = logSearch.toResult(docId);
+        byte[]          bytes = logSearch.toData(docId);
+        SearchResult    result = new SearchResult
+        (
+            docId,
+            item.getType(),
+            item.getPath(),
+            dateFormatter.format(item.getDate()),
+            new String(bytes, "UTF-8"),
+            ExplorerResource.bytesToString(bytes)
+        );
+
+        return Response.ok(result).build();
+    }
+    
     @Path("dataTable/{index-name}/{search-handle}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -136,18 +160,20 @@ public class IndexResource
         {
             CachedSearch cachedSearch = logSearch.getCachedSearch(searchHandle);
 
-            DateFormat          dateFormatter = new SimpleDateFormat("MM/dd/yyyy-HH:ss");
+            DateFormat          dateFormatter = new SimpleDateFormat(DATE_FORMAT_STR);
             ArrayNode           dataTab = JsonNodeFactory.instance.arrayNode();
             for ( int i = iDisplayStart; i < (iDisplayStart + iDisplayLength); ++i )
             {
                 if ( i < cachedSearch.getTotalHits() )
                 {
-                    ArrayNode       data = JsonNodeFactory.instance.arrayNode();
+                    ObjectNode      data = JsonNodeFactory.instance.objectNode();
                     int             docId = cachedSearch.getNthDocId(i);
-                    SearchItem item = logSearch.toResult(docId);
-                    data.add(getTypeName(EntryTypes.getFromId(item.getType())));
-                    data.add(dateFormatter.format(item.getDate()));
-                    data.add(trimPath(item.getPath()));
+                    SearchItem      item = logSearch.toResult(docId);
+                    
+                    data.put("DT_RowId", "index-query-result-" + docId);
+                    data.put("0", getTypeName(EntryTypes.getFromId(item.getType())));
+                    data.put("1", dateFormatter.format(item.getDate()));
+                    data.put("2", trimPath(item.getPath()));
 
                     dataTab.add(data);
                 }

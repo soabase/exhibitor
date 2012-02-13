@@ -44,17 +44,34 @@ public class LogIndexer
         this.indexDirectory = indexDirectory;
         inputStream = new CountingInputStream(new BufferedInputStream(new FileInputStream(logFile)));
 
-        IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_35, new KeywordAnalyzer())
-            .setOpenMode(IndexWriterConfig.OpenMode.CREATE);
-
-        directory = new NIOFSDirectory(indexDirectory, new SingleInstanceLockFactory());
-        writer = new IndexWriter(directory, conf);
+        IndexWriter     localWriter = null;
+        NIOFSDirectory  localDirectory = null;
 
         logParser = new LogParser(inputStream);
+        if ( logParser.isValid() )
+        {
+            IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_35, new KeywordAnalyzer())
+                .setOpenMode(IndexWriterConfig.OpenMode.CREATE);
+
+            localDirectory = new NIOFSDirectory(indexDirectory, new SingleInstanceLockFactory());
+            localWriter = new IndexWriter(localDirectory, conf);
+        }
+        writer = localWriter;
+        directory = localDirectory;
+    }
+
+    public boolean      isValid()
+    {
+        return logParser.isValid();
     }
 
     public void index() throws Exception
     {
+        if ( !logParser.isValid() )
+        {
+            return;
+        }
+        
         final AtomicInteger         count = new AtomicInteger(0);
         final AtomicLong            from = new AtomicLong(Long.MAX_VALUE);
         final AtomicLong            to = new AtomicLong(Long.MIN_VALUE);

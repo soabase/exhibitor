@@ -172,7 +172,7 @@ function initExplorer()
             $.ajax
                 (
                     {
-                        url:"node-data",
+                        url:"explorer/node-data",
                         data:{"key":node.data.key},
                         cache:false,
                         dataType:'json',
@@ -198,7 +198,7 @@ function initExplorer()
             node.appendAjax
                 (
                     {
-                        url:"node",
+                        url:"explorer/node",
                         data:{"key":node.data.key},
                         cache:false
                     }

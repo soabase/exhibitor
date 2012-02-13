@@ -2,9 +2,9 @@ package com.netflix.exhibitor.application;
 
 import com.google.common.collect.Sets;
 import com.netflix.exhibitor.core.Exhibitor;
-import com.netflix.exhibitor.core.IndexResource;
-import com.netflix.exhibitor.core.UIContext;
-import com.netflix.exhibitor.core.UIResource;
+import com.netflix.exhibitor.rest.IndexResource;
+import com.netflix.exhibitor.rest.UIContext;
+import com.netflix.exhibitor.rest.UIResource;
 import com.netflix.exhibitor.core.config.LocalFileConfigProvider;
 import com.sun.jersey.api.core.DefaultResourceConfig;
 import com.sun.jersey.spi.container.servlet.ServletContainer;

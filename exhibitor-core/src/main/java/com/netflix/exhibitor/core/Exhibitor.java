@@ -14,6 +14,7 @@ import com.netflix.exhibitor.core.state.InstanceStateManager;
 import com.netflix.exhibitor.core.state.MonitorRunningInstance;
 import com.netflix.exhibitor.core.state.ProcessOperations;
 import com.netflix.exhibitor.core.state.StandardProcessOperations;
+import com.netflix.exhibitor.rest.UITab;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Collection;

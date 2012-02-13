@@ -1,5 +1,6 @@
-package com.netflix.exhibitor.core;
+package com.netflix.exhibitor.rest;
 
+import com.netflix.exhibitor.core.Exhibitor;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
 

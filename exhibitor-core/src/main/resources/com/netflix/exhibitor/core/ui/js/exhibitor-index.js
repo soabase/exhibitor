@@ -54,6 +54,16 @@ function initRestoreUI()
             openIndex(indexName);
             return false;
         });
+    $('#index-query-clear-restore-button').button({
+        icons:{
+            primary: "ui-icon-alert"
+        },
+        disabled: true
+    }).click(function(){
+            var indexName = $('#index-query-dialog').attr("indexName");
+            openIndex(indexName);
+            return false;
+        });
 
     $('#index-query-dialog').dialog({
         modal: true,
@@ -185,12 +195,37 @@ function updateRestoreItems(selectedRadio)
     });
 }
 
+function applySelectedValue(data)
+{
+    var localBytes = data.dataBytes;
+    if ( localBytes.length === 0 )
+    {
+        localBytes = "[]";
+    }
+    $('#index-query-results-selected-path').html(data.path);
+    $('#index-query-results-selected-date').html(data.date);
+    $('#index-query-results-selected-data-bytes').html(localBytes);
+    $('#index-query-results-selected-data-string').html(data.dataAsString);
+}
+
+function setSelectedValue(indexName, indexHandle, rowId)
+{
+    var docId = rowId.split("-").pop();
+    $.getJSON('index/' + indexName + "/" + indexHandle + "/" + docId, applySelectedValue);
+}
+
 function viewIndex(indexName, indexHandle, isFromFilter)
 {
     $('#index-query-dialog').attr("indexName", indexName);
     $('#index-query-dialog').attr("indexHandle", indexHandle);
 
-    var selectedRows = [];
+    var emptyData = {
+        path: "",
+        dataBytes: "",
+        dataAsString: ""
+    };
+    applySelectedValue(emptyData);
+    var selectedRowId = -1;
     $('#index-query-results-table').dataTable({
         sAjaxSource: "index/dataTable/" + indexName + "/" + indexHandle,
         bDestroy: true,
@@ -203,28 +238,32 @@ function viewIndex(indexName, indexHandle, isFromFilter)
         sDom: "frtiS",
         bDeferRender: true,
         iDeferLoading: false,
-        fnRowCallback: function( nRow, aData, iDisplayIndex ) {
-            if ( jQuery.inArray(aData.DT_RowId, selectedRows) !== -1 ) {
-                $(nRow).addClass('row_selected');
+        fnRowCallback: function( row, data, index ) {
+            if ( data.DT_RowId === selectedRowId ) {
+                $(row).addClass('row_selected');
             }
-            return nRow;
+            return row;
         }
     });
 
     $('#index-query-results-table tbody tr').live('click', function () {
         var id = this.id;
-        var index = jQuery.inArray(id, selectedRows);
+        if ( id != selectedRowId )
+        {
+            if ( selectedRowId != -1 )
+            {
+                $('#' + selectedRowId).removeClass('row_selected');
+            }
 
-        if ( index === -1 ) {
-            selectedRows.push( id );
-        } else {
-            selectedRows.splice( index, 1 );
+            selectedRowId = id;
+            $(this).addClass('row_selected');
+            setSelectedValue(indexName, indexHandle, id);
+            $('#index-query-clear-restore-button').button("option", "disabled", false);
         }
-
-        $(this).toggleClass('row_selected');
-    } );
+    });
 
     $('#index-query-clear-filter-button').button("option", "disabled", !isFromFilter);
+    $('#index-query-clear-restore-button').button("option", "disabled", true);
 
     $('#index-query-results-dialog').bind('dialogclose', function(event, ui) {
         $.get('index/release-cache/' + indexName + '/' + indexHandle);
