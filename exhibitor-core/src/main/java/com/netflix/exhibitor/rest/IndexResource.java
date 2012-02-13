@@ -111,10 +111,10 @@ public class IndexResource
         return Response.ok(new Result("OK", true)).build();
     }
 
-    @Path("{index-name}/{search-handle}/{doc-id}")
+    @Path("get/{index-name}/{search-handle}/{doc-id}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getRow(@PathParam("index-name") String indexName, @PathParam("search-handle") String searchHandle, @PathParam("doc-id")  int docId) throws Exception
+    public Response getResult(@PathParam("index-name") String indexName, @PathParam("search-handle") String searchHandle, @PathParam("doc-id")  int docId) throws Exception
     {
         LogSearch logSearch = getLogSearch(indexName);
         if ( logSearch == null )
@@ -137,7 +137,27 @@ public class IndexResource
 
         return Response.ok(result).build();
     }
-    
+
+
+    @Path("restore/{index-name}/{search-handle}/{doc-id}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response recover(@PathParam("index-name") String indexName, @PathParam("search-handle") String searchHandle, @PathParam("doc-id")  int docId) throws Exception
+    {
+        LogSearch logSearch = getLogSearch(indexName);
+        if ( logSearch == null )
+        {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        SearchItem      item = logSearch.toResult(docId);
+        byte[]          bytes = logSearch.toData(docId);
+        EntryTypes      type = EntryTypes.getFromId(item.getType());
+        context.getExhibitor().getActivityQueue().add(QueueGroups.IO, new RestoreActivity(context.getExhibitor(), type, item.getPath(), bytes));
+
+        return Response.ok(new Result("OK", true)).build();
+    }
+
     @Path("dataTable/{index-name}/{search-handle}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)

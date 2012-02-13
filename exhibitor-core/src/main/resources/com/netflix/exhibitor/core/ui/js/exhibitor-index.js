@@ -1,3 +1,10 @@
+var ACTION_NAMES = [
+    "Create-Persistent",
+    "Create-Ephemeral",
+    "Delete",
+    "Set Data"
+];
+
 function initRestoreUI()
 {
     $('#restore-open-button').button({
@@ -60,8 +67,7 @@ function initRestoreUI()
         },
         disabled: true
     }).click(function(){
-            var indexName = $('#index-query-dialog').attr("indexName");
-            openIndex(indexName);
+            openRestoreDialog();
             return false;
         });
 
@@ -91,6 +97,27 @@ function initRestoreUI()
                 var searchRequest = buildSearchRequestFromFilter(indexName, indexHandle);
                 $(this).dialog("close");
                 filterIndex(indexName, searchRequest, true);
+            }
+        }
+    );
+
+    $('#index-query-restore-dialog').dialog({
+        modal: true,
+        autoOpen: false,
+        title: 'Restore',
+        minWidth: 600
+    });
+    $('#index-query-restore-dialog').dialog("option", "buttons",
+        {
+            "Cancel":function ()
+            {
+                $(this).dialog("close");
+            },
+
+            "OK":function ()
+            {
+                $(this).dialog("close");
+                submitRestore();
             }
         }
     );
@@ -138,6 +165,24 @@ function initRestoreUI()
         title: 'Results',
         minWidth: 800
     });
+}
+
+function submitRestore()
+{
+    var indexName = $('#index-query-dialog').attr("indexName");
+    var indexHandle = $('#index-query-dialog').attr("indexHandle");
+    $.getJSON('index/restore/' + indexName + "/" + indexHandle + "/" + selectedIndexData.docId, function(data){
+        messageDialog('Restore', 'Restore request sent. Check the log for details.');
+    });
+}
+
+function openRestoreDialog()
+{
+    $('#index-query-restore-action').html(ACTION_NAMES[selectedIndexData.type]);
+    $('#index-query-restore-path').html(selectedIndexData.path);
+    $('#index-query-restore-date').html(selectedIndexData.date);
+
+    $('#index-query-restore-dialog').dialog("open");
 }
 
 function updateRestoreItems(selectedRadio)
@@ -195,8 +240,11 @@ function updateRestoreItems(selectedRadio)
     });
 }
 
+var selectedIndexData = null;
 function applySelectedValue(data)
 {
+    selectedIndexData = data;
+
     var localBytes = data.dataBytes;
     if ( localBytes.length === 0 )
     {
@@ -208,18 +256,14 @@ function applySelectedValue(data)
     $('#index-query-results-selected-data-string').html(data.dataAsString);
 }
 
-function setSelectedValue(indexName, indexHandle, rowId)
-{
-    var docId = rowId.split("-").pop();
-    $.getJSON('index/' + indexName + "/" + indexHandle + "/" + docId, applySelectedValue);
-}
-
 function viewIndex(indexName, indexHandle, isFromFilter)
 {
     $('#index-query-dialog').attr("indexName", indexName);
     $('#index-query-dialog').attr("indexHandle", indexHandle);
 
     var emptyData = {
+        type: 0,
+        date: "",
         path: "",
         dataBytes: "",
         dataAsString: ""
@@ -257,7 +301,9 @@ function viewIndex(indexName, indexHandle, isFromFilter)
 
             selectedRowId = id;
             $(this).addClass('row_selected');
-            setSelectedValue(indexName, indexHandle, id);
+
+            var docId = selectedRowId.split('-').pop();
+            $.getJSON('index/get/' + indexName + "/" + indexHandle + "/" + docId, applySelectedValue);
             $('#index-query-clear-restore-button').button("option", "disabled", false);
         }
     });

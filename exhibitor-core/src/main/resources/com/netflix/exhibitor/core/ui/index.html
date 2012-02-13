@@ -197,5 +197,20 @@
             <button id="index-query-clear-filter-button">Clear Filter</button>
             <button id="index-query-clear-restore-button">Restore...</button>
         </div>
+
+        <div id="index-query-restore-dialog" class="ui-helper-hidden">
+            <div>Are you sure that you want to perform this restore? It cannot be undone.</div><br/><br/>
+            <div id="index-query-restore-form">
+                <span class="label">Action</span><span id="index-query-restore-action" class="value"></span><br clear="all"/>
+                <span class="label">Path</span><span id="index-query-restore-path" class="value"></span><br clear="all"/>
+                <span class="label">Date</span><span id="index-query-restore-date" class="value"></span><br clear="all"/>
+            </div><br/>
+            <div>
+                Note:
+                <li>Ephemeral nodes will be restored as <strong>persistent</strong> nodes</li>
+                <li>Create will revert to Set Data if the node alread exists</li>
+                <li>Set Data will re-create the node if necessary</li>
+            </div>
+        </div>
     </body>
 </html>

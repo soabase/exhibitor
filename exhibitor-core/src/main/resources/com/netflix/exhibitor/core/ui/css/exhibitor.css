@@ -210,15 +210,15 @@ label
 
 }
 
+#tabs-4ltr div div
+{
+    margin-bottom: 3px;
+}
+
 #index-query-results-table td
 {
     font-family: monospace;
     white-space: nowrap;
-}
-
-#tabs-4ltr div div
-{
-    margin-bottom: 3px;
 }
 
 #index-query-results-selected
@@ -236,6 +236,23 @@ label
 }
 
 #index-query-results-selected .value
+{
+    font-family: monospace;
+}
+
+#index-query-restore-dialog .label
+{
+    float: left;
+    width: 80px;
+    font-weight: bold;
+}
+
+#index-query-restore-form
+{
+    white-space: nowrap;
+}
+
+#index-query-restore-dialog .value
 {
     font-family: monospace;
 }
