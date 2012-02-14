@@ -212,13 +212,21 @@ public class StandardProcessOperations implements ProcessOperations
     {
         ServerList              serverList = new ServerList(exhibitor.getConfig().getServersSpec());
 
+        File                    idFile = new File(details.dataDirectory, "myid");
         ServerList.ServerSpec   us = Iterables.find(serverList.getSpecs(), ServerList.isUs(exhibitor.getConfig().getHostname()), null);
         if ( us != null )
         {
-            File                    idFile = new File(details.dataDirectory, "myid");
             Files.createParentDirs(idFile);
             String                  id = String.format("%d\n", us.getServerId());
             Files.write(id.getBytes(), idFile);
+        }
+        else
+        {
+            exhibitor.getLog().add(ActivityLog.Type.INFO, "Starting in standalone mode");
+            if ( idFile.exists() && !idFile.delete() )
+            {
+                exhibitor.getLog().add(ActivityLog.Type.ERROR, "Could not delete ID file: " + idFile);
+            }
         }
 
         Properties      localProperties = new Properties();

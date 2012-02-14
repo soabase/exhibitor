@@ -1,5 +1,6 @@
 package com.netflix.exhibitor.core.state;
 
+import com.google.common.collect.Iterables;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.activity.Activity;
 import com.netflix.exhibitor.core.activity.QueueGroups;
@@ -54,8 +55,25 @@ public class Checker implements Closeable
 
     private void setState()
     {
-        InstanceStateTypes      currentState = state.get();
-        InstanceStateTypes      newState = exhibitor.isControlPanelSettingEnabled(ControlPanelTypes.UNLISTED_RESTARTS) ? InstanceStateTypes.UNKNOWN : InstanceStateTypes.DOWN_BECAUSE_UNLISTED;
+        InstanceStateTypes      localCurrentState = state.get();
+
+        InstanceStateTypes      newState = InstanceStateTypes.UNKNOWN;
+        ServerList              serverList = new ServerList(exhibitor.getConfig().getServersSpec());
+        ServerList.ServerSpec   us = Iterables.find(serverList.getSpecs(), ServerList.isUs(exhibitor.getConfig().getHostname()), null);
+        if ( us != null )
+        {
+            if ( !exhibitor.isControlPanelSettingEnabled(ControlPanelTypes.RESTARTS) )
+            {
+                newState = InstanceStateTypes.DOWN_BECAUSE_RESTARTS_TURNED_OFF;
+            }
+        }
+        else
+        {
+            if ( !exhibitor.isControlPanelSettingEnabled(ControlPanelTypes.UNLISTED_RESTARTS) )
+            {
+                newState = InstanceStateTypes.DOWN_BECAUSE_UNLISTED;
+            }
+        }
 
         String      ruok = new FourLetterWord(FourLetterWord.Word.RUOK, exhibitor.getConfig()).getResponse();
         if ( "imok".equals(ruok) )
@@ -79,8 +97,8 @@ public class Checker implements Closeable
                 }
             }
         }
-        
-        if ( newState != currentState )
+
+        if ( newState != localCurrentState )
         {
             state.set(newState);
         }
