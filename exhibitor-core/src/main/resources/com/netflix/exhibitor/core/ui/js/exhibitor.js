@@ -76,6 +76,10 @@ function updateState()
             $('#instance-restarts-enabled').prop("checked", systemState.restartsEnabled === "true");
             $('#instance-restarts-enabled').trigger("change");
 
+            $('#unlisted-restarts').prop("checked", systemState.unlistedRestartsEnabled === "true");
+            $('#unlisted-restarts').trigger("change");
+
+            $('#cleanup-enabled').prop("checked", systemState.cleanupEnabled === "true");
             $('#cleanup-enabled').prop("checked", systemState.cleanupEnabled === "true");
             $('#cleanup-enabled').trigger("change");
 
@@ -307,6 +311,16 @@ $(function ()
         $.get("set/cleanup/" + (isChecked ? "true" : "false"));
     });
 
+    $('#unlisted-restarts').lightSwitch({
+        switchImgCover: 'lightSwitch/switchplate.png',
+        switchImg : 'lightSwitch/switch.png',
+        disabledImg : 'lightSwitch/disabled.png'
+    });
+    $('#unlisted-restarts').next('span.switch').click(function(){
+        var isChecked = $('#unlisted-restarts').is(':checked');
+        $.get("set/unlisted-restarts/" + (isChecked ? "true" : "false"));
+    });
+
     $('#config-editable').lightSwitch({
         switchImgCover: 'lightSwitch/switchplate.png',
         switchImg : 'lightSwitch/switch.png',
@@ -347,6 +361,7 @@ $(function ()
     ableConfig(false);
 
     $('#config-group').colorTip();
+    $('#control-panel').colorTip();
 
     initRestoreUI();
     window.setInterval("refreshCurrentTab()", AUTO_REFRESH_PERIOD);

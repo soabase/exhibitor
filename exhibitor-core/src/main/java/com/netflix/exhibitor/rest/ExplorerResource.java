@@ -29,6 +29,16 @@ public class ExplorerResource
         context = resolver.getContext(UIContext.class);
     }
 
+    public static String bytesToString(byte[] bytes)
+    {
+        StringBuilder       bytesStr = new StringBuilder();
+        for ( byte b : bytes )
+        {
+            bytesStr.append(Integer.toHexString(b & 0xff)).append(" ");
+        }
+        return bytesStr.toString();
+    }
+
     @GET
     @Path("node-data")
     @Produces("application/json")
@@ -59,16 +69,6 @@ public class ExplorerResource
             node.put("stat", e.getMessage());
         }
         return node.toString();
-    }
-
-    public static String bytesToString(byte[] bytes)
-    {
-        StringBuilder       bytesStr = new StringBuilder();
-        for ( byte b : bytes )
-        {
-            bytesStr.append(Integer.toHexString(b & 0xff)).append(" ");
-        }
-        return bytesStr.toString();
     }
 
     @GET

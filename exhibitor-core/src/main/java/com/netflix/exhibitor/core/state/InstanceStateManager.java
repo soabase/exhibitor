@@ -7,8 +7,8 @@ import java.io.IOException;
 
 public class InstanceStateManager implements Closeable
 {
-    private final Exhibitor exhibitor;
-    private final Checker           checker;
+    private final Exhibitor     exhibitor;
+    private final Checker       checker;
 
     public InstanceStateManager(Exhibitor exhibitor)
     {
@@ -31,14 +31,12 @@ public class InstanceStateManager implements Closeable
     {
         ServerList              serverList = new ServerList(exhibitor.getConfig().getServersSpec());
         ServerList.ServerSpec   us = Iterables.find(serverList.getSpecs(), ServerList.isUs(exhibitor.getConfig().getHostname()), null);
-        InstanceStateTypes      state = (us != null) ? checker.getState() : InstanceStateTypes.WAITING;
         return new InstanceState
         (
             serverList,
             exhibitor.getConfig().getConnectPort(),
             exhibitor.getConfig().getElectionPort(),
             (us != null) ? us.getServerId() : -1,
-            state,
             checker.getState()
         );
     }

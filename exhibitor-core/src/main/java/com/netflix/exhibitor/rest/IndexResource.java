@@ -124,6 +124,11 @@ public class IndexResource
 
         DateFormat      dateFormatter = new SimpleDateFormat(DATE_FORMAT_STR);
         SearchItem      item = logSearch.toResult(docId);
+        if ( item == null )
+        {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
         byte[]          bytes = logSearch.toData(docId);
         SearchResult    result = new SearchResult
         (
@@ -151,6 +156,11 @@ public class IndexResource
         }
 
         SearchItem      item = logSearch.toResult(docId);
+        if ( item == null )
+        {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
         byte[]          bytes = logSearch.toData(docId);
         EntryTypes      type = EntryTypes.getFromId(item.getType());
         context.getExhibitor().getActivityQueue().add(QueueGroups.IO, new RestoreActivity(context.getExhibitor(), type, item.getPath(), bytes));

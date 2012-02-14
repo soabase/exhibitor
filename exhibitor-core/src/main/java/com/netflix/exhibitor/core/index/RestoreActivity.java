@@ -39,7 +39,7 @@ public class RestoreActivity implements Activity
             {
                 try
                 {
-                    client.create().forPath(path, data);
+                    client.create().creatingParentsIfNeeded().forPath(path, data);
                 }
                 catch ( KeeperException.NodeExistsException dummy )
                 {

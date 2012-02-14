@@ -2,6 +2,7 @@ package com.netflix.exhibitor.application;
 
 import com.google.common.collect.Sets;
 import com.netflix.exhibitor.core.Exhibitor;
+import com.netflix.exhibitor.rest.ExplorerResource;
 import com.netflix.exhibitor.rest.IndexResource;
 import com.netflix.exhibitor.rest.UIContext;
 import com.netflix.exhibitor.rest.UIResource;
@@ -30,6 +31,7 @@ public class ExhibitorMain
                 Set<Class<?>>       classes = Sets.newHashSet();
                 classes.add(UIResource.class);
                 classes.add(IndexResource.class);
+                classes.add(ExplorerResource.class);
                 return classes;
             }
 

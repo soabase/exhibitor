@@ -7,12 +7,10 @@ public class InstanceState
     private final int                   serverId;
     private final InstanceStateTypes    state;
     private final ServerList            serverList;
-    private final InstanceStateTypes    rawState;
 
-    public InstanceState(ServerList serverList, int connectPort, int electionPort, int serverId, InstanceStateTypes state, InstanceStateTypes rawState)
+    public InstanceState(ServerList serverList, int connectPort, int electionPort, int serverId, InstanceStateTypes state)
     {
         this.serverList = serverList;
-        this.rawState = rawState;
         this.connectPort = connectPort;
         this.electionPort = electionPort;
         this.serverId = serverId;
@@ -46,12 +44,7 @@ public class InstanceState
 
     public String   getStateDescription()
     {
-        String  description = rawState.toString();
-        if ( state == InstanceStateTypes.WAITING )
-        {
-            description += " (waiting)";
-        }
-        return description;
+        return state.toString().toLowerCase().replace("_", " ");
     }
 
     @Override
@@ -80,10 +73,6 @@ public class InstanceState
         {
             return false;
         }
-        if ( rawState != that.rawState )
-        {
-            return false;
-        }
         if ( !serverList.equals(that.serverList) )
         {
             return false;
@@ -105,7 +94,6 @@ public class InstanceState
         result = 31 * result + serverId;
         result = 31 * result + state.hashCode();
         result = 31 * result + serverList.hashCode();
-        result = 31 * result + rawState.hashCode();
         return result;
     }
 }

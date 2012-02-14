@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
-import com.netflix.curator.utils.ZKPaths;
 import com.netflix.exhibitor.core.InstanceConfig;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.QueueGroups;
@@ -13,32 +12,25 @@ import com.netflix.exhibitor.core.entities.Config;
 import com.netflix.exhibitor.core.entities.Result;
 import com.netflix.exhibitor.core.entities.SystemState;
 import com.netflix.exhibitor.core.entities.UITabSpec;
+import com.netflix.exhibitor.core.state.ControlPanelTypes;
 import com.netflix.exhibitor.core.state.FourLetterWord;
 import com.netflix.exhibitor.core.state.KillRunningInstance;
 import com.netflix.exhibitor.core.state.ServerList;
-import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.data.Stat;
-import org.codehaus.jackson.node.ArrayNode;
-import org.codehaus.jackson.node.JsonNodeFactory;
-import org.codehaus.jackson.node.ObjectNode;
 import javax.activation.MimetypesFileTypeMap;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ContextResolver;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -180,9 +172,10 @@ public class UIResource
         (
             config,
             "imok".equals(response),
-            context.getExhibitor().restartsAreEnabled(),
+            context.getExhibitor().isControlPanelSettingEnabled(ControlPanelTypes.RESTARTS),
+            context.getExhibitor().isControlPanelSettingEnabled(ControlPanelTypes.UNLISTED_RESTARTS),
             "v0.0.1",       // TODO - correct version
-            context.getExhibitor().getCleanupManager().isEnabled()
+            context.getExhibitor().isControlPanelSettingEnabled(ControlPanelTypes.CLEANUP)
         );
         return Response.ok(state).build();
     }
@@ -272,21 +265,22 @@ public class UIResource
         return Response.ok(new Result("OK", true)).build();
     }
 
-    @Path("set/restarts/{value}")
+    @Path("set/{type}/{value}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response setRestartsState(@PathParam("value") boolean newValue) throws Exception
+    public Response setControlPanelSetting(@PathParam("type") String typeStr, @PathParam("value") boolean newValue) throws Exception
     {
-        context.getExhibitor().setRestartsEnabled(newValue);
-        return Response.ok(new Result("OK", true)).build();
-    }
-
-    @Path("set/cleanup/{value}")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response setCleanupState(@PathParam("value") boolean newValue) throws Exception
-    {
-        context.getExhibitor().getCleanupManager().setEnable(newValue);
+        ControlPanelTypes type;
+        try
+        {
+            typeStr = typeStr.replace("-", "_");
+            type = ControlPanelTypes.valueOf(typeStr.toUpperCase());
+        }
+        catch ( IllegalArgumentException e )
+        {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        context.getExhibitor().setControlPanelSettingEnabled(type, newValue);
         return Response.ok(new Result("OK", true)).build();
     }
 

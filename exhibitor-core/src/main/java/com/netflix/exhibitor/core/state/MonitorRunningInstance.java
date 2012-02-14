@@ -13,11 +13,9 @@ import java.util.concurrent.atomic.AtomicReference;
 public class MonitorRunningInstance implements Closeable
 {
     private final Exhibitor                         exhibitor;
-    private final AtomicLong                        notServingStartMs = new AtomicLong(0);
+    private final AtomicLong                        onHoldStart = new AtomicLong(0);
     private final AtomicReference<InstanceState>    currentInstanceState = new AtomicReference<InstanceState>();
     private final RepeatingActivity                 repeatingActivity;
-
-    private static final int        ON_HOLD_FACTOR = 10;
 
     public MonitorRunningInstance(Exhibitor exhibitor)
     {
@@ -56,14 +54,8 @@ public class MonitorRunningInstance implements Closeable
     private void doWork()
     {
         InstanceState   instanceState = exhibitor.getInstanceStateManager().getInstanceState();
-        if ( isOnHold(instanceState) )
-        {
-            exhibitor.getLog().add(ActivityLog.Type.INFO, "Start/restart is on hold...");
-            return;
-        }
-
-        InstanceState localCurrentInstanceState = currentInstanceState.get();
-        if ( !instanceState.equals(localCurrentInstanceState) || (instanceState.getState() == InstanceStateTypes.UNKNOWN) )
+        InstanceState   localCurrentInstanceState = currentInstanceState.get();
+        if ( !instanceState.equals(localCurrentInstanceState) )
         {
             boolean         serverListChange = (localCurrentInstanceState != null) && !localCurrentInstanceState.getServerList().equals(instanceState.getServerList());
             currentInstanceState.set(instanceState);
@@ -82,7 +74,6 @@ public class MonitorRunningInstance implements Closeable
                     case NOT_SERVING:
                     case UNKNOWN:
                     {
-                        setNotServing();
                         restartZooKeeper(instanceState);
                         break;
                     }
@@ -97,14 +88,9 @@ public class MonitorRunningInstance implements Closeable
         }
     }
 
-    private void setNotServing()
-    {
-        notServingStartMs.set(System.currentTimeMillis());
-    }
-
     private void restartZooKeeper(final InstanceState instanceState)
     {
-        if ( !exhibitor.restartsAreEnabled() )
+        if ( !exhibitor.isControlPanelSettingEnabled(ControlPanelTypes.RESTARTS) )
         {
             return;
         }
@@ -119,39 +105,17 @@ public class MonitorRunningInstance implements Closeable
                 {
                     if ( wasSuccessful )
                     {
-                        if ( instanceState.getState() == InstanceStateTypes.WAITING )
+                        try
                         {
-                            setNotServing();
+                            exhibitor.getProcessOperations().startInstance();
                         }
-                        else
+                        catch ( Exception e )
                         {
-                            try
-                            {
-                                exhibitor.getProcessOperations().startInstance();
-                            }
-                            catch ( Exception e )
-                            {
-                                exhibitor.getLog().add(ActivityLog.Type.ERROR, "Monitoring instance", e);
-                            }
+                            exhibitor.getLog().add(ActivityLog.Type.ERROR, "Monitoring instance", e);
                         }
                     }
                 }
             }
         );
-    }
-
-    private boolean       isOnHold(InstanceState instanceState)
-    {
-        long localMs = notServingStartMs.get();
-        if ( localMs > 0 )
-        {
-            long        endOfHold = localMs + (ON_HOLD_FACTOR * exhibitor.getConfig().getCheckMs());
-            if ( (instanceState.getState() != InstanceStateTypes.SERVING) && (System.currentTimeMillis() < endOfHold) )
-            {
-                return true;
-            }
-            notServingStartMs.set(-1);
-        }
-        return false;
     }
 }

@@ -55,12 +55,12 @@ public class Checker implements Closeable
     private void setState()
     {
         InstanceStateTypes      currentState = state.get();
-        InstanceStateTypes      newState = InstanceStateTypes.UNKNOWN;
+        InstanceStateTypes      newState = exhibitor.isControlPanelSettingEnabled(ControlPanelTypes.UNLISTED_RESTARTS) ? InstanceStateTypes.UNKNOWN : InstanceStateTypes.DOWN_BECAUSE_UNLISTED;
 
         String      ruok = new FourLetterWord(FourLetterWord.Word.RUOK, exhibitor.getConfig()).getResponse();
         if ( "imok".equals(ruok) )
         {
-            // The following code depends on inside knowledge of the "stat" response. If they change it
+            // The following code depends on inside knowledge of the "srvr" response. If they change it
             // this code might break
 
             List<String> lines = new FourLetterWord(FourLetterWord.Word.SRVR, exhibitor.getConfig()).getResponseLines();

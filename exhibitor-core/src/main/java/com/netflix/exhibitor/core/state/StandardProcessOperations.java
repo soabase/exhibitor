@@ -153,7 +153,7 @@ public class StandardProcessOperations implements ProcessOperations
 
         if ( pid == null )
         {
-            exhibitor.getLog().add(ActivityLog.Type.ERROR, "jps didn't find instance - assuming ZK is not running");
+            exhibitor.getLog().add(ActivityLog.Type.INFO, "jps didn't find instance - assuming ZK is not running");
         }
         else
         {

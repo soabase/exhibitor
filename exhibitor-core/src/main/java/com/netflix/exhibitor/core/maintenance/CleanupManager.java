@@ -5,14 +5,13 @@ import com.netflix.exhibitor.core.activity.Activity;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.QueueGroups;
 import com.netflix.exhibitor.core.activity.RepeatingActivity;
+import com.netflix.exhibitor.core.state.ControlPanelTypes;
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CleanupManager implements Closeable
 {
     private final RepeatingActivity repeatingActivity;
-    private final AtomicBoolean     enabled = new AtomicBoolean(true);
 
     public CleanupManager(final Exhibitor exhibitor)
     {
@@ -27,7 +26,7 @@ public class CleanupManager implements Closeable
             @Override
             public Boolean call() throws Exception
             {
-                if ( enabled.get() )
+                if ( exhibitor.isControlPanelSettingEnabled(ControlPanelTypes.CLEANUP) )
                 {
                     try
                     {
@@ -54,15 +53,5 @@ public class CleanupManager implements Closeable
     public void close() throws IOException
     {
         repeatingActivity.close();
-    }
-    
-    public void setEnable(boolean newValue)
-    {
-        enabled.set(newValue);
-    }
-    
-    public boolean isEnabled()
-    {
-        return enabled.get();
     }
 }

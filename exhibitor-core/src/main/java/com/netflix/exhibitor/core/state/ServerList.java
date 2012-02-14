@@ -78,8 +78,8 @@ public class ServerList
                 String[]    hostAndId = trimmed.split(":");
                 if ( hostAndId.length == 2 )
                 {
-                    String      trimmedHost = hostAndId[0].trim();
-                    String      trimmedId = hostAndId[1].trim();
+                    String      trimmedId = hostAndId[0].trim();
+                    String      trimmedHost = hostAndId[1].trim();
                     if ( (trimmedHost.length() > 0) && (trimmedId.length() > 0) )
                     {
                         try
@@ -114,5 +114,34 @@ public class ServerList
                 return spec.getHostname().equals(hostname);
             }
         };
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if ( this == o )
+        {
+            return true;
+        }
+        if ( o == null || getClass() != o.getClass() )
+        {
+            return false;
+        }
+
+        ServerList that = (ServerList)o;
+
+        //noinspection RedundantIfStatement
+        if ( !specs.equals(that.specs) )
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return specs.hashCode();
     }
 }

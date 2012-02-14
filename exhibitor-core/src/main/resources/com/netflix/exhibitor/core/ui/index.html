@@ -56,8 +56,15 @@
                 </div>
 
                 <div id="control-panel">
-                    <label for="instance-restarts-enabled">Automatic Instance Restarts </label><input type="checkbox" id="instance-restarts-enabled" name="instance-restarts-enabled"/><br/>
-                    <label for="cleanup-enabled">Log Cleanup Task </label><input type="checkbox" id="cleanup-enabled" name="cleanup-enabled"/><br/>
+                    <div title="When on, ZooKeeper instance is automatically restarted when there is an error, config change, etc.">
+                        <label for="instance-restarts-enabled">Automatic Instance Restarts</label><input type="checkbox" id="instance-restarts-enabled" name="instance-restarts-enabled"/>
+                    </div>
+                    <div title="When on, the ZooKeeper log cleanup task is active">
+                        <label for="cleanup-enabled">Log Cleanup Task</label><input type="checkbox" id="cleanup-enabled" name="cleanup-enabled"/><br/>
+                    </div>
+                    <div title="When on, the ZooKeeper instance will get restarted even if it is not in the config list of servers">
+                        <label for="unlisted-restarts">Restarts When Unlisted</label><input type="checkbox" id="unlisted-restarts" name="unlisted-restarts"/><br/>
+                    </div>
                 </div>
 
                 <div class="ui-widget" id="start-stop-button-container">

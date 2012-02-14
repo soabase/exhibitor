@@ -8,12 +8,13 @@ public class SystemState
     private boolean         running;
     private boolean         restartsEnabled;
     private boolean         cleanupEnabled;
+    private boolean         unlistedRestartsEnabled;
     private String          version;
-    private Config config;
+    private Config          config;
 
     public SystemState()
     {
-        this(new Config(), false, false, "", true);
+        this(new Config(), false, false, false, "", true);
     }
 
     public SystemState
@@ -21,6 +22,7 @@ public class SystemState
             Config config,
             boolean running,
             boolean restartsEnabled,
+            boolean unlistedRestartsEnabled,
             String version,
             boolean cleanupEnabled
         )
@@ -28,8 +30,19 @@ public class SystemState
         this.config = config;
         this.running = running;
         this.restartsEnabled = restartsEnabled;
+        this.unlistedRestartsEnabled = unlistedRestartsEnabled;
         this.version = version;
         this.cleanupEnabled = cleanupEnabled;
+    }
+
+    public boolean isUnlistedRestartsEnabled()
+    {
+        return unlistedRestartsEnabled;
+    }
+
+    public void setUnlistedRestartsEnabled(boolean unlistedRestartsEnabled)
+    {
+        this.unlistedRestartsEnabled = unlistedRestartsEnabled;
     }
 
     public boolean isRunning()
