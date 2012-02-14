@@ -168,6 +168,7 @@ public class UIResource
             context.getExhibitor().getConfig().getCleanupMaxFiles(),
             context.getExhibitor().getConfig().getLogIndexDirectory()
         );
+
         SystemState state = new SystemState
         (
             config,

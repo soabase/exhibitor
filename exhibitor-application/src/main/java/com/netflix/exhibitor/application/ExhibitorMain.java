@@ -9,6 +9,11 @@ import com.netflix.exhibitor.rest.UIResource;
 import com.netflix.exhibitor.core.config.LocalFileConfigProvider;
 import com.sun.jersey.api.core.DefaultResourceConfig;
 import com.sun.jersey.spi.container.servlet.ServletContainer;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.PosixParser;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.Context;
 import org.mortbay.jetty.servlet.ServletHolder;
@@ -19,7 +24,20 @@ public class ExhibitorMain
 {
     public static void main(String[] args) throws Exception
     {
-        Exhibitor exhibitor = new Exhibitor(new LocalFileConfigProvider(new File("exhibitor.properties")), null);
+        File        propertiesFile = new File("exhibitor.properties");
+
+        Options     options  = new Options();
+        options.addOption("properties", true, "Path to store Exhibitor properties. Default location is: " + propertiesFile.getCanonicalPath());
+        options.addOption("?", "help", false, "Print this help");
+
+        CommandLineParser   parser = new PosixParser();
+        CommandLine         commandLine = parser.parse(options, args);
+        if ( commandLine.hasOption('?') || commandLine.hasOption("help") || (commandLine.getArgList().size() > 0) )
+        {
+            printHelp(options);
+        }
+
+        Exhibitor exhibitor = new Exhibitor(new LocalFileConfigProvider(propertiesFile), null);
         exhibitor.start();
 
         final UIContext context = new UIContext(exhibitor);
@@ -50,5 +68,12 @@ public class ExhibitorMain
         server.start();
 
         server.join();
+    }
+    
+    private static void printHelp(Options options)
+    {
+        HelpFormatter       formatter = new HelpFormatter();
+        formatter.printHelp("ExhibitorMain", options);
+        System.exit(0);
     }
 }
