@@ -4,18 +4,22 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.io.Resources;
 import com.netflix.exhibitor.core.InstanceConfig;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.QueueGroups;
-import com.netflix.exhibitor.core.entities.Config;
+import com.netflix.exhibitor.core.config.IntConfigs;
+import com.netflix.exhibitor.core.config.StringConfigs;
 import com.netflix.exhibitor.core.entities.Result;
-import com.netflix.exhibitor.core.entities.SystemState;
 import com.netflix.exhibitor.core.entities.UITabSpec;
 import com.netflix.exhibitor.core.state.ControlPanelTypes;
 import com.netflix.exhibitor.core.state.FourLetterWord;
 import com.netflix.exhibitor.core.state.KillRunningInstance;
 import com.netflix.exhibitor.core.state.ServerList;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.node.ObjectNode;
 import javax.activation.MimetypesFileTypeMap;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -32,6 +36,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Path("exhibitor/v1/ui")
@@ -147,119 +152,69 @@ public class UIResource
     @Path("state")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getSystemState() throws Exception
+    public String getSystemState() throws Exception
     {
         String                      response = new FourLetterWord(FourLetterWord.Word.RUOK, context.getExhibitor().getConfig()).getResponse();
-        ServerList serverList = new ServerList(context.getExhibitor().getConfig().getServersSpec());
-        ServerList.ServerSpec       us = Iterables.find(serverList.getSpecs(), ServerList.isUs(context.getExhibitor().getConfig().getHostname()), null);
-        Config config = new Config
-        (
-            context.getExhibitor().getConfig().getServersSpec(),
-            context.getExhibitor().getConfig().getHostname(),
-            (us != null) ? us.getServerId() : -1,
-            context.getExhibitor().getConfig().getClientPort(),
-            context.getExhibitor().getConfig().getConnectPort(),
-            context.getExhibitor().getConfig().getElectionPort(),
-            context.getExhibitor().getConfig().getCheckMs(),
-            context.getExhibitor().getConfig().getConnectionTimeoutMs(),
-            context.getExhibitor().getConfig().getCleanupPeriodMs(),
-            context.getExhibitor().getConfig().getZooKeeperInstallDirectory(),
-            context.getExhibitor().getConfig().getZooKeeperDataDirectory(),
-            context.getExhibitor().getConfig().getCleanupMaxFiles(),
-            context.getExhibitor().getConfig().getLogIndexDirectory()
-        );
+        ServerList serverList = new ServerList(context.getExhibitor().getConfig().getString(StringConfigs.SERVERS_SPEC));
+        ServerList.ServerSpec       us = Iterables.find(serverList.getSpecs(), ServerList.isUs(context.getExhibitor().getConfig().getString(StringConfigs.HOSTNAME)), null);
 
-        SystemState state = new SystemState
-        (
-            config,
-            "imok".equals(response),
-            context.getExhibitor().isControlPanelSettingEnabled(ControlPanelTypes.RESTARTS),
-            context.getExhibitor().isControlPanelSettingEnabled(ControlPanelTypes.UNLISTED_RESTARTS),
-            "v0.0.1",       // TODO - correct version
-            context.getExhibitor().isControlPanelSettingEnabled(ControlPanelTypes.CLEANUP)
-        );
-        return Response.ok(state).build();
+        ObjectMapper                mapper = new ObjectMapper();
+        ObjectNode                  mainNode = mapper.getNodeFactory().objectNode();
+        ObjectNode                  configNode = mapper.getNodeFactory().objectNode();
+
+        mainNode.put("version", "v0.0.1");       // TODO - correct version
+        mainNode.put("running", "imok".equals(response));
+        mainNode.put("restartsEnabled", context.getExhibitor().isControlPanelSettingEnabled(ControlPanelTypes.RESTARTS));
+        mainNode.put("cleanupEnabled", context.getExhibitor().isControlPanelSettingEnabled(ControlPanelTypes.CLEANUP));
+        mainNode.put("unlistedRestartsEnabled", context.getExhibitor().isControlPanelSettingEnabled(ControlPanelTypes.UNLISTED_RESTARTS));
+        mainNode.put("backupActive", context.getExhibitor().getBackupManager().isActive());
+
+        configNode.put("serverId", (us != null) ? us.getServerId() : -1);
+        for ( StringConfigs c : StringConfigs.values() )
+        {
+            configNode.put(fixName(c), context.getExhibitor().getConfig().getString(c));
+        }
+        for ( IntConfigs c : IntConfigs.values() )
+        {
+            configNode.put(fixName(c), context.getExhibitor().getConfig().getInt(c));
+        }
+        mainNode.put("config", configNode);
+
+        return mapper.writer().writeValueAsString(mainNode);
     }
 
     @Path("set/config")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public Response setConfig(final Config newConfig) throws Exception
+    public Response setConfig(String newConfigJson) throws Exception
     {
         // TODO - should flush caches as needed
+
+        ObjectMapper          mapper = new ObjectMapper();
+        final JsonNode        tree = mapper.reader().readTree(newConfigJson);
 
         InstanceConfig wrapped = new InstanceConfig()
         {
             @Override
-            public String getLogIndexDirectory()
+            public String getString(StringConfigs config)
             {
-                return newConfig.getLogIndexDirectory();
+                JsonNode node = tree.get(fixName(config));
+                if ( node == null )
+                {
+                    return "";
+                }
+                return node.getTextValue();
             }
 
             @Override
-            public String getZooKeeperInstallDirectory()
+            public int getInt(IntConfigs config)
             {
-                return newConfig.getZooKeeperInstallDir();
-            }
-
-            @Override
-            public String getZooKeeperDataDirectory()
-            {
-                return newConfig.getZooKeeperDataDir();
-            }
-
-            @Override
-            public String getHostname()
-            {
-                return newConfig.getThisHostname();
-            }
-
-            @Override
-            public String getServersSpec()
-            {
-                return newConfig.getServersSpec();
-            }
-
-            @Override
-            public int getClientPort()
-            {
-                return newConfig.getClientPort();
-            }
-
-            @Override
-            public int getConnectPort()
-            {
-                return newConfig.getConnectPort();
-            }
-
-            @Override
-            public int getElectionPort()
-            {
-                return newConfig.getElectionPort();
-            }
-
-            @Override
-            public int getCheckMs()
-            {
-                return newConfig.getCheckMs();
-            }
-
-            @Override
-            public int getConnectionTimeoutMs()
-            {
-                return newConfig.getConnectionTimeoutMs();
-            }
-
-            @Override
-            public int getCleanupPeriodMs()
-            {
-                return newConfig.getCleanupPeriodMs();
-            }
-
-            @Override
-            public int getCleanupMaxFiles()
-            {
-                return newConfig.getCleanupMaxFiles();
+                JsonNode node = tree.get(fixName(config));
+                if ( node == null )
+                {
+                    return 0;
+                }
+                return node.getIntValue();
             }
         };
         context.getExhibitor().updateConfig(wrapped);
@@ -353,4 +308,48 @@ public class UIResource
         return path;
     }
 
+    private Map<String, String> toStringMap(InstanceConfig config)
+    {
+        Map<String, String>     map = Maps.newHashMap();
+        for ( StringConfigs c : StringConfigs.values() )
+        {
+            map.put(c.name(), config.getString(c));
+        }
+        return map;
+    }
+
+    private Map<String, Integer> toIntMap(InstanceConfig config)
+    {
+        Map<String, Integer>     map = Maps.newHashMap();
+        for ( IntConfigs c : IntConfigs.values() )
+        {
+            map.put(c.name(), config.getInt(c));
+        }
+        return map;
+    }
+
+    private String fixName(Enum c)
+    {
+        StringBuilder   str = new StringBuilder();
+        String[]        parts = c.name().toLowerCase().split("_");
+        for ( String p : parts )
+        {
+            if ( p.length() > 0 )
+            {
+                if ( str.length() > 0 )
+                {
+                    str.append(p.substring(0, 1).toUpperCase());
+                    if ( p.length() > 1 )
+                    {
+                        str.append(p.substring(1));
+                    }
+                }
+                else
+                {
+                    str.append(p);
+                }
+            }
+        }
+        return str.toString();
+    }
 }

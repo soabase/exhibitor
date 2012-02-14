@@ -2,6 +2,7 @@ package com.netflix.exhibitor.core.state;
 
 import com.google.common.collect.Iterables;
 import com.netflix.exhibitor.core.Exhibitor;
+import com.netflix.exhibitor.core.config.StringConfigs;
 import java.util.List;
 
 public class Checker
@@ -16,8 +17,8 @@ public class Checker
     public InstanceStateTypes   getState()
     {
         InstanceStateTypes      state = InstanceStateTypes.UNKNOWN;
-        ServerList              serverList = new ServerList(exhibitor.getConfig().getServersSpec());
-        ServerList.ServerSpec   us = Iterables.find(serverList.getSpecs(), ServerList.isUs(exhibitor.getConfig().getHostname()), null);
+        ServerList              serverList = new ServerList(exhibitor.getConfig().getString(StringConfigs.SERVERS_SPEC));
+        ServerList.ServerSpec   us = Iterables.find(serverList.getSpecs(), ServerList.isUs(exhibitor.getConfig().getString(StringConfigs.HOSTNAME)), null);
         if ( us != null )
         {
             if ( !exhibitor.isControlPanelSettingEnabled(ControlPanelTypes.RESTARTS) )

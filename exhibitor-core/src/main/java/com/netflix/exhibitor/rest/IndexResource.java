@@ -4,6 +4,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.QueueGroups;
+import com.netflix.exhibitor.core.config.StringConfigs;
 import com.netflix.exhibitor.core.entities.Index;
 import com.netflix.exhibitor.core.entities.NewIndexRequest;
 import com.netflix.exhibitor.core.entities.Result;
@@ -31,7 +32,6 @@ import javax.ws.rs.ext.ContextResolver;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -62,17 +62,13 @@ public class IndexResource
         }
         else
         {
-            File        f = new File(context.getExhibitor().getConfig().getZooKeeperDataDirectory(), "version-2");
-            File[]      logs = f.listFiles();
-            if ( logs != null )
-            {
-                paths.addAll(Arrays.asList(logs));
-            }
+            ZookeeperLogFiles   zookeeperLogFiles = new ZookeeperLogFiles(context.getExhibitor());
+            paths.addAll(zookeeperLogFiles.getPaths());
         }
 
         if ( paths.size() > 0 )
         {
-            File            indexDirectory = new File(context.getExhibitor().getConfig().getLogIndexDirectory(), "exhibitor-" + System.currentTimeMillis());
+            File            indexDirectory = new File(context.getExhibitor().getConfig().getString(StringConfigs.LOG_INDEX_DIRECTORY), "exhibitor-" + System.currentTimeMillis());
             for ( File logFile : paths )
             {
                 boolean     wasIndexed = false;
@@ -230,7 +226,7 @@ public class IndexResource
     {
         final DateFormat    format = new SimpleDateFormat("MM/dd/yyyy-HH:mm");
         final IndexCache indexCache = context.getExhibitor().getIndexCache();
-        IndexList           indexList = new IndexList(new File(context.getExhibitor().getConfig().getLogIndexDirectory()));
+        IndexList           indexList = new IndexList(new File(context.getExhibitor().getConfig().getString(StringConfigs.LOG_INDEX_DIRECTORY)));
         GenericEntity<List<Index>> entity = new GenericEntity<List<Index>>
         (
             Lists.transform
@@ -369,7 +365,7 @@ public class IndexResource
 
     private File getLogFile(String indexName)
     {
-        String      indexDirectory = context.getExhibitor().getConfig().getLogIndexDirectory();
+        String      indexDirectory = context.getExhibitor().getConfig().getString(StringConfigs.LOG_INDEX_DIRECTORY);
         File        indexFile = new File(indexDirectory, indexName);
         if ( !IndexMetaData.isValid(indexFile) )
         {

@@ -5,6 +5,7 @@ import com.netflix.exhibitor.core.activity.Activity;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.QueueGroups;
 import com.netflix.exhibitor.core.activity.RepeatingActivity;
+import com.netflix.exhibitor.core.config.IntConfigs;
 import com.netflix.exhibitor.core.state.ControlPanelTypes;
 import java.io.Closeable;
 import java.io.IOException;
@@ -42,7 +43,7 @@ public class CleanupManager implements Closeable
         };
 
         // TODO - notice change in cleanup period
-        repeatingActivity = new RepeatingActivity(exhibitor.getActivityQueue(), QueueGroups.IO, activity, exhibitor.getConfig().getCleanupPeriodMs());
+        repeatingActivity = new RepeatingActivity(exhibitor.getActivityQueue(), QueueGroups.IO, activity, exhibitor.getConfig().getInt(IntConfigs.CLEANUP_PERIOD_MS));
     }
 
     public void start()

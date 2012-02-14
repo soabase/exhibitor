@@ -73,23 +73,31 @@ function updateState()
                 $('#tabs-main-not-running').show();
             }
 
-            $('#instance-restarts-enabled').prop("checked", systemState.restartsEnabled === "true");
+            if ( systemState.backupActive )
+            {
+                $('#config-backups-fieldset').show();
+            }
+            else
+            {
+                $('#config-backups-fieldset').hide();
+            }
+
+            $('#instance-restarts-enabled').prop("checked", systemState.restartsEnabled);
             $('#instance-restarts-enabled').trigger("change");
 
-            $('#unlisted-restarts').prop("checked", systemState.unlistedRestartsEnabled === "true");
+            $('#unlisted-restarts').prop("checked", systemState.unlistedRestartsEnabled);
             $('#unlisted-restarts').trigger("change");
 
-            $('#cleanup-enabled').prop("checked", systemState.cleanupEnabled === "true");
-            $('#cleanup-enabled').prop("checked", systemState.cleanupEnabled === "true");
+            $('#cleanup-enabled').prop("checked", systemState.cleanupEnabled);
             $('#cleanup-enabled').trigger("change");
 
             $('#exhibitor-valence').hide();
             $('#version').html(systemState.version);
             $('#not-connected-alert').hide();
-            $('#instance-hostname').html(systemConfig.thisHostname);
+            $('#instance-hostname').html(systemConfig.hostname);
             $('#instance-id').html((
-                systemConfig.thisServerId > 0
-                ) ? systemConfig.thisServerId : "n/a");
+                systemConfig.serverId > 0
+                ) ? systemConfig.serverId : "n/a");
 
             updateConfig();
         }).error(function ()
@@ -108,10 +116,10 @@ updateState();
 function submitConfigChanges()
 {
     var newConfig = {};
-    newConfig.zooKeeperInstallDir = $('#config-zookeeper-install-dir').val();
-    newConfig.zooKeeperDataDir = $('#config-zookeeper-data-dir').val();
+    newConfig.zookeeperInstallDirectory = $('#config-zookeeper-install-dir').val();
+    newConfig.zookeeperDataDirectory = $('#config-zookeeper-data-dir').val();
     newConfig.logIndexDirectory = $('#config-log-index-dir').val();
-    newConfig.thisHostname = $('#config-hostname').val();
+    newConfig.hostname = $('#config-hostname').val();
     newConfig.serversSpec = $('#config-servers-spec').val();
     newConfig.clientPort = $('#config-client-port').val();
     newConfig.connectPort = $('#config-connect-port').val();
@@ -119,9 +127,10 @@ function submitConfigChanges()
     newConfig.checkMs = $('#config-check-ms').val();
     newConfig.cleanupPeriodMs = $('#config-cleanup-ms').val();
     newConfig.cleanupMaxFiles = $('#config-cleanup-max-files').val();
+    newConfig.backupPeriodMs = $('#config-backup-ms').val();
 
     newConfig.connectionTimeoutMs = systemConfig.connectionTimeoutMs;
-    newConfig.thisServerId = systemConfig.thisServerId;
+    newConfig.serverId = systemConfig.serverId;
 
     systemConfig = newConfig;
 
@@ -147,6 +156,7 @@ function ableConfig(enable)
     $('#config-check-ms').prop('disabled', !enable);
     $('#config-cleanup-ms').prop('disabled', !enable);
     $('#config-cleanup-max-files').prop('disabled', !enable);
+    $('#config-backup-ms').prop('disabled', !enable);
 
     $("#config-button").button(enable ? "enable" : "disable");
 }
@@ -157,10 +167,10 @@ function updateConfig()
         return;
     }
 
-    $('#config-zookeeper-install-dir').val(systemConfig.zooKeeperInstallDir);
-    $('#config-zookeeper-data-dir').val(systemConfig.zooKeeperDataDir);
+    $('#config-zookeeper-install-dir').val(systemConfig.zookeeperInstallDirectory);
+    $('#config-zookeeper-data-dir').val(systemConfig.zookeeperDataDirectory);
     $('#config-log-index-dir').val(systemConfig.logIndexDirectory);
-    $('#config-hostname').val(systemConfig.thisHostname);
+    $('#config-hostname').val(systemConfig.hostname);
     $('#config-servers-spec').val(systemConfig.serversSpec);
     $('#config-client-port').val(systemConfig.clientPort);
     $('#config-connect-port').val(systemConfig.connectPort);
@@ -168,6 +178,7 @@ function updateConfig()
     $('#config-check-ms').val(systemConfig.checkMs);
     $('#config-cleanup-ms').val(systemConfig.cleanupPeriodMs);
     $('#config-cleanup-max-files').val(systemConfig.cleanupMaxFiles);
+    $('#config-backup-ms').val(systemConfig.backupPeriodMs);
 }
 
 function initExplorer()

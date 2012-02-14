@@ -6,84 +6,56 @@ import java.util.Properties;
 public class PropertyBasedInstanceConfig implements InstanceConfig
 {
     private final Properties properties;
-    private final InstanceConfig defaults;
+    private final Properties defaults;
 
-    public PropertyBasedInstanceConfig(Properties properties, InstanceConfig defaults)
+    public PropertyBasedInstanceConfig(InstanceConfig source)
+    {
+        defaults = new Properties();
+
+        properties = new Properties();
+        for ( StringConfigs config : StringConfigs.values() )
+        {
+            properties.setProperty(toName(config), source.getString(config));
+        }
+        for ( IntConfigs config : IntConfigs.values() )
+        {
+            properties.setProperty(toName(config), Integer.toString(source.getInt(config)));
+        }
+    }
+
+    public Properties getProperties()
+    {
+        Properties      copy = new Properties();
+        copy.putAll(properties);
+        return copy;
+    }
+
+    public PropertyBasedInstanceConfig(Properties properties, Properties defaults)
     {
         this.properties = properties;
         this.defaults = defaults;
     }
 
     @Override
-    public String getLogIndexDirectory()
+    public String getString(StringConfigs config)
     {
-        return PropertyBasedConfigNames.LOG_INDEX_DIRECTORY.getValue(properties, defaults);
+        String  propertyName = toName(config);
+        return properties.getProperty(propertyName, defaults.getProperty(propertyName, ""));
     }
 
     @Override
-    public String getZooKeeperInstallDirectory()
+    public int getInt(IntConfigs config)
     {
-        return PropertyBasedConfigNames.ZOOKEEPER_INSTALL_DIRECTORY.getValue(properties, defaults);
+        String propertyName = toName(config);
+        return asInt(properties.getProperty(propertyName, defaults.getProperty(propertyName, "0")));
     }
-
-    @Override
-    public String getZooKeeperDataDirectory()
+    
+    private String toName(Enum e)
     {
-        return PropertyBasedConfigNames.ZOOKEEPER_DATA_DIRECTORY.getValue(properties, defaults);
-    }
-
-    @Override
-    public String getHostname()
-    {
-        return PropertyBasedConfigNames.HOSTNAME.getValue(properties, defaults);
-    }
-
-    @Override
-    public String getServersSpec()
-    {
-        return PropertyBasedConfigNames.SEVERS_SPEC.getValue(properties, defaults);
-    }
-
-    @Override
-    public int getClientPort()
-    {
-        return asInt(PropertyBasedConfigNames.CLIENT_PORT.getValue(properties, defaults));
-    }
-
-    @Override
-    public int getConnectPort()
-    {
-        return asInt(PropertyBasedConfigNames.CONNECT_PORT.getValue(properties, defaults));
-    }
-
-    @Override
-    public int getElectionPort()
-    {
-        return asInt(PropertyBasedConfigNames.ELECTION_PORT.getValue(properties, defaults));
-    }
-
-    @Override
-    public int getCheckMs()
-    {
-        return asInt(PropertyBasedConfigNames.CHECK_MS.getValue(properties, defaults));
-    }
-
-    @Override
-    public int getConnectionTimeoutMs()
-    {
-        return asInt(PropertyBasedConfigNames.CONNECTION_TIMEOUT_MS.getValue(properties, defaults));
-    }
-
-    @Override
-    public int getCleanupPeriodMs()
-    {
-        return asInt(PropertyBasedConfigNames.CLEANUP_PERIOD_MS.getValue(properties, defaults));
-    }
-
-    @Override
-    public int getCleanupMaxFiles()
-    {
-        return asInt(PropertyBasedConfigNames.CLEANUP_MAX_FILES.getValue(properties, defaults));
+        String  s = e.name();
+        s = s.replace('_', '-');
+        s = s.toLowerCase();
+        return "com.netflix.exhibitor." + s;
     }
 
     private int asInt(String property)

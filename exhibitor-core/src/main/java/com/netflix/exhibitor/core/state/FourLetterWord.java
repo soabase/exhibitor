@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.CharStreams;
 import com.netflix.exhibitor.core.InstanceConfig;
+import com.netflix.exhibitor.core.config.IntConfigs;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -39,9 +40,9 @@ public class FourLetterWord
         Socket  s = null;
         try
         {
-            s = new Socket("localhost", config.getClientPort());
+            s = new Socket("localhost", config.getInt(IntConfigs.CLIENT_PORT));
             s.setTcpNoDelay(true);
-            s.setSoTimeout(config.getConnectionTimeoutMs());
+            s.setSoTimeout(config.getInt(IntConfigs.CONNECTION_TIMEOUT_MS));
 
             s.getOutputStream().write(word.name().toLowerCase().getBytes());
             s.getOutputStream().flush();

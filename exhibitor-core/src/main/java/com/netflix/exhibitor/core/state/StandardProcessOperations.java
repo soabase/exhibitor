@@ -5,6 +5,8 @@ import com.google.common.io.Closeables;
 import com.google.common.io.Files;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.activity.ActivityLog;
+import com.netflix.exhibitor.core.config.IntConfigs;
+import com.netflix.exhibitor.core.config.StringConfigs;
 import java.io.*;
 import java.util.Date;
 import java.util.Properties;
@@ -30,8 +32,8 @@ public class StandardProcessOperations implements ProcessOperations
 
         private Details(Exhibitor exhibitor) throws IOException
         {
-            this.zooKeeperDirectory = new File(exhibitor.getConfig().getZooKeeperInstallDirectory());
-            this.dataDirectory = new File(exhibitor.getConfig().getZooKeeperDataDirectory());
+            this.zooKeeperDirectory = new File(exhibitor.getConfig().getString(StringConfigs.ZOOKEEPER_INSTALL_DIRECTORY));
+            this.dataDirectory = new File(exhibitor.getConfig().getString(StringConfigs.ZOOKEEPER_DATA_DIRECTORY));
 
             configDirectory = new File(zooKeeperDirectory, "conf");
             log4jJarPath = findJar(new File(zooKeeperDirectory, "lib"), "log4j");
@@ -71,7 +73,7 @@ public class StandardProcessOperations implements ProcessOperations
             details.dataDirectory.getPath(),
             details.dataDirectory.getPath(),
             "-n",
-            Integer.toString(exhibitor.getConfig().getCleanupMaxFiles())
+            Integer.toString(exhibitor.getConfig().getInt(IntConfigs.CLEANUP_MAX_FILES))
         );
 
         ExecutorService errorService = Executors.newSingleThreadExecutor();
@@ -210,10 +212,10 @@ public class StandardProcessOperations implements ProcessOperations
 
     private File prepConfigFile(Details details) throws IOException
     {
-        ServerList              serverList = new ServerList(exhibitor.getConfig().getServersSpec());
+        ServerList              serverList = new ServerList(exhibitor.getConfig().getString(StringConfigs.SERVERS_SPEC));
 
         File                    idFile = new File(details.dataDirectory, "myid");
-        ServerList.ServerSpec   us = Iterables.find(serverList.getSpecs(), ServerList.isUs(exhibitor.getConfig().getHostname()), null);
+        ServerList.ServerSpec   us = Iterables.find(serverList.getSpecs(), ServerList.isUs(exhibitor.getConfig().getString(StringConfigs.HOSTNAME)), null);
         if ( us != null )
         {
             Files.createParentDirs(idFile);
@@ -232,9 +234,9 @@ public class StandardProcessOperations implements ProcessOperations
         Properties      localProperties = new Properties();
         localProperties.putAll(details.properties);
 
-        localProperties.setProperty("clientPort", Integer.toString(exhibitor.getConfig().getClientPort()));
+        localProperties.setProperty("clientPort", Integer.toString(exhibitor.getConfig().getInt(IntConfigs.CLIENT_PORT)));
 
-        String          portSpec = String.format(":%d:%d", exhibitor.getConfig().getConnectPort(), exhibitor.getConfig().getElectionPort());
+        String          portSpec = String.format(":%d:%d", exhibitor.getConfig().getInt(IntConfigs.CONNECT_PORT), exhibitor.getConfig().getInt(IntConfigs.ELECTION_PORT));
         for ( ServerList.ServerSpec spec : serverList.getSpecs() )
         {
             localProperties.setProperty("server." + spec.getServerId(), spec.getHostname() + portSpec);

@@ -9,6 +9,8 @@ import com.netflix.curator.framework.CuratorFrameworkFactory;
 import com.netflix.curator.retry.ExponentialBackoffRetry;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.ActivityQueue;
+import com.netflix.exhibitor.core.backup.BackupManager;
+import com.netflix.exhibitor.core.config.IntConfigs;
 import com.netflix.exhibitor.core.index.IndexCache;
 import com.netflix.exhibitor.core.maintenance.CleanupManager;
 import com.netflix.exhibitor.core.state.ControlPanelTypes;
@@ -48,6 +50,7 @@ public class Exhibitor implements Closeable
     private final ConfigProvider            configProvider;
     private final IndexCache                indexCache;
     private final Map<ControlPanelTypes, AtomicBoolean> controlPanelSettings;
+    private final BackupManager             backupManager;
 
     private CuratorFramework    localConnection;    // protected by synchronization
 
@@ -59,12 +62,12 @@ public class Exhibitor implements Closeable
     }
 
     /**
-     *
      * @param configProvider config source
      * @param additionalUITabs any additional tabs in the UI (can be null)
+     * @param backupProvider backup provider or null
      * @throws IOException errors
      */
-    public Exhibitor(ConfigProvider configProvider, Collection<UITab> additionalUITabs) throws Exception
+    public Exhibitor(ConfigProvider configProvider, Collection<UITab> additionalUITabs, BackupProvider backupProvider) throws Exception
     {
         this.configProvider = configProvider;
         this.instanceConfig.set(configProvider.loadConfig());
@@ -81,6 +84,8 @@ public class Exhibitor implements Closeable
             builder.put(type, new AtomicBoolean(true));
         }
         controlPanelSettings = builder.build();
+
+        this.backupManager = new BackupManager(this, backupProvider);
     }
 
     public ActivityLog getLog()
@@ -103,6 +108,7 @@ public class Exhibitor implements Closeable
         activityQueue.start();
         monitorRunningInstance.start();
         cleanupManager.start();
+        backupManager.start();
     }
 
     @Override
@@ -111,6 +117,7 @@ public class Exhibitor implements Closeable
         Preconditions.checkState(state.compareAndSet(State.STARTED, State.STOPPED));
 
         Closeables.closeQuietly(indexCache);
+        Closeables.closeQuietly(backupManager);
         Closeables.closeQuietly(cleanupManager);
         Closeables.closeQuietly(monitorRunningInstance);
         Closeables.closeQuietly(activityQueue);
@@ -155,9 +162,9 @@ public class Exhibitor implements Closeable
         {
             localConnection = CuratorFrameworkFactory.newClient
             (
-                "localhost:" + instanceConfig.get().getClientPort(),
-                instanceConfig.get().getConnectionTimeoutMs() * 10,
-                instanceConfig.get().getConnectionTimeoutMs(),
+                "localhost:" + instanceConfig.get().getInt(IntConfigs.CLIENT_PORT),
+                instanceConfig.get().getInt(IntConfigs.CONNECTION_TIMEOUT_MS) * 10,
+                instanceConfig.get().getInt(IntConfigs.CONNECTION_TIMEOUT_MS),
                 new ExponentialBackoffRetry(10, 3)
             );
             localConnection.start();
@@ -178,6 +185,11 @@ public class Exhibitor implements Closeable
     public CleanupManager getCleanupManager()
     {
         return cleanupManager;
+    }
+
+    public BackupManager getBackupManager()
+    {
+        return backupManager;
     }
 
     private synchronized void closeLocalConnection()
