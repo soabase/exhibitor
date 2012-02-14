@@ -101,7 +101,6 @@ public class Exhibitor implements Closeable
         Preconditions.checkState(state.compareAndSet(State.LATENT, State.STARTED));
 
         activityQueue.start();
-        instanceStateManager.start();
         monitorRunningInstance.start();
         cleanupManager.start();
     }
@@ -114,7 +113,6 @@ public class Exhibitor implements Closeable
         Closeables.closeQuietly(indexCache);
         Closeables.closeQuietly(cleanupManager);
         Closeables.closeQuietly(monitorRunningInstance);
-        Closeables.closeQuietly(instanceStateManager);
         Closeables.closeQuietly(activityQueue);
         closeLocalConnection();
     }

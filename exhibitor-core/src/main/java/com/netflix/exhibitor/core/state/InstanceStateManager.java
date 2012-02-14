@@ -2,10 +2,8 @@ package com.netflix.exhibitor.core.state;
 
 import com.google.common.collect.Iterables;
 import com.netflix.exhibitor.core.Exhibitor;
-import java.io.Closeable;
-import java.io.IOException;
 
-public class InstanceStateManager implements Closeable
+public class InstanceStateManager
 {
     private final Exhibitor     exhibitor;
     private final Checker       checker;
@@ -14,17 +12,6 @@ public class InstanceStateManager implements Closeable
     {
         this.exhibitor = exhibitor;
         checker = new Checker(exhibitor, this);
-    }
-
-    public void start()
-    {
-        checker.start();
-    }
-
-    @Override
-    public void close() throws IOException
-    {
-        checker.close();
     }
 
     public InstanceState getInstanceState()

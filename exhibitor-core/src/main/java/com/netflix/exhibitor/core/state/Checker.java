@@ -2,76 +2,34 @@ package com.netflix.exhibitor.core.state;
 
 import com.google.common.collect.Iterables;
 import com.netflix.exhibitor.core.Exhibitor;
-import com.netflix.exhibitor.core.activity.Activity;
-import com.netflix.exhibitor.core.activity.QueueGroups;
-import com.netflix.exhibitor.core.activity.RepeatingActivity;
-import java.io.Closeable;
-import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
-public class Checker implements Closeable
+public class Checker
 {
     private final Exhibitor exhibitor;
-    private final AtomicReference<InstanceStateTypes> state = new AtomicReference<InstanceStateTypes>(InstanceStateTypes.LATENT);
-    private final RepeatingActivity repeatingActivity;
 
     public Checker(Exhibitor exhibitor, InstanceStateManager manager)
     {
         this.exhibitor = exhibitor;
-        Activity activity = new Activity()
-        {
-            @Override
-            public void completed(boolean wasSuccessful)
-            {
-                // NOP
-            }
-
-            @Override
-            public Boolean call() throws Exception
-            {
-                setState();
-                return true;
-            }
-        };
-        repeatingActivity = new RepeatingActivity(exhibitor.getActivityQueue(), QueueGroups.MAIN, activity, exhibitor.getConfig().getCheckMs());
-    }
-
-    public void     start()
-    {
-        repeatingActivity.start();
-    }
-
-    @Override
-    public void close() throws IOException
-    {
-        repeatingActivity.close();
     }
 
     public InstanceStateTypes   getState()
     {
-        return state.get();
-    }
-
-    private void setState()
-    {
-        InstanceStateTypes      localCurrentState = state.get();
-
-        InstanceStateTypes      newState = InstanceStateTypes.UNKNOWN;
+        InstanceStateTypes      state = InstanceStateTypes.UNKNOWN;
         ServerList              serverList = new ServerList(exhibitor.getConfig().getServersSpec());
         ServerList.ServerSpec   us = Iterables.find(serverList.getSpecs(), ServerList.isUs(exhibitor.getConfig().getHostname()), null);
         if ( us != null )
         {
             if ( !exhibitor.isControlPanelSettingEnabled(ControlPanelTypes.RESTARTS) )
             {
-                newState = InstanceStateTypes.DOWN_BECAUSE_RESTARTS_TURNED_OFF;
+                state = InstanceStateTypes.DOWN_BECAUSE_RESTARTS_TURNED_OFF;
             }
         }
         else
         {
             if ( !exhibitor.isControlPanelSettingEnabled(ControlPanelTypes.UNLISTED_RESTARTS) )
             {
-                newState = InstanceStateTypes.DOWN_BECAUSE_UNLISTED;
+                state = InstanceStateTypes.DOWN_BECAUSE_UNLISTED;
             }
         }
 
@@ -86,21 +44,18 @@ public class Checker implements Closeable
             {
                 if ( line.contains("not currently serving") )
                 {
-                    newState = InstanceStateTypes.NOT_SERVING;
+                    state = InstanceStateTypes.NOT_SERVING;
                     break;
                 }
 
                 if ( line.toLowerCase().startsWith("mode") )
                 {
-                    newState = InstanceStateTypes.SERVING;
+                    state = InstanceStateTypes.SERVING;
                     break;
                 }
             }
         }
 
-        if ( newState != localCurrentState )
-        {
-            state.set(newState);
-        }
+        return state;
     }
 }
