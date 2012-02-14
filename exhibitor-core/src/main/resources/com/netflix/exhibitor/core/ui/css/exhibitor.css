@@ -271,3 +271,26 @@ label
     opacity: 0.4;
     filter: alpha(opacity=40);
 }
+
+#tabs-config-controls div
+{
+    float: left;
+    margin-right: 20px;
+}
+
+#tabs-config-controls div div
+{
+    margin-left: 0;
+    margin-top: 10px;
+}
+
+legend
+{
+    font-size: .9em;
+    color: #555;
+}
+
+fieldset
+{
+    border: 1px solid #888;
+}

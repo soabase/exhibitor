@@ -105,25 +105,47 @@
             </div>
 
             <div id="tabs-config" class="ui-helper-hidden">
-                <label id="config-editable-label" for="config-editable">Editing </label><input type="checkbox" id="config-editable" name="config-editable" value="yes"><br/>
-                <br/>
+                <div id="tabs-config-controls">
+                    <div>
+                        <div>
+                            <label id="config-editable-label" for="config-editable">Editing </label><input type="checkbox" id="config-editable" name="config-editable" value="yes">
+                        </div>
+                    </div>
+                    <div>
+                        <button id="config-button">Update...</button>
+                    </div>
+                </div>
+                <br clear="all"/>
 
                 <div id="config-group">
-                <label for="config-zookeeper-install-dir">ZooKeeper Install Dir</label><input type="text" id="config-zookeeper-install-dir" name="config-zookeeper-install-dir" size="60" title="The directory where the ZooKeeper server is installed"><br clear="all"/>
-                <label for="config-zookeeper-data-dir">ZooKeeper Data Dir</label><input type="text" id="config-zookeeper-data-dir" name="config-zookeeper-data-dir" size="60" title="The directory where the ZooKeeper data is stored"><br clear="all"/>
-                <label for="config-log-index-dir">Log Index Dir</label><input type="text" id="config-log-index-dir" name="config-log-index-dir" size="60" title="The directory where indexed ZooKeeper logs should be kept."><br clear="all"/>
-                <label for="config-hostname">This Hostname</label><input type="text" id="config-hostname" name="config-hostname" size="20" title="The hostname of this instance"><br clear="all"/>
-                <label for="config-servers-spec">Servers</label><input type="text" id="config-servers-spec" name="config-servers-spec" size="60" title="List of all servers in the ensemble (including this one) in the form: host:id,host:id,..."><br clear="all"/>
-                <label for="config-client-port">Client Port</label><input type="text" id="config-client-port" class="mask-pint" name="config-client-port" size="8" title="The port that clients connect to ZooKeeper (usually 2181)"><br clear="all"/>
-                <label for="config-connect-port">Connect Port</label><input type="text" id="config-connect-port" class="mask-pint" name="config-connect-port" size="8" title="The port that other ZooKeeper instances connect to ZooKeeper (usually 2888)"><br clear="all"/>
-                <label for="config-election-port">Election Port</label><input type="text" id="config-election-port" class="mask-pint" name="config-election-port" size="8" title="The port that other ZooKeeper instances connect for election to ZooKeeper (usually 3888)"><br clear="all"/>
-                <label for="config-check-ms">Live Check (ms)</label><input type="text" id="config-check-ms" class="mask-pint" name="config-check-ms" size="8" title="The number of milliseconds between live-ness checks on the ZooKeeper server"><br clear="all"/>
-                <label for="config-cleanup-ms">Cleanup Period (ms)</label><input type="text" id="config-cleanup-ms" class="mask-pint" name="config-cleanup-ms" size="8" title="The number of milliseconds between ZooKeeper log file cleanups"><br clear="all"/>
-                <label for="config-cleanup-max-files">Cleanup: Max Log Files</label><input type="text" id="config-cleanup-max-files" class="mask-pint" name="config-cleanup-max-files" size="2" title="The max number of ZooKeeper log files to keep when cleaning up"><br clear="all"/>
+                    <fieldset>
+                        <legend>Paths</legend>
+                        <label for="config-zookeeper-install-dir">ZooKeeper Install Dir</label><input type="text" id="config-zookeeper-install-dir" name="config-zookeeper-install-dir" size="60" title="The directory where the ZooKeeper server is installed"><br clear="all"/>
+                        <label for="config-zookeeper-data-dir">ZooKeeper Data Dir</label><input type="text" id="config-zookeeper-data-dir" name="config-zookeeper-data-dir" size="60" title="The directory where the ZooKeeper data is stored"><br clear="all"/>
+                        <label for="config-log-index-dir">Log Index Dir</label><input type="text" id="config-log-index-dir" name="config-log-index-dir" size="60" title="The directory where indexed ZooKeeper logs should be kept."><br clear="all"/>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Server</legend>
+                        <label for="config-hostname">This Hostname</label><input type="text" id="config-hostname" name="config-hostname" size="20" title="The hostname of this instance"><br clear="all"/>
+                        <label for="config-servers-spec">Servers</label><input type="text" id="config-servers-spec" name="config-servers-spec" size="60" title="List of all servers in the ensemble (including this one) in the form: host:id,host:id,..."><br clear="all"/>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Ports</legend>
+                        <label for="config-client-port">Client Port</label><input type="text" id="config-client-port" class="mask-pint" name="config-client-port" size="8" title="The port that clients connect to ZooKeeper (usually 2181)"><br clear="all"/>
+                        <label for="config-connect-port">Connect Port</label><input type="text" id="config-connect-port" class="mask-pint" name="config-connect-port" size="8" title="The port that other ZooKeeper instances connect to ZooKeeper (usually 2888)"><br clear="all"/>
+                        <label for="config-election-port">Election Port</label><input type="text" id="config-election-port" class="mask-pint" name="config-election-port" size="8" title="The port that other ZooKeeper instances connect for election to ZooKeeper (usually 3888)"><br clear="all"/>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Periods/Maximums</legend>
+                        <label for="config-check-ms">Live Check (ms)</label><input type="text" id="config-check-ms" class="mask-pint" name="config-check-ms" size="8" title="The number of milliseconds between live-ness checks on the ZooKeeper server"><br clear="all"/>
+                        <label for="config-cleanup-ms">Cleanup Period (ms)</label><input type="text" id="config-cleanup-ms" class="mask-pint" name="config-cleanup-ms" size="8" title="The number of milliseconds between ZooKeeper log file cleanups"><br clear="all"/>
+                        <label for="config-cleanup-max-files">Cleanup: Max Log Files</label><input type="text" id="config-cleanup-max-files" class="mask-pint" name="config-cleanup-max-files" size="2" title="The max number of ZooKeeper log files to keep when cleaning up"><br clear="all"/>
+                    </fieldset>
                 </div>
                 <br/>
-
-                <button id="config-button">Update...</button>
             </div>
 
             <div id="tabs-restore" class="ui-helper-hidden">
