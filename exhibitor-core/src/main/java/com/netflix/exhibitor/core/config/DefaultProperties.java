@@ -67,6 +67,11 @@ public class DefaultProperties
                     {
                         return (int)TimeUnit.MILLISECONDS.convert(1, TimeUnit.MINUTES);
                     }
+
+                    case BACKUP_MAX_FILES:
+                    {
+                        return 5;
+                    }
                 }
                 return 0;
             }

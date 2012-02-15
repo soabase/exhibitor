@@ -1,15 +1,13 @@
 package com.netflix.exhibitor.application;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.netflix.exhibitor.core.BackupProvider;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.config.DefaultProperties;
+import com.netflix.exhibitor.core.config.LocalFileConfigProvider;
 import com.netflix.exhibitor.rest.ExplorerResource;
 import com.netflix.exhibitor.rest.IndexResource;
 import com.netflix.exhibitor.rest.UIContext;
 import com.netflix.exhibitor.rest.UIResource;
-import com.netflix.exhibitor.core.config.LocalFileConfigProvider;
 import com.sun.jersey.api.core.DefaultResourceConfig;
 import com.sun.jersey.spi.container.servlet.ServletContainer;
 import org.apache.commons.cli.CommandLine;
@@ -21,7 +19,6 @@ import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.Context;
 import org.mortbay.jetty.servlet.ServletHolder;
 import java.io.File;
-import java.util.List;
 import java.util.Set;
 
 public class ExhibitorMain
@@ -41,20 +38,7 @@ public class ExhibitorMain
             printHelp(options);
         }
 
-        BackupProvider backupProvider = new BackupProvider()
-        {
-            @Override
-            public List<String> getConfigNames()
-            {
-                return Lists.newArrayList();
-            }
-
-            @Override
-            public void backupFile(File f) throws Exception
-            {
-            }
-        };
-        Exhibitor exhibitor = new Exhibitor(new LocalFileConfigProvider(propertiesFile, DefaultProperties.get()), null, backupProvider);
+        Exhibitor exhibitor = new Exhibitor(new LocalFileConfigProvider(propertiesFile, DefaultProperties.get()), null, new FileSystemBackupProvider());
         exhibitor.start();
 
         final UIContext context = new UIContext(exhibitor);

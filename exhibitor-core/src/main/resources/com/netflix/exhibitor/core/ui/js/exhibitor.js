@@ -128,6 +128,17 @@ function submitConfigChanges()
     newConfig.cleanupPeriodMs = $('#config-cleanup-ms').val();
     newConfig.cleanupMaxFiles = $('#config-cleanup-max-files').val();
     newConfig.backupPeriodMs = $('#config-backup-ms').val();
+    newConfig.backupMaxFiles = $('#config-backup-max-files').val();
+
+    newConfig.backupExtra = new Array();
+    for ( var i = 0; i < configExtraTab.length; ++i )
+    {
+        var c = configExtraTab[i];
+        var id = getBackupExtraId(c);
+        var obj = {};
+        obj[c.key] = $('#' + id).val();
+        newConfig.backupExtra[i] = obj;
+    }
 
     newConfig.connectionTimeoutMs = systemConfig.connectionTimeoutMs;
     newConfig.serverId = systemConfig.serverId;
@@ -143,6 +154,13 @@ function submitConfigChanges()
     });
 }
 
+function getBackupExtraId(obj)
+{
+    return 'config-backup-extra-' + obj.key;
+}
+
+var configExtraTab = new Array();
+
 function ableConfig(enable)
 {
     $('#config-zookeeper-install-dir').prop('disabled', !enable);
@@ -157,8 +175,43 @@ function ableConfig(enable)
     $('#config-cleanup-ms').prop('disabled', !enable);
     $('#config-cleanup-max-files').prop('disabled', !enable);
     $('#config-backup-ms').prop('disabled', !enable);
+    $('#config-backup-max-files').prop('disabled', !enable);
+
+    for ( var i = 0; i < configExtraTab.length; ++i )
+    {
+        var c = configExtraTab[i];
+        var id = getBackupExtraId(c);
+        $('#' + id).prop('disabled', !enable);
+    }
 
     $("#config-button").button(enable ? "enable" : "disable");
+}
+
+function addBackupExtraConfig()
+{
+    var isChecked = $('#config-editable').is(':checked');
+
+    var extraTab = $.makeArray(systemConfig.backupExtra);
+    var extra = "";
+    for ( var i = 0; i < extraTab.length; ++i )
+    {
+        var c = extraTab[i];
+        var id = getBackupExtraId(c);
+        extra += '<label for="' + id + '">' + c.name + '</label><input type="text" id="' + id + '" class="mask-pint" name="' + id + '" size="30" title="' + c.help + '"><br clear="all"/>';
+    }
+    $('#config-backups-extra').html(extra);
+    for ( i = 0; i < extraTab.length; ++i )
+    {
+        c = extraTab[i];
+        id = getBackupExtraId(c);
+        $('#' + id).val(c.value);
+        if ( !isChecked )
+        {
+            $('#' + id).prop('disabled', true);
+        }
+    }
+
+    configExtraTab = extraTab;
 }
 
 function updateConfig()
@@ -179,6 +232,9 @@ function updateConfig()
     $('#config-cleanup-ms').val(systemConfig.cleanupPeriodMs);
     $('#config-cleanup-max-files').val(systemConfig.cleanupMaxFiles);
     $('#config-backup-ms').val(systemConfig.backupPeriodMs);
+    $('#config-backup-max-files').val(systemConfig.backupMaxFiles);
+
+    addBackupExtraConfig();
 }
 
 function initExplorer()
@@ -341,10 +397,10 @@ $(function ()
         var isChecked = $('#config-editable').is(':checked');
         doConfigUpdates = !isChecked;
 
-        ableConfig(isChecked);
         if ( !isChecked ) {
             updateConfig();
         }
+        ableConfig(isChecked);
     });
 
     $("#config-button").button().click(function ()

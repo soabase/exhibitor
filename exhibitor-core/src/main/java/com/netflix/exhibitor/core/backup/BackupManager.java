@@ -8,10 +8,12 @@ import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.QueueGroups;
 import com.netflix.exhibitor.core.activity.RepeatingActivity;
 import com.netflix.exhibitor.core.config.IntConfigs;
+import com.netflix.exhibitor.core.config.StringConfigs;
 import com.netflix.exhibitor.core.index.ZookeeperLogFiles;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 public class BackupManager implements Closeable
 {
@@ -64,8 +66,17 @@ public class BackupManager implements Closeable
         return backupProvider.isPresent();
     }
 
+    public BackupProvider getBackupProvider()
+    {
+        return backupProvider.get();
+    }
+
     private void doBackup() throws Exception
     {
+        String              backupExtra = exhibitor.getConfig().getString(StringConfigs.BACKUP_EXTRA);
+        BackupConfigParser  backupConfigParser = new BackupConfigParser(backupExtra);
+        Map<String, String> backupConfigParserValues = backupConfigParser.getValues();
+
         BackupProvider provider = backupProvider.get();
 
         exhibitor.getLog().add(ActivityLog.Type.INFO, "Backup starting");
@@ -74,7 +85,7 @@ public class BackupManager implements Closeable
             for ( File f : new ZookeeperLogFiles(exhibitor).getPaths() )
             {
                 exhibitor.getLog().add(ActivityLog.Type.INFO, "Backing up: " + f);
-                provider.backupFile(f);
+                provider.backupFile(f, backupConfigParserValues);
             }
         }
         finally

@@ -9,6 +9,8 @@ import com.google.common.io.Resources;
 import com.netflix.exhibitor.core.InstanceConfig;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.QueueGroups;
+import com.netflix.exhibitor.core.backup.BackupConfig;
+import com.netflix.exhibitor.core.backup.BackupConfigParser;
 import com.netflix.exhibitor.core.config.IntConfigs;
 import com.netflix.exhibitor.core.config.StringConfigs;
 import com.netflix.exhibitor.core.entities.Result;
@@ -19,6 +21,7 @@ import com.netflix.exhibitor.core.state.KillRunningInstance;
 import com.netflix.exhibitor.core.state.ServerList;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.ObjectNode;
 import javax.activation.MimetypesFileTypeMap;
 import javax.ws.rs.GET;
@@ -35,6 +38,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -178,6 +182,26 @@ public class UIResource
         {
             configNode.put(fixName(c), context.getExhibitor().getConfig().getInt(c));
         }
+        if ( context.getExhibitor().getBackupManager().isActive() )
+        {
+            ArrayNode           backupNode = mapper.getNodeFactory().arrayNode();
+
+            BackupConfigParser  parser = new BackupConfigParser(context.getExhibitor().getConfig().getString(StringConfigs.BACKUP_EXTRA));
+            List<BackupConfig>  configs = context.getExhibitor().getBackupManager().getBackupProvider().getConfigs();
+            for ( BackupConfig c : configs )
+            {
+                ObjectNode      n = mapper.getNodeFactory().objectNode();
+                n.put("key", c.getKey());
+                n.put("name", c.getDisplayName());
+                n.put("help", c.getHelpText());
+                n.put("value", parser.getValues().get(c.getKey()));
+
+                backupNode.add(n);
+            }
+
+            configNode.put("backupExtra", backupNode);
+        }
+
         mainNode.put("config", configNode);
 
         return mapper.writer().writeValueAsString(mainNode);
@@ -193,11 +217,35 @@ public class UIResource
         ObjectMapper          mapper = new ObjectMapper();
         final JsonNode        tree = mapper.reader().readTree(newConfigJson);
 
+        String                backupExtraValue = "";
+        if ( tree.has("backupExtra") )
+        {
+            Map<String, String>     values = Maps.newHashMap();
+            Iterator<JsonNode>      backupExtra = tree.get("backupExtra").getElements();
+            while ( backupExtra.hasNext() )
+            {
+                JsonNode            node = backupExtra.next();
+                Iterator<String>    fieldNames = node.getFieldNames();
+                if ( fieldNames.hasNext() )
+                {
+                    String      name = fieldNames.next();
+                    values.put(name, node.get(name).getTextValue());
+                }
+            }
+            backupExtraValue = new BackupConfigParser(values).toEncoded();
+        }
+
+        final String          finalBackupExtraValue = backupExtraValue;
         InstanceConfig wrapped = new InstanceConfig()
         {
             @Override
             public String getString(StringConfigs config)
             {
+                if ( config == StringConfigs.BACKUP_EXTRA )
+                {
+                    return finalBackupExtraValue;
+                }
+
                 JsonNode node = tree.get(fixName(config));
                 if ( node == null )
                 {
