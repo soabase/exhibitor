@@ -62,7 +62,7 @@ public class RestoreActivity implements Activity
                 }
                 catch ( KeeperException.NoNodeException dummy )
                 {
-                    client.create().forPath(path, data);
+                    client.create().creatingParentsIfNeeded().forPath(path, data);
                 }
                 break;
             }

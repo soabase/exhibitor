@@ -153,6 +153,34 @@ public class UIResource
         return Response.ok(tabs.get(index).getContent()).build();
     }
 
+    @Path("backup-config")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getBackupConfig() throws Exception
+    {
+        ObjectMapper        mapper = new ObjectMapper();
+        ArrayNode           node = mapper.getNodeFactory().arrayNode();
+
+        if ( context.getExhibitor().getBackupManager().isActive() )
+        {
+            BackupConfigParser  parser = new BackupConfigParser(context.getExhibitor().getConfig().getString(StringConfigs.BACKUP_EXTRA), context.getExhibitor().getBackupManager().getBackupProvider());
+            List<BackupConfig>  configs = context.getExhibitor().getBackupManager().getBackupProvider().getConfigs();
+            for ( BackupConfig c : configs )
+            {
+                ObjectNode      n = mapper.getNodeFactory().objectNode();
+                n.put("key", c.getKey());
+                n.put("name", c.getDisplayName());
+                n.put("help", c.getHelpText());
+                n.put("value", parser.getValues().get(c.getKey()));
+                n.put("type", c.getType().name().toLowerCase().substring(0, 1));
+
+                node.add(n);
+            }
+        }
+
+        return mapper.writer().writeValueAsString(node);
+    }
+
     @Path("state")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -172,6 +200,7 @@ public class UIResource
         mainNode.put("cleanupEnabled", context.getExhibitor().isControlPanelSettingEnabled(ControlPanelTypes.CLEANUP));
         mainNode.put("unlistedRestartsEnabled", context.getExhibitor().isControlPanelSettingEnabled(ControlPanelTypes.UNLISTED_RESTARTS));
         mainNode.put("backupActive", context.getExhibitor().getBackupManager().isActive());
+        mainNode.put("backupsEnabled", context.getExhibitor().isControlPanelSettingEnabled(ControlPanelTypes.BACKUPS));
 
         configNode.put("serverId", (us != null) ? us.getServerId() : -1);
         for ( StringConfigs c : StringConfigs.values() )
@@ -182,24 +211,17 @@ public class UIResource
         {
             configNode.put(fixName(c), context.getExhibitor().getConfig().getInt(c));
         }
+
         if ( context.getExhibitor().getBackupManager().isActive() )
         {
-            ArrayNode           backupNode = mapper.getNodeFactory().arrayNode();
-
-            BackupConfigParser  parser = new BackupConfigParser(context.getExhibitor().getConfig().getString(StringConfigs.BACKUP_EXTRA));
+            ObjectNode          backupExtraNode = mapper.getNodeFactory().objectNode();
+            BackupConfigParser  parser = new BackupConfigParser(context.getExhibitor().getConfig().getString(StringConfigs.BACKUP_EXTRA), context.getExhibitor().getBackupManager().getBackupProvider());
             List<BackupConfig>  configs = context.getExhibitor().getBackupManager().getBackupProvider().getConfigs();
             for ( BackupConfig c : configs )
             {
-                ObjectNode      n = mapper.getNodeFactory().objectNode();
-                n.put("key", c.getKey());
-                n.put("name", c.getDisplayName());
-                n.put("help", c.getHelpText());
-                n.put("value", parser.getValues().get(c.getKey()));
-
-                backupNode.add(n);
+                backupExtraNode.put(c.getKey(), parser.getValues().get(c.getKey()));
             }
-
-            configNode.put("backupExtra", backupNode);
+            configNode.put("backupExtra", backupExtraNode);
         }
 
         mainNode.put("config", configNode);
@@ -221,16 +243,13 @@ public class UIResource
         if ( tree.has("backupExtra") )
         {
             Map<String, String>     values = Maps.newHashMap();
-            Iterator<JsonNode>      backupExtra = tree.get("backupExtra").getElements();
-            while ( backupExtra.hasNext() )
+            JsonNode                backupExtra = tree.get("backupExtra");
+            Iterator<String>        fieldNames = backupExtra.getFieldNames();
+            while ( fieldNames.hasNext() )
             {
-                JsonNode            node = backupExtra.next();
-                Iterator<String>    fieldNames = node.getFieldNames();
-                if ( fieldNames.hasNext() )
-                {
-                    String      name = fieldNames.next();
-                    values.put(name, node.get(name).getTextValue());
-                }
+                String      name = fieldNames.next();
+                String      value = backupExtra.get(name).getTextValue();
+                values.put(name, value);
             }
             backupExtraValue = new BackupConfigParser(values).toEncoded();
         }
@@ -262,7 +281,15 @@ public class UIResource
                 {
                     return 0;
                 }
-                return node.getIntValue();
+                try
+                {
+                    return Integer.parseInt(node.getTextValue());
+                }
+                catch ( NumberFormatException e )
+                {
+                    // ignore
+                }
+                return 0;
             }
         };
         context.getExhibitor().updateConfig(wrapped);

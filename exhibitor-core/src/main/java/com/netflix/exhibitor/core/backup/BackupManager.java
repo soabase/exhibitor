@@ -7,9 +7,11 @@ import com.netflix.exhibitor.core.activity.Activity;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.QueueGroups;
 import com.netflix.exhibitor.core.activity.RepeatingActivity;
+import com.netflix.exhibitor.core.config.ConfigListener;
 import com.netflix.exhibitor.core.config.IntConfigs;
 import com.netflix.exhibitor.core.config.StringConfigs;
 import com.netflix.exhibitor.core.index.ZookeeperLogFiles;
+import com.netflix.exhibitor.core.state.ControlPanelTypes;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -21,6 +23,9 @@ public class BackupManager implements Closeable
     private final Optional<BackupProvider> backupProvider;
     private final RepeatingActivity repeatingActivity;
 
+    private static final String         KEY_PREFIX = "exhibitor";
+    private static final char           SEPARATOR = '-';
+    
     public BackupManager(Exhibitor exhibitor, BackupProvider backupProvider)
     {
         this.exhibitor = exhibitor;
@@ -40,7 +45,6 @@ public class BackupManager implements Closeable
                 return true;
             }
         };
-        // TODO - notice change in check ms
         repeatingActivity = new RepeatingActivity(exhibitor.getActivityQueue(), QueueGroups.IO, activity, exhibitor.getConfig().getInt(IntConfigs.BACKUP_PERIOD_MS));
     }
 
@@ -49,6 +53,17 @@ public class BackupManager implements Closeable
         if ( isActive() )
         {
             repeatingActivity.start();
+            exhibitor.addConfigListener
+            (
+                new ConfigListener()
+                {
+                    @Override
+                    public void configUpdated()
+                    {
+                        repeatingActivity.setTimePeriodMs(exhibitor.getConfig().getInt(IntConfigs.BACKUP_PERIOD_MS));
+                    }
+                }
+            );
         }
     }
 
@@ -73,8 +88,13 @@ public class BackupManager implements Closeable
 
     private void doBackup() throws Exception
     {
+        if ( !exhibitor.isControlPanelSettingEnabled(ControlPanelTypes.BACKUPS) )
+        {
+            return;
+        }
+
         String              backupExtra = exhibitor.getConfig().getString(StringConfigs.BACKUP_EXTRA);
-        BackupConfigParser  backupConfigParser = new BackupConfigParser(backupExtra);
+        BackupConfigParser  backupConfigParser = new BackupConfigParser(backupExtra, exhibitor.getBackupManager().getBackupProvider());
         Map<String, String> backupConfigParserValues = backupConfigParser.getValues();
 
         BackupProvider provider = backupProvider.get();
@@ -85,12 +105,17 @@ public class BackupManager implements Closeable
             for ( File f : new ZookeeperLogFiles(exhibitor).getPaths() )
             {
                 exhibitor.getLog().add(ActivityLog.Type.INFO, "Backing up: " + f);
-                provider.backupFile(f, backupConfigParserValues);
+                provider.uploadBackup(exhibitor, makeKey(), f, backupConfigParserValues);
             }
         }
         finally
         {
             exhibitor.getLog().add(ActivityLog.Type.INFO, "Backup complete");
         }
+    }
+
+    private String makeKey()
+    {
+        return KEY_PREFIX + SEPARATOR + exhibitor.getConfig().getString(StringConfigs.HOSTNAME) + SEPARATOR + System.currentTimeMillis();
     }
 }

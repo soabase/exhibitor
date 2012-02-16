@@ -58,11 +58,11 @@ public class PropertyBasedInstanceConfig implements InstanceConfig
         return "com.netflix.exhibitor." + s;
     }
 
-    private int asInt(String property)
+    public static int asInt(String s)
     {
         try
         {
-            return Integer.parseInt(property);
+            return Integer.parseInt(s);
         }
         catch ( NumberFormatException e )
         {

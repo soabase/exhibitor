@@ -40,11 +40,21 @@ function okCancelDialog(title, message, okFunction)
     $("#message-dialog").dialog("open");
 }
 
+var hasBackupConfig = false;
 var systemState = {};
 var systemConfig = {};
 var connectedToExhibitor = true;
 function updateState()
 {
+    if ( !hasBackupConfig )
+    {
+        $.getJSON('backup-config', function(data){
+            hasBackupConfig = true;
+            addBackupExtraConfig(data);
+        });
+        return;
+    }
+
     $.getJSON('state',
         function (data)
         {
@@ -52,9 +62,6 @@ function updateState()
             if ( doConfigUpdates ) {
                 systemConfig = systemState.config;
             }
-            systemState.running = (
-                data.running === "true"
-                );    // it comes down as a string
 
             if ( !connectedToExhibitor )
             {
@@ -76,10 +83,12 @@ function updateState()
             if ( systemState.backupActive )
             {
                 $('#config-backups-fieldset').show();
+                $('#backups-enabled-control').show();
             }
             else
             {
                 $('#config-backups-fieldset').hide();
+                $('#backups-enabled-control').hide();
             }
 
             $('#instance-restarts-enabled').prop("checked", systemState.restartsEnabled);
@@ -90,6 +99,9 @@ function updateState()
 
             $('#cleanup-enabled').prop("checked", systemState.cleanupEnabled);
             $('#cleanup-enabled').trigger("change");
+
+            $('#backups-enabled').prop("checked", systemState.backupsEnabled);
+            $('#backups-enabled').trigger("change");
 
             $('#exhibitor-valence').hide();
             $('#version').html(systemState.version);
@@ -113,6 +125,37 @@ function updateState()
 }
 updateState();
 
+var configExtraTab = new Array();
+
+function addBackupExtraConfig(data)
+{
+    configExtraTab = $.makeArray(data);
+    var extra = "";
+    for ( var i = 0; i < configExtraTab.length; ++i )
+    {
+        var c = configExtraTab[i];
+        var id = getBackupExtraId(c);
+        var fieldSize = (c.type === "s") ? 30 : 5;
+        extra += '<label for="' + id + '">' + c.name + '</label><input type="text" id="' + id + '" name="' + id + '" size="' + fieldSize + '" title="' + c.help + '"><br clear="all"/>';
+    }
+
+    $('#config-backups-extra').html(extra);
+    for ( i = 0; i < configExtraTab.length; ++i )
+    {
+        c = configExtraTab[i];
+        if ( c.type === "i" )
+        {
+            id = getBackupExtraId(c);
+            $('#' + id).keyfilter($.fn.keyfilter.defaults.masks['pint']);
+        }
+    }
+
+    updateState();
+
+    var isChecked = $('#config-editable').is(':checked');
+    ableConfig(isChecked);
+}
+
 function submitConfigChanges()
 {
     var newConfig = {};
@@ -130,14 +173,12 @@ function submitConfigChanges()
     newConfig.backupPeriodMs = $('#config-backup-ms').val();
     newConfig.backupMaxFiles = $('#config-backup-max-files').val();
 
-    newConfig.backupExtra = new Array();
+    newConfig.backupExtra = {};
     for ( var i = 0; i < configExtraTab.length; ++i )
     {
         var c = configExtraTab[i];
         var id = getBackupExtraId(c);
-        var obj = {};
-        obj[c.key] = $('#' + id).val();
-        newConfig.backupExtra[i] = obj;
+        newConfig.backupExtra[c.key] = $('#' + id).val();
     }
 
     newConfig.connectionTimeoutMs = systemConfig.connectionTimeoutMs;
@@ -158,8 +199,6 @@ function getBackupExtraId(obj)
 {
     return 'config-backup-extra-' + obj.key;
 }
-
-var configExtraTab = new Array();
 
 function ableConfig(enable)
 {
@@ -187,33 +226,6 @@ function ableConfig(enable)
     $("#config-button").button(enable ? "enable" : "disable");
 }
 
-function addBackupExtraConfig()
-{
-    var isChecked = $('#config-editable').is(':checked');
-
-    var extraTab = $.makeArray(systemConfig.backupExtra);
-    var extra = "";
-    for ( var i = 0; i < extraTab.length; ++i )
-    {
-        var c = extraTab[i];
-        var id = getBackupExtraId(c);
-        extra += '<label for="' + id + '">' + c.name + '</label><input type="text" id="' + id + '" class="mask-pint" name="' + id + '" size="30" title="' + c.help + '"><br clear="all"/>';
-    }
-    $('#config-backups-extra').html(extra);
-    for ( i = 0; i < extraTab.length; ++i )
-    {
-        c = extraTab[i];
-        id = getBackupExtraId(c);
-        $('#' + id).val(c.value);
-        if ( !isChecked )
-        {
-            $('#' + id).prop('disabled', true);
-        }
-    }
-
-    configExtraTab = extraTab;
-}
-
 function updateConfig()
 {
     if ( !doConfigUpdates ) {
@@ -234,7 +246,13 @@ function updateConfig()
     $('#config-backup-ms').val(systemConfig.backupPeriodMs);
     $('#config-backup-max-files').val(systemConfig.backupMaxFiles);
 
-    addBackupExtraConfig();
+    for ( i = 0; i < configExtraTab.length; ++i )
+    {
+        c = configExtraTab[i];
+        id = getBackupExtraId(c);
+        $('#' + id).val(systemConfig.backupExtra[c.key]);
+    }
+
 }
 
 function initExplorer()
@@ -303,10 +321,12 @@ function refreshCurrentTab()
     }
     else if ( selected >= BUILTIN_TAB_QTY )
     {
-        $("#tabs").tabs("load", selected);
+        var index = selected - BUILTIN_TAB_QTY;
+        $("#" + customTabs[index].contentId).load(customTabs[index].url);
     }
 }
 
+var customTabs = new Array();
 $(function ()
 {
     $.getJSON('tabs', function (data)
@@ -314,10 +334,17 @@ $(function ()
         var uiTabSpec = $.makeArray(data.uiTabSpec);
         for ( var i = 0; i < uiTabSpec.length; ++i )
         {
-            $('#tabs-list').append('<li><a href="' + uiTabSpec[i].url + '">' + uiTabSpec[i].name + '</a></li>');
+            var tabData = {};
+            tabData.id = 'tabs-custom-' + i;
+            tabData.contentId = 'tabs-custom-content' + i;
+            tabData.url = uiTabSpec[i].url;
+            customTabs[i] = tabData;
+
+            $('#tabs').append('<div id="' + tabData.id + '" class="ui-helper-hidden"><div id="' + tabData.contentId + '" class="text"></div></div>')
+            $('#tabs-list').append('<li><a href="#' + tabData.id + '">' + uiTabSpec[i].name + '</a></li>');
         }
         $('#tabs').tabs({
-            panelTemplate:'<div class="text"></div>',
+            panelTemplate:'<div><div class="text"></div></div>',
 
             show:function (event, ui)
             {
@@ -421,6 +448,16 @@ $(function ()
         var word = $('#4ltr-word').val();
         $('#4ltr-content').load('4ltr/' + encodeURIComponent(word));
         return false;
+    });
+
+    $('#backups-enabled').lightSwitch({
+        switchImgCover: 'lightSwitch/switchplate.png',
+        switchImg : 'lightSwitch/switch.png',
+        disabledImg : 'lightSwitch/disabled.png'
+    });
+    $('#backups-enabled').next('span.switch').click(function(){
+        var isChecked = $('#backups-enabled').is(':checked');
+        $.get("set/backups/" + (isChecked ? "true" : "false"));
     });
 
     window.setInterval("updateState()", UPDATE_STATE_PERIOD);

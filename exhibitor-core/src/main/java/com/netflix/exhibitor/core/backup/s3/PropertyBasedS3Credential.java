@@ -13,6 +13,9 @@ public class PropertyBasedS3Credential implements S3Credential
     private final String accessKeyId;
     private final String accessSecretKey;
 
+    public static final String PROPERTY_S3_KEY_ID = "com.netflix.exhibitor.s3.access-key-id";
+    public static final String PROPERTY_S3_SECRET_KEY = "com.netflix.exhibitor.s3.access-secret-key";
+
     public PropertyBasedS3Credential(File propertiesFile) throws IOException
     {
         this(loadProperties(propertiesFile));
@@ -20,8 +23,8 @@ public class PropertyBasedS3Credential implements S3Credential
 
     public PropertyBasedS3Credential(Properties properties)
     {
-        accessKeyId = properties.getProperty("com.netflix.exhibitor.s3.access-key-id");
-        accessSecretKey = properties.getProperty("com.netflix.exhibitor.s3.access-secret-key");
+        accessKeyId = properties.getProperty(PROPERTY_S3_KEY_ID);
+        accessSecretKey = properties.getProperty(PROPERTY_S3_SECRET_KEY);
     }
 
     @Override

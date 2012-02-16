@@ -4,5 +4,6 @@ public enum ControlPanelTypes
 {
     RESTARTS,
     UNLISTED_RESTARTS,
-    CLEANUP
+    CLEANUP,
+    BACKUPS
 }

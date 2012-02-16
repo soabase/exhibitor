@@ -9,5 +9,11 @@ public interface BackupProvider
 {
     public List<BackupConfig> getConfigs();
     
-    public void     backupFile(File f, Map<String, String> configValues) throws Exception;
+    public void     uploadBackup(Exhibitor exhibitor, String key, File source, Map<String, String> configValues) throws Exception;
+    
+    public List<String> getAvailableBackupKeys(Exhibitor exhibitor, Map<String, String> configValues) throws Exception;
+
+    public void     deleteBackup(Exhibitor exhibitor, String key, Map<String, String> configValues) throws Exception;
+
+    public void     downloadBackup(Exhibitor exhibitor, String key, File destination, Map<String, String> configValues) throws Exception;
 }

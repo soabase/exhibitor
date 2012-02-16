@@ -3,6 +3,8 @@ package com.netflix.exhibitor.core;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.common.io.Closeables;
 import com.netflix.curator.framework.CuratorFramework;
 import com.netflix.curator.framework.CuratorFrameworkFactory;
@@ -10,6 +12,7 @@ import com.netflix.curator.retry.ExponentialBackoffRetry;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.ActivityQueue;
 import com.netflix.exhibitor.core.backup.BackupManager;
+import com.netflix.exhibitor.core.config.ConfigListener;
 import com.netflix.exhibitor.core.config.IntConfigs;
 import com.netflix.exhibitor.core.index.IndexCache;
 import com.netflix.exhibitor.core.maintenance.CleanupManager;
@@ -23,6 +26,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -51,6 +55,7 @@ public class Exhibitor implements Closeable
     private final IndexCache                indexCache;
     private final Map<ControlPanelTypes, AtomicBoolean> controlPanelSettings;
     private final BackupManager             backupManager;
+    private final Set<ConfigListener>       configListeners = Sets.newSetFromMap(Maps.<ConfigListener, Boolean>newConcurrentMap());
 
     private CuratorFramework    localConnection;    // protected by synchronization
 
@@ -139,6 +144,11 @@ public class Exhibitor implements Closeable
         closeLocalConnection();
         instanceConfig.set(newConfig);
         configProvider.storeConfig(newConfig);
+
+        for ( ConfigListener listener : configListeners )
+        {
+            listener.configUpdated();
+        }
     }
 
     public InstanceStateManager getInstanceStateManager()
@@ -190,6 +200,11 @@ public class Exhibitor implements Closeable
     public BackupManager getBackupManager()
     {
         return backupManager;
+    }
+    
+    public void addConfigListener(ConfigListener listener)
+    {
+        configListeners.add(listener);
     }
 
     private synchronized void closeLocalConnection()

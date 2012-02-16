@@ -1,19 +1,23 @@
 package com.netflix.exhibitor.core.backup;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
+import com.netflix.exhibitor.core.BackupProvider;
 import com.sun.deploy.net.URLEncoder;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Map;
+import java.util.Set;
 
 public class BackupConfigParser
 {
     private final Map<String, String>       values;
     
-    public BackupConfigParser(String encodedValue)
+    public BackupConfigParser(String encodedValue, BackupProvider backupProvider)
     {
         ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
 
+        Set<String>     usedKeys = Sets.newHashSet();
         String[]        parts = encodedValue.split("&");
         try
         {
@@ -22,6 +26,7 @@ public class BackupConfigParser
                 String[]      subParts = part.split("=");
                 if ( subParts.length == 2 )
                 {
+                    usedKeys.add(subParts[0]);
                     builder.put
                     (
                         URLDecoder.decode(subParts[0], "UTF-8"),
@@ -34,6 +39,14 @@ public class BackupConfigParser
         {
             // should never get here
             throw new Error(e);
+        }
+
+        for ( BackupConfig config : backupProvider.getConfigs() )
+        {
+            if ( !usedKeys.contains(config.getKey()) )
+            {
+                builder.put(config.getKey(), config.getDefaultValue());
+            }
         }
 
         values = builder.build();

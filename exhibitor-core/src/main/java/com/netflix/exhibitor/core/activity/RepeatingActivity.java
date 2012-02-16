@@ -4,13 +4,14 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class RepeatingActivity implements Closeable
 {
     private final QueueGroups   group;
     private final AtomicBoolean isStarted = new AtomicBoolean(false);
     private final Activity      activity;
-    private final long          timePeriodMs;
+    private final AtomicLong    timePeriodMs;
     private final ActivityQueue queue;
 
     public RepeatingActivity(ActivityQueue queue, QueueGroups group, final Activity actualActivity, long timePeriodMs)
@@ -37,7 +38,7 @@ public class RepeatingActivity implements Closeable
                 return result;
             }
         };
-        this.timePeriodMs = timePeriodMs;
+        this.timePeriodMs = new AtomicLong(timePeriodMs);
     }
 
     public void start()
@@ -52,13 +53,20 @@ public class RepeatingActivity implements Closeable
         isStarted.set(false);
     }
 
-    public void forceReQueue()
+    public void setTimePeriodMs(long newTimePeriodMs)
     {
-        queue.replace(group, activity);
+        long previousValue = timePeriodMs.getAndSet(newTimePeriodMs);
+        if ( previousValue == 0 )
+        {
+            reQueue();
+        }
     }
 
     private void reQueue()
     {
-        queue.add(group, activity, timePeriodMs, TimeUnit.MILLISECONDS);
+        if ( timePeriodMs.get() > 0 )
+        {
+            queue.add(group, activity, timePeriodMs.get(), TimeUnit.MILLISECONDS);
+        }
     }
 }
