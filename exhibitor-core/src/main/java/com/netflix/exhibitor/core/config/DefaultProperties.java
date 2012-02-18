@@ -48,11 +48,6 @@ public class DefaultProperties
                         return (int)TimeUnit.MILLISECONDS.convert(30, TimeUnit.SECONDS);
                     }
 
-                    case CONNECTION_TIMEOUT_MS:
-                    {
-                        return (int)TimeUnit.MILLISECONDS.convert(30, TimeUnit.SECONDS);
-                    }
-
                     case CLEANUP_PERIOD_MS:
                     {
                         return (int)TimeUnit.MILLISECONDS.convert(12, TimeUnit.HOURS);

@@ -34,13 +34,13 @@ public class Checker
             }
         }
 
-        String      ruok = new FourLetterWord(FourLetterWord.Word.RUOK, exhibitor.getConfig()).getResponse();
+        String      ruok = new FourLetterWord(FourLetterWord.Word.RUOK, exhibitor.getConfig(), exhibitor.getConnectionTimeOutMs()).getResponse();
         if ( "imok".equals(ruok) )
         {
             // The following code depends on inside knowledge of the "srvr" response. If they change it
             // this code might break
 
-            List<String> lines = new FourLetterWord(FourLetterWord.Word.SRVR, exhibitor.getConfig()).getResponseLines();
+            List<String> lines = new FourLetterWord(FourLetterWord.Word.SRVR, exhibitor.getConfig(), exhibitor.getConnectionTimeOutMs()).getResponseLines();
             for ( String line : lines )
             {
                 if ( line.contains("not currently serving") )

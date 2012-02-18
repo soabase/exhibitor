@@ -31,7 +31,7 @@ public class FourLetterWord
         WCHP
     }
 
-    public FourLetterWord(Word word, InstanceConfig config)
+    public FourLetterWord(Word word, InstanceConfig config, int connectionTimeOutMs)
     {
         Preconditions.checkNotNull(word);
 
@@ -41,7 +41,7 @@ public class FourLetterWord
         {
             s = new Socket("localhost", config.getInt(IntConfigs.CLIENT_PORT));
             s.setTcpNoDelay(true);
-            s.setSoTimeout(config.getInt(IntConfigs.CONNECTION_TIMEOUT_MS));
+            s.setSoTimeout(connectionTimeOutMs);
 
             s.getOutputStream().write(word.name().toLowerCase().getBytes());
             s.getOutputStream().flush();

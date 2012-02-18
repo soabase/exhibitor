@@ -39,6 +39,7 @@ public class ExhibitorMain implements Closeable
         options.addOption(null, "properties", true, "Path to store Exhibitor properties. Default location is: " + propertiesFile.getCanonicalPath());
         options.addOption(null, "s3backup", true, "Enables AWS S3 backup of ZooKeeper log files. The argument is the path to an AWS credential properties file with two properties: " + PropertyBasedS3Credential.PROPERTY_S3_KEY_ID + " and " + PropertyBasedS3Credential.PROPERTY_S3_SECRET_KEY);
         options.addOption(null, "filesystembackup", false, "Enables file system backup of ZooKeeper log files.");
+        options.addOption(null, "timeout", true, "Connection timeout (ms) for ZK connections. Default is 30000.");
         options.addOption("?", "help", false, "Print this help");
 
         CommandLine         commandLine;
@@ -68,15 +69,17 @@ public class ExhibitorMain implements Closeable
         {
             backupProvider = new FileSystemBackupProvider();
         }
+        
+        int         timeoutMs = Integer.parseInt(commandLine.getOptionValue("timeout", "30000"));
 
-        ExhibitorMain exhibitorMain = new ExhibitorMain(propertiesFile, backupProvider);
+        ExhibitorMain exhibitorMain = new ExhibitorMain(propertiesFile, backupProvider, timeoutMs);
         exhibitorMain.start();
         exhibitorMain.join();
     }
 
-    public ExhibitorMain(File propertiesFile, BackupProvider backupProvider) throws Exception
+    public ExhibitorMain(File propertiesFile, BackupProvider backupProvider, int timeoutMs) throws Exception
     {
-        Exhibitor exhibitor = new Exhibitor(new LocalFileConfigProvider(propertiesFile, DefaultProperties.get()), null, backupProvider);
+        Exhibitor exhibitor = new Exhibitor(new LocalFileConfigProvider(propertiesFile, DefaultProperties.get()), null, backupProvider, timeoutMs);
         exhibitor.start();
 
         final UIContext context = new UIContext(exhibitor);

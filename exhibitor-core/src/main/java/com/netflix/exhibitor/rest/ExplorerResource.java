@@ -92,6 +92,7 @@ public class ExplorerResource
         }
         catch ( Throwable e )
         {
+            context.getExhibitor().resetLocalConnection();
             context.getExhibitor().getLog().add(ActivityLog.Type.ERROR, "getNode: " + key, e);
 
             ObjectNode  node = children.addObject();

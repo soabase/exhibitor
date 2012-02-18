@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -53,6 +54,7 @@ public class Exhibitor implements Closeable
     private final CleanupManager            cleanupManager;
     private final AtomicReference<State>    state = new AtomicReference<State>(State.LATENT);
     private final ConfigProvider            configProvider;
+    private final int connectionTimeOutMs;
     private final IndexCache                indexCache;
     private final Map<ControlPanelTypes, AtomicBoolean> controlPanelSettings;
     private final BackupManager             backupManager;
@@ -75,7 +77,13 @@ public class Exhibitor implements Closeable
      */
     public Exhibitor(ConfigProvider configProvider, Collection<UITab> additionalUITabs, BackupProvider backupProvider) throws Exception
     {
+        this(configProvider, additionalUITabs, backupProvider, (int)TimeUnit.MILLISECONDS.convert(30, TimeUnit.SECONDS));
+    }
+
+    public Exhibitor(ConfigProvider configProvider, Collection<UITab> additionalUITabs, BackupProvider backupProvider, int connectionTimeOutMs) throws Exception
+    {
         this.configProvider = configProvider;
+        this.connectionTimeOutMs = connectionTimeOutMs;
         this.instanceConfig.set(configProvider.loadConfig());
         this.additionalUITabs = (additionalUITabs != null) ? ImmutableList.copyOf(additionalUITabs) : ImmutableList.<UITab>of();
         this.processOperations = new StandardProcessOperations(this);
@@ -167,6 +175,16 @@ public class Exhibitor implements Closeable
         return processOperations;
     }
 
+    public int getConnectionTimeOutMs()
+    {
+        return connectionTimeOutMs;
+    }
+
+    public synchronized void resetLocalConnection() throws IOException
+    {
+        closeLocalConnection();
+    }
+
     public synchronized CuratorFramework getLocalConnection() throws IOException
     {
         if ( localConnection == null )
@@ -174,8 +192,8 @@ public class Exhibitor implements Closeable
             localConnection = CuratorFrameworkFactory.newClient
             (
                 "localhost:" + instanceConfig.get().getInt(IntConfigs.CLIENT_PORT),
-                instanceConfig.get().getInt(IntConfigs.CONNECTION_TIMEOUT_MS) * 10,
-                instanceConfig.get().getInt(IntConfigs.CONNECTION_TIMEOUT_MS),
+                connectionTimeOutMs * 10,
+                connectionTimeOutMs,
                 new ExponentialBackoffRetry(10, 3)
             );
             localConnection.start();

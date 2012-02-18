@@ -438,7 +438,11 @@ $(function ()
         ableConfig(isChecked);
     });
 
-    $("#config-button").button().click(function ()
+    $("#config-button").button({
+        icons:{
+            primary:"ui-icon-disk"
+        }
+    }).click(function ()
     {
         return false;
     }).click(function(){
@@ -448,7 +452,11 @@ $(function ()
             return false;
         });
 
-    $('#calculator-button').button().click(function(){
+    $('#calculator-button').button({
+        icons:{
+            primary:"ui-icon-calculator"
+        }
+    }).click(function(){
         updateCalculatorValue();
         $('#millisecond-calculator-dialog').dialog("open");
     });

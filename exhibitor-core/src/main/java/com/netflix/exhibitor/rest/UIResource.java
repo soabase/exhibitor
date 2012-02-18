@@ -132,7 +132,7 @@ public class UIResource
         try
         {
             FourLetterWord.Word wordEnum = FourLetterWord.Word.valueOf(word.toUpperCase());
-            value = new FourLetterWord(wordEnum, context.getExhibitor().getConfig()).getResponse();
+            value = new FourLetterWord(wordEnum, context.getExhibitor().getConfig(), context.getExhibitor().getConnectionTimeOutMs()).getResponse();
         }
         catch ( IllegalArgumentException e )
         {
@@ -195,7 +195,7 @@ public class UIResource
     @Produces(MediaType.APPLICATION_JSON)
     public String getSystemState() throws Exception
     {
-        String                      response = new FourLetterWord(FourLetterWord.Word.RUOK, context.getExhibitor().getConfig()).getResponse();
+        String                      response = new FourLetterWord(FourLetterWord.Word.RUOK, context.getExhibitor().getConfig(), context.getExhibitor().getConnectionTimeOutMs()).getResponse();
         ServerList serverList = new ServerList(context.getExhibitor().getConfig().getString(StringConfigs.SERVERS_SPEC));
         ServerList.ServerSpec       us = Iterables.find(serverList.getSpecs(), ServerList.isUs(context.getExhibitor().getConfig().getString(StringConfigs.HOSTNAME)), null);
 
@@ -302,6 +302,8 @@ public class UIResource
             }
         };
         context.getExhibitor().updateConfig(wrapped);
+        context.getExhibitor().resetLocalConnection();
+
         return Response.ok(new Result("OK", true)).build();
     }
 
