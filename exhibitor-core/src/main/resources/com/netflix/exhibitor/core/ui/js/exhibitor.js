@@ -116,6 +116,7 @@ function updateState()
         {
             if ( connectedToExhibitor )
             {
+                $('#exhibitor-valence').height($(document).height());
                 $('#exhibitor-valence').show();
                 $('#not-connected-alert').show();
                 connectedToExhibitor = false;
@@ -326,6 +327,13 @@ function refreshCurrentTab()
     }
 }
 
+function updateCalculatorValue()
+{
+    var value = parseInt($('#millisecond-calculator-value').val());
+    var unit = parseInt($('#millisecond-calculator-unit').val());
+    $('#millisecond-calculator-result').html(value * unit);
+}
+
 var customTabs = new Array();
 $(function ()
 {
@@ -440,6 +448,11 @@ $(function ()
             return false;
         });
 
+    $('#calculator-button').button().click(function(){
+        updateCalculatorValue();
+        $('#millisecond-calculator-dialog').dialog("open");
+    });
+
     $('#not-connected-message').html("Not connected to " + $('#app-name').html() + " server");
     $('#page-title').html($('#app-name').html() + " for ZooKeeper");
 
@@ -467,6 +480,19 @@ $(function ()
     $('#config-group').colorTip();
     $('#control-panel').colorTip();
 
+    $("#millisecond-calculator-dialog").dialog({
+        modal: true,
+        title: 'Converter',
+        autoOpen: false
+    });
+    $('#millisecond-calculator-value').keyup(function(){
+        updateCalculatorValue();
+    });
+    $('#millisecond-calculator-unit').change(function(){
+        updateCalculatorValue();
+    });
+
+    $.get('able-backups/true');
     initRestoreUI();
     window.setInterval("refreshCurrentTab()", AUTO_REFRESH_PERIOD);
 });

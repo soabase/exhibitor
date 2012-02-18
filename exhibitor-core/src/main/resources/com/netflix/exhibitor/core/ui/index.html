@@ -27,8 +27,8 @@
 	<body>
         <div id="tabs" class="ui-tabs">
             <div id="title">
-                <div id="page-title"></div>
-                <div id="version"></div>
+                <span id="page-title"></span>
+                <span id="version"></span>
             </div>
 
             <div class="ui-widget" id="not-connected-alert">
@@ -117,6 +117,9 @@
                     <div>
                         <button id="config-button">Update...</button>
                     </div>
+                    <div>
+                        <button id="calculator-button">Millisecond Calculator...</button>
+                    </div>
                 </div>
                 <br clear="all"/>
 
@@ -204,9 +207,18 @@
             </select><br clear="all"/>
         </div>
 
+        <div id="new-index-loading-dialog" class="ui-helper-hidden">
+            <div id="new-index-loading-progressbar"></div>
+        </div>
+
         <div id="new-index-dialog" class="ui-helper-hidden">
-            <input type="radio" id="new-index-radio-default" name="new-index-specified" value="no" checked><label for="new-index-radio-default">Use Current Logs</label><br clear="all"/>
-            <input type="radio" id="new-index-radio-path" name="new-index-specified" value="yes"><label for="new-index-radio-path">Log File Path</label><input type="text" id="new-index-path" name="index-query-path" size="30">
+            <input type="radio" id="new-index-radio-default" name="new-index-specified" value="default" checked><label for="new-index-radio-default">Use Current Logs</label><br clear="all"/>
+            <input type="radio" id="new-index-radio-path" name="new-index-specified" value="path"><label for="new-index-radio-path">Log File Path</label><input type="text" id="new-index-path" name="index-query-path" size="30">
+            <div id="new-index-backups-section" class="ui-helper-hidden">
+                <input type="radio" id="new-index-radio-backup" name="new-index-specified" value="backup"><label for="new-index-radio-backup">From Backup</label>
+                <select id="new-index-backup-names" size="1"></select><br clear="all"/>
+                <div id="backups-disabled-message">NOTE: Backups are temporarily turned off</div>
+            </div>
         </div>
 
         <div id="index-query-results-dialog" class="ui-helper-hidden">
@@ -253,5 +265,20 @@
         </div>
 
         <div id="exhibitor-valence"></div>
+
+        <div id="millisecond-calculator-dialog" class="ui-helper-hidden">
+            <input type="text" id="millisecond-calculator-value" name="millisecond-calculator-value" class="mask-pint" size="10" value="1">
+            <select id="millisecond-calculator-unit" size="1">
+                <option value="1000">Seconds</option>
+                <option value="60000">Minutes</option>
+                <option value="3600000">Hours</option>
+                <option value="86400000">Days</option>
+            </select><br clear="all"/><br/>
+            <div>
+                <strong>
+                    = <span id="millisecond-calculator-result"></span> ms
+                </strong>
+            </div>
+        </div>
     </body>
 </html>

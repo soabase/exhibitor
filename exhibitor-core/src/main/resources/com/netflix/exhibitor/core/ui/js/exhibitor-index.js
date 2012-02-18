@@ -5,6 +5,30 @@ var ACTION_NAMES = [
     "Set Data"
 ];
 
+function loadBackups()
+{
+    $.getJSON('index/get-backups', function(data){
+        var names = $.makeArray(data);
+        if ( names.length == 0 )
+        {
+            $('#new-index-backups-section').hide();
+        }
+        else
+        {
+            var options = "";
+            for ( var i = 0; i < names.length; ++i )
+            {
+                options += '<option>' + names[i].name + '</option>';
+            }
+            $('#new-index-backup-names').html(options);
+
+            $('#new-index-backups-section').show();
+        }
+        $('#new-index-loading-dialog').dialog("close");
+        $('#new-index-dialog').dialog("open");
+    });
+}
+
 function initRestoreUI()
 {
     $('#restore-open-button').button({
@@ -39,7 +63,15 @@ function initRestoreUI()
             primary:"ui-icon-document"
         }
     }).click(function(){
-            $('#new-index-dialog').dialog("open");
+            if ( systemState.backupActive )
+            {
+                $('#new-index-loading-dialog').dialog("open");
+                loadBackups();
+            }
+            else
+            {
+                $('#new-index-dialog').dialog("open");
+            }
             return false;
         });
 
@@ -122,11 +154,28 @@ function initRestoreUI()
         }
     );
 
+    $('#new-index-loading-progressbar').progressbar({
+        value: 100
+    });
+    $('#new-index-loading-dialog').dialog({
+        modal: true,
+        autoOpen: false,
+        title: 'Loading...',
+        resizable: false,
+        height: 100
+    });
+
     $('#new-index-dialog').dialog({
         modal: true,
         autoOpen: false,
         title: 'New Index',
-        minWidth: 450
+        minWidth: 450,
+        open: function(){
+            $.get('able-backups/false');
+        },
+        beforeClose: function(){
+            $.get('able-backups/true');
+        }
     });
     $('#new-index-dialog').dialog("option", "buttons",
         {
@@ -138,7 +187,20 @@ function initRestoreUI()
             "OK":function ()
             {
                 var newIndexRequest = {};
-                newIndexRequest.path = $('#new-index-radio-default').prop("checked") ? null : $('#new-index-path').val();
+                newIndexRequest.type = $('input[name=new-index-specified]:checked').val();
+                if ( newIndexRequest.type === "path" )
+                {
+                    newIndexRequest.value = $('#new-index-path').val();
+                }
+                else if ( newIndexRequest.type === "backup" )
+                {
+                    newIndexRequest.value = $("#new-index-backup-names option:selected").text();
+                }
+                else
+                {
+                    newIndexRequest.value = "";
+                }
+
                 $(this).dialog("close");
                 var payload = JSON.stringify(newIndexRequest);
                 $.ajax({
@@ -152,11 +214,11 @@ function initRestoreUI()
         }
     );
 
-    $('#new-index-path').change(function(){
+    $('#new-index-path').focus(function(){
         $('#new-index-radio-path').prop("checked", true);
     });
-    $('#new-index-path').keydown(function(){
-        $('#new-index-radio-path').prop("checked", true);
+    $('#new-index-backup-names').focus(function(){
+        $('#new-index-radio-backup').prop("checked", true);
     });
 
     $('#index-query-results-dialog').dialog({

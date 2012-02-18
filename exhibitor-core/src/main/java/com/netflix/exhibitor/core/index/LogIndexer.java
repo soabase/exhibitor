@@ -18,36 +18,38 @@ import org.apache.zookeeper.txn.SetDataTxn;
 import org.apache.zookeeper.txn.TxnHeader;
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class LogIndexer
 {
-    private final File logFile;
     private final File indexDirectory;
     private final CountingInputStream inputStream;
     private final IndexWriter writer;
     private final NIOFSDirectory directory;
-    private final LogParser logParser;
+    private final ZooKeeperLogParser logParser;
+    private final long sourceLength;
+    private final String sourceName;
 
-    public LogIndexer(File logFile, File indexDirectory) throws Exception
+    public LogIndexer(InputStream in, String sourceName, long sourceLength, File indexDirectory) throws Exception
     {
         if ( !indexDirectory.exists() && !indexDirectory.mkdirs() )
         {
             throw new IOException("Could not make: " + indexDirectory);
         }
+        this.sourceLength = sourceLength;
+        this.sourceName = sourceName;
 
-        this.logFile = logFile;
         this.indexDirectory = indexDirectory;
-        inputStream = new CountingInputStream(new BufferedInputStream(new FileInputStream(logFile)));
+        inputStream = new CountingInputStream(new BufferedInputStream(in));
 
         IndexWriter     localWriter = null;
         NIOFSDirectory  localDirectory = null;
 
-        logParser = new LogParser(inputStream);
+        logParser = new ZooKeeperLogParser(inputStream);
         if ( logParser.isValid() )
         {
             IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_35, new KeywordAnalyzer())
@@ -96,7 +98,6 @@ public class LogIndexer
         {
             Closeables.closeQuietly(writer);
             Closeables.closeQuietly(directory);
-            Closeables.closeQuietly(inputStream);
         }
     }
 
@@ -104,13 +105,13 @@ public class LogIndexer
     {
         synchronized(inputStream)   // inputStream.getCount() should be sync/volatile but it isn't
         {
-            return (int)((100 * inputStream.getCount()) / logFile.length());
+            return (int)((100 * inputStream.getCount()) / sourceLength);
         }
     }
 
-    public File getLogFile()
+    public String getLogSourceName()
     {
-        return logFile;
+        return sourceName;
     }
 
     private void indexRecord(TxnHeader header, Record record, AtomicInteger count, AtomicLong from, AtomicLong to) throws IOException

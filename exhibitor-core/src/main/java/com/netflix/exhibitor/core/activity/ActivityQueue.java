@@ -37,6 +37,7 @@ public class ActivityQueue implements Closeable
         }
 
         @Override
+        // Note: this class has a natural ordering that is inconsistent with equals
         public int compareTo(Delayed rhs)
         {
             if ( rhs == this )
@@ -60,19 +61,8 @@ public class ActivityQueue implements Closeable
                 return false;
             }
 
-            ActivityHolder holder = (ActivityHolder)o;
-
-            if ( endMs != holder.endMs )
-            {
-                return false;
-            }
-            //noinspection RedundantIfStatement
-            if ( !activity.equals(holder.activity) )
-            {
-                return false;
-            }
-
-            return true;
+            ActivityHolder rhs = (ActivityHolder)o;
+            return activity == rhs.activity;    // ID comparison on purpose
         }
 
         @Override

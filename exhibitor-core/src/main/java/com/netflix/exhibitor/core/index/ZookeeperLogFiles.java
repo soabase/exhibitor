@@ -4,36 +4,50 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.io.Closeables;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.config.StringConfigs;
-import org.apache.jute.BinaryInputArchive;
-import org.apache.zookeeper.server.persistence.FileHeader;
-import org.apache.zookeeper.server.persistence.FileTxnLog;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.List;
 
-public class ZookeeperLogFiles
+public class ZooKeeperLogFiles
 {
     private final List<File>        paths;
+    private final boolean           isValid;
 
-    public ZookeeperLogFiles(Exhibitor exhibitor) throws Exception
+    public static File      getDataDir(Exhibitor exhibitor)
+    {
+        String      path = exhibitor.getConfig().getString(StringConfigs.ZOOKEEPER_DATA_DIRECTORY);
+        return new File(path, "version-2");
+    }
+
+    public ZooKeeperLogFiles(Exhibitor exhibitor) throws Exception
     {
         ImmutableList.Builder<File> builder = ImmutableList.builder();
 
-        File[]      logs = new File(exhibitor.getConfig().getString(StringConfigs.ZOOKEEPER_DATA_DIRECTORY), "version-2").listFiles();
-        if ( logs != null )
+        File        path = getDataDir(exhibitor);
+        isValid = path.isDirectory();
+        if ( isValid )
         {
-            for ( File f : logs )
+            File[]      logs = path.listFiles();
+            if ( logs != null )
             {
-                if ( isLogFile(f) )
+                for ( File f : logs )
                 {
-                    builder.add(f);
+                    if ( isLogFile(f) )
+                    {
+                        builder.add(f);
+                    }
                 }
             }
         }
 
         paths = builder.build();
+    }
+
+    public boolean isValid()
+    {
+        return isValid;
     }
 
     public List<File> getPaths()
@@ -46,11 +60,8 @@ public class ZookeeperLogFiles
         InputStream         log = new BufferedInputStream(new FileInputStream(f));
         try
         {
-            BinaryInputArchive  logStream = BinaryInputArchive.getArchive(log);
-
-            FileHeader fhdr = new FileHeader();
-            fhdr.deserialize(logStream, "fileheader");
-            return (fhdr.getMagic() == FileTxnLog.TXNLOG_MAGIC);
+            ZooKeeperLogParser  logParser = new ZooKeeperLogParser(log);
+            return logParser.isValid();
         }
         finally
         {

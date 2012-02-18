@@ -16,4 +16,6 @@ public interface BackupProvider
     public void     deleteBackup(Exhibitor exhibitor, String key, Map<String, String> configValues) throws Exception;
 
     public void     downloadBackup(Exhibitor exhibitor, String key, File destination, Map<String, String> configValues) throws Exception;
+
+    public boolean  isValidConfig(Exhibitor exhibitor, Map<String, String> configValues);
 }

@@ -54,6 +54,12 @@ public class S3BackupProvider implements BackupProvider
     }
 
     @Override
+    public boolean isValidConfig(Exhibitor exhibitor, Map<String, String> configValues)
+    {
+        return (configValues.get(CONFIG_BUCKET.getKey()).trim().length() > 0);
+    }
+
+    @Override
     public void uploadBackup(Exhibitor exhibitor, String key, File source, final Map<String, String> configValues) throws Exception
     {
         RetryPolicy retryPolicy = makeRetryPolicy(configValues);

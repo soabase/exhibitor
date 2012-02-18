@@ -21,38 +21,6 @@ public class StandardProcessOperations implements ProcessOperations
     private static final String     MODIFIED_CONFIG_NAME = "exhibitor.cfg";
     private static final String     SNAPSHOT_PREFIX = "snapshot.";
 
-    private static class Details
-    {
-        final File zooKeeperDirectory;
-        final File dataDirectory;
-        final File configDirectory;
-        final File log4jJarPath;
-        final File zooKeeperJarPath;
-        final Properties properties;
-
-        private Details(Exhibitor exhibitor) throws IOException
-        {
-            this.zooKeeperDirectory = new File(exhibitor.getConfig().getString(StringConfigs.ZOOKEEPER_INSTALL_DIRECTORY));
-            this.dataDirectory = new File(exhibitor.getConfig().getString(StringConfigs.ZOOKEEPER_DATA_DIRECTORY));
-
-            configDirectory = new File(zooKeeperDirectory, "conf");
-            log4jJarPath = findJar(new File(zooKeeperDirectory, "lib"), "log4j");
-            zooKeeperJarPath = findJar(this.zooKeeperDirectory, "zookeeper");
-
-            properties = new Properties();
-            InputStream     in = new BufferedInputStream(new FileInputStream(new File(configDirectory, "zoo.cfg")));
-            try
-            {
-                properties.load(in);
-            }
-            finally
-            {
-                Closeables.closeQuietly(in);
-            }
-            properties.setProperty("dataDir", dataDirectory.getPath());
-        }
-    }
-
     public StandardProcessOperations(Exhibitor exhibitor) throws IOException
     {
         this.exhibitor = exhibitor;
@@ -62,6 +30,10 @@ public class StandardProcessOperations implements ProcessOperations
     public void cleanupInstance() throws Exception
     {
         Details             details = new Details(exhibitor);
+        if ( !details.isValid() )
+        {
+            return;
+        }
 
         // see http://zookeeper.apache.org/doc/r3.3.3/zookeeperAdmin.html#Ongoing+Data+Directory+Cleanup
         ProcessBuilder      builder = new ProcessBuilder
@@ -188,26 +160,6 @@ public class StandardProcessOperations implements ProcessOperations
         builder.start();
 
         exhibitor.getLog().add(ActivityLog.Type.INFO, "Process started via: " + startScript.getPath());
-    }
-
-    private static File findJar(File dir, final String name) throws IOException
-    {
-        File[]          snapshots = dir.listFiles
-        (
-            new FileFilter()
-            {
-                @Override
-                public boolean accept(File f)
-                {
-                    return f.getName().startsWith(name) && f.getName().endsWith(".jar");
-                }
-            }
-        );
-        if ( snapshots.length == 0 )
-        {
-            throw new IOException("Could not find " + name + " jar");
-        }
-        return snapshots[0];
     }
 
     private File prepConfigFile(Details details) throws IOException

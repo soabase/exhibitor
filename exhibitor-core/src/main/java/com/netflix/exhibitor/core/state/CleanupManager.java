@@ -1,4 +1,4 @@
-package com.netflix.exhibitor.core.maintenance;
+package com.netflix.exhibitor.core.state;
 
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.activity.Activity;

@@ -5,25 +5,36 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class NewIndexRequest
 {
-    private String      path;
+    private String type;
+    private String value;
 
     public NewIndexRequest()
     {
-        this("");
+        this("", "");
     }
 
-    public NewIndexRequest(String path)
+    public NewIndexRequest(String type, String value)
     {
-        this.path = path;
+        this.value = value;
     }
 
-    public String getPath()
+    public String getType()
     {
-        return path;
+        return type;
     }
 
-    public void setPath(String path)
+    public void setType(String type)
     {
-        this.path = path;
+        this.type = type;
+    }
+
+    public String getValue()
+    {
+        return value;
+    }
+
+    public void setValue(String value)
+    {
+        this.value = value;
     }
 }

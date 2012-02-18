@@ -11,34 +11,33 @@ import java.io.ByteArrayInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 
 // based on ~/.m2/repository/org/apache/zookeeper/zookeeper/3.3.3/zookeeper-3.3.3-sources.jar!/org/apache/zookeeper/server/LogFormatter.java
 // idea suggested by Kishore Gopalakrishna <kgopalakrishna@linkedin.com>
-public class LogParser
+public class ZooKeeperLogParser
 {
     private final BinaryInputArchive logStream;
-    private final AtomicBoolean      validHeader = new AtomicBoolean();
+    private final boolean            validHeader;
 
-    public LogParser(InputStream log) throws IOException
+    public ZooKeeperLogParser(InputStream log) throws IOException
     {
         logStream = BinaryInputArchive.getArchive(log);
 
         FileHeader fhdr = new FileHeader();
         fhdr.deserialize(logStream, "fileheader");
-        validHeader.set(fhdr.getMagic() == FileTxnLog.TXNLOG_MAGIC);
+        validHeader = (fhdr.getMagic() == FileTxnLog.TXNLOG_MAGIC);
     }
 
     public boolean isValid()
     {
-        return validHeader.get();
+        return validHeader;
     }
 
     public void parse(LogEntryReceiver receiver) throws Exception
     {
-        if ( !validHeader.get() )
+        if ( !validHeader )
         {
             throw new Exception("Invalid magic number for");
         }

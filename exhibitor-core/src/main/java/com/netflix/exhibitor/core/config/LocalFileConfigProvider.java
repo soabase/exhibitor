@@ -2,7 +2,7 @@ package com.netflix.exhibitor.core.config;
 
 import com.google.common.io.Closeables;
 import com.netflix.exhibitor.core.ConfigProvider;
-import com.netflix.exhibitor.core.InstanceConfig;
+import com.netflix.exhibitor.core.state.InstanceConfig;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;

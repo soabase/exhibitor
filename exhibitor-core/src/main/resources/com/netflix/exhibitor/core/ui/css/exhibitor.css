@@ -75,22 +75,25 @@ label
 
 #title
 {
-    font-size: 200%;
-    font-weight: bold;
-    padding: 3px;
+    margin-bottom: 3px;
     text-shadow: 2px 2px #888;
     color: #C00;
+    width: 100%;
+    clear: both;
+}
+
+#page-title
+{
+    font-size: 2em;
+    font-weight: bold;
 }
 
 #version
 {
-    font-size: 50%;
-    font-weight: normal;
     font-style: italic;
-    position: relative;
-    left: 100%;
-    margin-left: -40px;
-    top: -1.5em;
+    float: right;
+    margin-top: 1em;
+    margin-right: 3px;
 }
 
 #tree
@@ -293,4 +296,26 @@ legend
 fieldset
 {
     border: 1px solid #888;
+}
+
+.ui-progressbar-value
+{
+    background-image: url(../images/pbar-ani.gif);
+    background-color: #FFF;
+    border: none;
+}
+
+#new-index-loading-progressbar
+{
+    background-color: #FFF;
+    border: none;
+}
+
+#backups-disabled-message
+{
+    padding-top: 8px;
+    padding-bottom: 3px;
+    margin-left: 25px;
+    font-size: .75em;
+    font-style: italic;
 }

@@ -55,11 +55,8 @@ public class RepeatingActivity implements Closeable
 
     public void setTimePeriodMs(long newTimePeriodMs)
     {
-        long previousValue = timePeriodMs.getAndSet(newTimePeriodMs);
-        if ( previousValue == 0 )
-        {
-            reQueue();
-        }
+        timePeriodMs.set(newTimePeriodMs);
+        queue.replace(group, activity, timePeriodMs.get(), TimeUnit.MILLISECONDS);
     }
 
     private void reQueue()

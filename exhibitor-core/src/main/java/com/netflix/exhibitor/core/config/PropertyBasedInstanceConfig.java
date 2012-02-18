@@ -1,6 +1,6 @@
 package com.netflix.exhibitor.core.config;
 
-import com.netflix.exhibitor.core.InstanceConfig;
+import com.netflix.exhibitor.core.state.InstanceConfig;
 import java.util.Properties;
 
 public class PropertyBasedInstanceConfig implements InstanceConfig

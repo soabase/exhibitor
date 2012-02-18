@@ -6,7 +6,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.io.Resources;
-import com.netflix.exhibitor.core.InstanceConfig;
+import com.netflix.exhibitor.core.state.InstanceConfig;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.QueueGroups;
 import com.netflix.exhibitor.core.backup.BackupConfig;
@@ -153,6 +153,15 @@ public class UIResource
         return Response.ok(tabs.get(index).getContent()).build();
     }
 
+    @Path("able-backups/{value}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response tempDisableBackups(@PathParam("value") boolean value) throws Exception
+    {
+        context.getExhibitor().getBackupManager().setTempDisabled(!value);
+        return Response.ok(new Result("OK", true)).build();
+    }
+
     @Path("backup-config")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -163,8 +172,8 @@ public class UIResource
 
         if ( context.getExhibitor().getBackupManager().isActive() )
         {
-            BackupConfigParser  parser = new BackupConfigParser(context.getExhibitor().getConfig().getString(StringConfigs.BACKUP_EXTRA), context.getExhibitor().getBackupManager().getBackupProvider());
-            List<BackupConfig>  configs = context.getExhibitor().getBackupManager().getBackupProvider().getConfigs();
+            BackupConfigParser  parser = context.getExhibitor().getBackupManager().getBackupConfigParser();
+            List<BackupConfig>  configs = context.getExhibitor().getBackupManager().getConfigs();
             for ( BackupConfig c : configs )
             {
                 ObjectNode      n = mapper.getNodeFactory().objectNode();
@@ -215,8 +224,8 @@ public class UIResource
         if ( context.getExhibitor().getBackupManager().isActive() )
         {
             ObjectNode          backupExtraNode = mapper.getNodeFactory().objectNode();
-            BackupConfigParser  parser = new BackupConfigParser(context.getExhibitor().getConfig().getString(StringConfigs.BACKUP_EXTRA), context.getExhibitor().getBackupManager().getBackupProvider());
-            List<BackupConfig>  configs = context.getExhibitor().getBackupManager().getBackupProvider().getConfigs();
+            BackupConfigParser  parser = context.getExhibitor().getBackupManager().getBackupConfigParser();
+            List<BackupConfig>  configs = context.getExhibitor().getBackupManager().getConfigs();
             for ( BackupConfig c : configs )
             {
                 backupExtraNode.put(c.getKey(), parser.getValues().get(c.getKey()));

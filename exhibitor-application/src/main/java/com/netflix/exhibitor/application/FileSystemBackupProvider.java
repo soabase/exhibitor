@@ -24,6 +24,12 @@ public class FileSystemBackupProvider implements BackupProvider
     }
 
     @Override
+    public boolean isValidConfig(Exhibitor exhibitor, Map<String, String> configValues)
+    {
+        return (configValues.get(CONFIG_DIRECTORY.getKey()).trim().length() > 0);
+    }
+
+    @Override
     public void uploadBackup(Exhibitor exhibitor, String key, File source, Map<String, String> configValues) throws Exception
     {
         String      path = configValues.get(CONFIG_DIRECTORY.getKey());

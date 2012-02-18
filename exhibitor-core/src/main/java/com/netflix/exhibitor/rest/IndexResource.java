@@ -1,9 +1,11 @@
 package com.netflix.exhibitor.rest;
 
 import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.QueueGroups;
+import com.netflix.exhibitor.core.backup.RestoreAndIndex;
 import com.netflix.exhibitor.core.config.StringConfigs;
 import com.netflix.exhibitor.core.entities.Index;
 import com.netflix.exhibitor.core.entities.NewIndexRequest;
@@ -13,6 +15,8 @@ import com.netflix.exhibitor.core.entities.SearchRequest;
 import com.netflix.exhibitor.core.entities.SearchResult;
 import com.netflix.exhibitor.core.index.*;
 import org.apache.lucene.search.Query;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.JsonNodeFactory;
 import org.codehaus.jackson.node.ObjectNode;
@@ -33,6 +37,7 @@ import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -55,43 +60,31 @@ public class IndexResource
     @Produces(MediaType.APPLICATION_JSON)
     public Response newIndex(NewIndexRequest request) throws Exception
     {
-        List<File>        paths = Lists.newArrayList();
-        if ( (request.getPath() != null) && (request.getPath().length() > 0) )
+        if ( request.getType().equals("backup") )
         {
-            paths.add(new File(request.getPath()));
+            RestoreAndIndex     restoreAndIndex = new RestoreAndIndex(context.getExhibitor(), request.getValue());
+            context.getExhibitor().getActivityQueue().add(QueueGroups.IO, restoreAndIndex);
         }
         else
         {
-            ZookeeperLogFiles   zookeeperLogFiles = new ZookeeperLogFiles(context.getExhibitor());
-            paths.addAll(zookeeperLogFiles.getPaths());
-        }
-
-        if ( paths.size() > 0 )
-        {
-            File            indexDirectory = new File(context.getExhibitor().getConfig().getString(StringConfigs.LOG_INDEX_DIRECTORY), "exhibitor-" + System.currentTimeMillis());
-            for ( File logFile : paths )
+            File        path = null;
+            if ( request.getType().equals("default") )
             {
-                boolean     wasIndexed = false;
-                if ( logFile.exists() && !logFile.isDirectory() )
-                {
-                    LogIndexer      logIndexer = new LogIndexer(logFile, indexDirectory);
-                    if ( logIndexer.isValid() )
-                    {
-                        IndexActivity   activity = new IndexActivity(logIndexer, context.getExhibitor().getLog());
-                        context.getExhibitor().getActivityQueue().add(QueueGroups.MAIN, activity);
-                        wasIndexed = true;
-                    }
-                }
-
-                if ( !wasIndexed )
-                {
-                    context.getExhibitor().getLog().add(ActivityLog.Type.INFO, "Ignoring non-log file: " + logFile);
-                }
+                path = ZooKeeperLogFiles.getDataDir(context.getExhibitor());
             }
-        }
-        else
-        {
-            context.getExhibitor().getLog().add(ActivityLog.Type.INFO, "No log files found");
+            else if ( request.getType().equals("path") )
+            {
+                path = new File(request.getValue());
+            }
+
+            if ( path != null )
+            {
+                IndexerUtil.startIndexing(context.getExhibitor(), path);
+            }
+            else
+            {
+                context.getExhibitor().getLog().add(ActivityLog.Type.INFO, "No log files found");
+            }
         }
 
         return Response.ok(new Result("OK", true)).build();
@@ -105,6 +98,35 @@ public class IndexResource
         File        indexFile = getLogFile(indexName);
         context.getExhibitor().getIndexCache().markForDeletion(indexFile);
         return Response.ok(new Result("OK", true)).build();
+    }
+
+    @Path("get-backups")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getAvailableBackups() throws Exception
+    {
+        Collection<String> names = context.getExhibitor().getBackupManager().getAvailableSessionNames();
+
+        ObjectMapper            mapper = new ObjectMapper();
+        final JsonNodeFactory   factory = mapper.getNodeFactory();
+        Collection<JsonNode>    nodes = Collections2.transform
+        (
+            names,
+            new Function<String, JsonNode>()
+            {
+                @Override
+                public JsonNode apply(String name)
+                {
+                    ObjectNode node = factory.objectNode();
+                    node.put("name", name);
+                    return node;
+                }
+            }
+        );
+        ArrayNode tab = factory.arrayNode();
+        tab.addAll(nodes);
+
+        return mapper.writer().writeValueAsString(tab);
     }
 
     @Path("get/{index-name}/{search-handle}/{doc-id}")

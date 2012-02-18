@@ -22,11 +22,15 @@ import org.apache.commons.cli.PosixParser;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.Context;
 import org.mortbay.jetty.servlet.ServletHolder;
+import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.util.Set;
 
-public class ExhibitorMain
+public class ExhibitorMain implements Closeable
 {
+    private final Server server;
+
     public static void main(String[] args) throws Exception
     {
         File        propertiesFile = new File("exhibitor.properties");
@@ -34,10 +38,10 @@ public class ExhibitorMain
         Options     options  = new Options();
         options.addOption(null, "properties", true, "Path to store Exhibitor properties. Default location is: " + propertiesFile.getCanonicalPath());
         options.addOption(null, "s3backup", true, "Enables AWS S3 backup of ZooKeeper log files. The argument is the path to an AWS credential properties file with two properties: " + PropertyBasedS3Credential.PROPERTY_S3_KEY_ID + " and " + PropertyBasedS3Credential.PROPERTY_S3_SECRET_KEY);
-        options.addOption(null, "filebackup", false, "Enables file system backup of ZooKeeper log files.");
+        options.addOption(null, "filesystembackup", false, "Enables file system backup of ZooKeeper log files.");
         options.addOption("?", "help", false, "Print this help");
 
-        CommandLine         commandLine = null;
+        CommandLine         commandLine;
         try
         {
             CommandLineParser   parser = new PosixParser();
@@ -60,11 +64,18 @@ public class ExhibitorMain
             PropertyBasedS3Credential credential = new PropertyBasedS3Credential(new File(commandLine.getOptionValue("s3backup")));
             backupProvider = new S3BackupProvider(credential);
         }
-        else if ( commandLine.hasOption("filebackup") )
+        else if ( commandLine.hasOption("filesystembackup") )
         {
             backupProvider = new FileSystemBackupProvider();
         }
 
+        ExhibitorMain exhibitorMain = new ExhibitorMain(propertiesFile, backupProvider);
+        exhibitorMain.start();
+        exhibitorMain.join();
+    }
+
+    public ExhibitorMain(File propertiesFile, BackupProvider backupProvider) throws Exception
+    {
         Exhibitor exhibitor = new Exhibitor(new LocalFileConfigProvider(propertiesFile, DefaultProperties.get()), null, backupProvider);
         exhibitor.start();
 
@@ -90,14 +101,27 @@ public class ExhibitorMain
             }
         };
         ServletContainer container = new ServletContainer(application);
-        Server server = new Server(8080);
+        server = new Server(8080);
         Context root = new Context(server, "/", Context.SESSIONS);
         root.addServlet(new ServletHolder(container), "/*");
-        server.start();
+    }
 
+    public void start() throws Exception
+    {
+        server.start();
+    }
+
+    public void join() throws Exception
+    {
         server.join();
     }
-    
+
+    @Override
+    public void close() throws IOException
+    {
+        server.destroy();
+    }
+
     private static void printHelp(Options options)
     {
         HelpFormatter       formatter = new HelpFormatter();
