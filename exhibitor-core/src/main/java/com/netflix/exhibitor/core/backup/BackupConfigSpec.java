@@ -1,6 +1,6 @@
 package com.netflix.exhibitor.core.backup;
 
-public class BackupConfig
+public class BackupConfigSpec
 {
     private final String        key;
     private final String        displayName;
@@ -14,7 +14,7 @@ public class BackupConfig
         INTEGER
     }
 
-    public BackupConfig(String key, String displayName, String helpText, String defaultValue, Type type)
+    public BackupConfigSpec(String key, String displayName, String helpText, String defaultValue, Type type)
     {
         this.key = key;
         this.displayName = displayName;

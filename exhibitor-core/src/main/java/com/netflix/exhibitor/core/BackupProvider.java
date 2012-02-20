@@ -1,13 +1,13 @@
 package com.netflix.exhibitor.core;
 
-import com.netflix.exhibitor.core.backup.BackupConfig;
+import com.netflix.exhibitor.core.backup.BackupConfigSpec;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
 
 public interface BackupProvider
 {
-    public List<BackupConfig> getConfigs();
+    public List<BackupConfigSpec> getConfigs();
     
     public void     uploadBackup(Exhibitor exhibitor, String key, File source, Map<String, String> configValues) throws Exception;
     

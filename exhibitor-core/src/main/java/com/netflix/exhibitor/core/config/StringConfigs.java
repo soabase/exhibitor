@@ -1,5 +1,8 @@
 package com.netflix.exhibitor.core.config;
 
+/**
+ * Config selectors for string values
+ */
 public enum StringConfigs
 {
     LOG_INDEX_DIRECTORY,

@@ -46,7 +46,7 @@ public class Exhibitor implements Closeable
 {
     private final ActivityLog               log = new ActivityLog();
     private final ActivityQueue             activityQueue = new ActivityQueue();
-    private final MonitorRunningInstance monitorRunningInstance;
+    private final MonitorRunningInstance    monitorRunningInstance;
     private final InstanceStateManager      instanceStateManager;
     private final AtomicReference<InstanceConfig> instanceConfig = new AtomicReference<InstanceConfig>();
     private final Collection<UITab>         additionalUITabs;
@@ -54,7 +54,7 @@ public class Exhibitor implements Closeable
     private final CleanupManager            cleanupManager;
     private final AtomicReference<State>    state = new AtomicReference<State>(State.LATENT);
     private final ConfigProvider            configProvider;
-    private final int connectionTimeOutMs;
+    private final int                       connectionTimeOutMs;
     private final IndexCache                indexCache;
     private final Map<ControlPanelTypes, AtomicBoolean> controlPanelSettings;
     private final BackupManager             backupManager;
@@ -80,6 +80,13 @@ public class Exhibitor implements Closeable
         this(configProvider, additionalUITabs, backupProvider, (int)TimeUnit.MILLISECONDS.convert(30, TimeUnit.SECONDS));
     }
 
+    /**
+     * @param configProvider config source
+     * @param additionalUITabs any additional tabs in the UI (can be null)
+     * @param backupProvider backup provider or null
+     * @param connectionTimeOutMs general timeout for ZK connections
+     * @throws IOException errors
+     */
     public Exhibitor(ConfigProvider configProvider, Collection<UITab> additionalUITabs, BackupProvider backupProvider, int connectionTimeOutMs) throws Exception
     {
         this.configProvider = configProvider;
@@ -102,11 +109,17 @@ public class Exhibitor implements Closeable
         this.backupManager = new BackupManager(this, backupProvider);
     }
 
+    /**
+     * @return logging manager
+     */
     public ActivityLog getLog()
     {
         return log;
     }
 
+    /**
+     * @return cache of indexed log files
+     */
     public IndexCache getIndexCache()
     {
         return indexCache;
@@ -138,16 +151,28 @@ public class Exhibitor implements Closeable
         closeLocalConnection();
     }
 
+    /**
+     * @return any additionally configured tabs
+     */
     public Collection<UITab> getAdditionalUITabs()
     {
         return additionalUITabs;
     }
 
+    /**
+     * @return the config instance
+     */
     public InstanceConfig getConfig()
     {
         return instanceConfig.get();
     }
 
+    /**
+     * Set new new config
+     *
+     * @param newConfig the new config
+     * @throws Exception I/O errors
+     */
     public synchronized void updateConfig(InstanceConfig newConfig) throws Exception
     {
         closeLocalConnection();

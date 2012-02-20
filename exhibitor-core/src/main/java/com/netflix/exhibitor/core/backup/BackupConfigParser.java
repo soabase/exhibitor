@@ -9,11 +9,14 @@ import java.net.URLDecoder;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Converts between the stored version of backup config and the runtime version
+ */
 public class BackupConfigParser
 {
     private final Map<String, String>       values;
     
-    public BackupConfigParser(String encodedValue, BackupProvider backupProvider)
+    BackupConfigParser(String encodedValue, BackupProvider backupProvider)
     {
         ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
 
@@ -41,7 +44,7 @@ public class BackupConfigParser
             throw new Error(e);
         }
 
-        for ( BackupConfig config : backupProvider.getConfigs() )
+        for ( BackupConfigSpec config : backupProvider.getConfigs() )
         {
             if ( !usedKeys.contains(config.getKey()) )
             {
@@ -52,16 +55,27 @@ public class BackupConfigParser
         values = builder.build();
     }
 
+    /**
+     * @param values runtime values
+     */
     public BackupConfigParser(Map<String, String> values)
     {
         this.values = ImmutableMap.copyOf(values);
     }
 
+    /**
+     * Return the values
+     *
+     * @return values
+     */
     public Map<String, String> getValues()
     {
         return values;
     }
 
+    /**
+     * @return storable value
+     */
     public String   toEncoded()
     {
         StringBuilder       str = new StringBuilder();

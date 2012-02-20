@@ -28,6 +28,9 @@ import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Manages backups/restores
+ */
 public class BackupManager implements Closeable
 {
     private final Exhibitor exhibitor;
@@ -41,6 +44,10 @@ public class BackupManager implements Closeable
 
     private static final String         FORMAT_SPEC = "MMM d yyyy HH:mm:ss";
 
+    /**
+     * @param exhibitor main instance
+     * @param backupProvider provider
+     */
     public BackupManager(Exhibitor exhibitor, BackupProvider backupProvider)
     {
         this.exhibitor = exhibitor;
@@ -66,6 +73,9 @@ public class BackupManager implements Closeable
         repeatingActivity = new RepeatingActivity(exhibitor.getActivityQueue(), QueueGroups.IO, activity, exhibitor.getConfig().getInt(IntConfigs.BACKUP_PERIOD_MS));
     }
 
+    /**
+     * Manager must be started
+     */
     public void start()
     {
         if ( isActive() )
@@ -94,16 +104,32 @@ public class BackupManager implements Closeable
         }
     }
 
+    /**
+     * Returns true if backup has been configured. Running Exhibitor without backups is supported
+     *
+     * @return true/false
+     */
     public boolean isActive()
     {
         return backupProvider.isPresent();
     }
 
+    /**
+     * Used to temporarily disable backups
+     *
+     * @param value on/off
+     */
     public void     setTempDisabled(boolean value)
     {
         tempDisabled.set(value);
     }
 
+    /**
+     * Return displayable set of backups
+     *
+     * @return display names
+     * @throws Exception errors
+     */
     public Collection<String> getAvailableSessionNames() throws Exception
     {
         Collection<SessionAndName> sessionAndNames = getAvailableSession();
@@ -121,6 +147,12 @@ public class BackupManager implements Closeable
         );
     }
 
+    /**
+     * Get detailed info on available restores
+     *
+     * @return details
+     * @throws Exception errors
+     */
     public Collection<SessionAndName> getAvailableSession() throws Exception
     {
         final SimpleDateFormat    formatter = new SimpleDateFormat(FORMAT_SPEC);
@@ -142,22 +174,46 @@ public class BackupManager implements Closeable
         );
     }
 
+    /**
+     * Return the stored backup config
+     *
+     * @return backup config
+     */
     public BackupConfigParser  getBackupConfigParser()
     {
         return new BackupConfigParser(exhibitor.getConfig().getString(StringConfigs.BACKUP_EXTRA), backupProvider.get());
     }
 
-    public List<BackupConfig> getConfigs()
+    /**
+     * Return the names of backup config, display info, etc.
+     *
+     * @return specs
+     */
+    public List<BackupConfigSpec> getConfigSpecs()
     {
         return backupProvider.get().getConfigs();
     }
 
+    /**
+     * Given a session ID, return all the backup keys
+     *
+     * @param session the session
+     * @return keys
+     * @throws Exception errors
+     */
     public Collection<String> findKeyForSession(long session) throws Exception
     {
         List<String> backupKeys = backupProvider.get().getAvailableBackupKeys(exhibitor, getBackupConfig());
         return Collections2.filter(backupKeys, asKey(session));
     }
-    
+
+    /**
+     * Restore the given key to the given file
+     *
+     * @param key the key
+     * @param destinationFile the file
+     * @throws Exception errors
+     */
     public void restoreKey(String key, File destinationFile) throws Exception
     {
         backupProvider.get().downloadBackup(exhibitor, key, destinationFile, getBackupConfig());

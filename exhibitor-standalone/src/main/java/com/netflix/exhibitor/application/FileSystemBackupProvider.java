@@ -5,7 +5,7 @@ import com.google.common.io.Files;
 import com.netflix.exhibitor.core.BackupProvider;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.activity.ActivityLog;
-import com.netflix.exhibitor.core.backup.BackupConfig;
+import com.netflix.exhibitor.core.backup.BackupConfigSpec;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
@@ -13,12 +13,12 @@ import java.util.Map;
 
 public class FileSystemBackupProvider implements BackupProvider
 {
-    private static final BackupConfig       CONFIG_DIRECTORY = new BackupConfig("directory", "Destination Path", "The path of the directory where backups are written to", "", BackupConfig.Type.STRING);
+    private static final BackupConfigSpec CONFIG_DIRECTORY = new BackupConfigSpec("directory", "Destination Path", "The path of the directory where backups are written to", "", BackupConfigSpec.Type.STRING);
 
-    private static final List<BackupConfig> BACKUP_CONFIGS = Arrays.asList(CONFIG_DIRECTORY);
+    private static final List<BackupConfigSpec> BACKUP_CONFIGS = Arrays.asList(CONFIG_DIRECTORY);
 
     @Override
-    public List<BackupConfig> getConfigs()
+    public List<BackupConfigSpec> getConfigs()
     {
         return BACKUP_CONFIGS;
     }

@@ -3,12 +3,20 @@ package com.netflix.exhibitor.core.config;
 import com.netflix.exhibitor.core.state.InstanceConfig;
 import java.util.Properties;
 
-public class PropertyBasedInstanceConfig implements InstanceConfig
+/**
+ * Config imp that uses a Properties file
+ */
+class PropertyBasedInstanceConfig implements InstanceConfig
 {
     private final Properties properties;
     private final Properties defaults;
 
-    public PropertyBasedInstanceConfig(InstanceConfig source)
+    /**
+     * Used to wrap an existing config
+     *
+     * @param source source config
+     */
+    PropertyBasedInstanceConfig(InstanceConfig source)
     {
         defaults = new Properties();
 
@@ -23,17 +31,21 @@ public class PropertyBasedInstanceConfig implements InstanceConfig
         }
     }
 
-    public Properties getProperties()
+    /**
+     * @param properties the properties
+     * @param defaults default values
+     */
+    PropertyBasedInstanceConfig(Properties properties, Properties defaults)
+    {
+        this.properties = properties;
+        this.defaults = defaults;
+    }
+
+    Properties getProperties()
     {
         Properties      copy = new Properties();
         copy.putAll(properties);
         return copy;
-    }
-
-    public PropertyBasedInstanceConfig(Properties properties, Properties defaults)
-    {
-        this.properties = properties;
-        this.defaults = defaults;
     }
 
     @Override
@@ -47,7 +59,7 @@ public class PropertyBasedInstanceConfig implements InstanceConfig
     public int getInt(IntConfigs config)
     {
         String propertyName = toName(config);
-        return asInt(properties.getProperty(propertyName, defaults.getProperty(propertyName, "0")));
+        return DefaultProperties.asInt(properties.getProperty(propertyName, defaults.getProperty(propertyName, "0")));
     }
     
     private String toName(Enum e)
@@ -56,18 +68,5 @@ public class PropertyBasedInstanceConfig implements InstanceConfig
         s = s.replace('_', '-');
         s = s.toLowerCase();
         return "com.netflix.exhibitor." + s;
-    }
-
-    public static int asInt(String s)
-    {
-        try
-        {
-            return Integer.parseInt(s);
-        }
-        catch ( NumberFormatException e )
-        {
-            // ignore
-        }
-        return 0;
     }
 }

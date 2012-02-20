@@ -9,7 +9,7 @@ import com.google.common.io.Resources;
 import com.netflix.exhibitor.core.state.InstanceConfig;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.QueueGroups;
-import com.netflix.exhibitor.core.backup.BackupConfig;
+import com.netflix.exhibitor.core.backup.BackupConfigSpec;
 import com.netflix.exhibitor.core.backup.BackupConfigParser;
 import com.netflix.exhibitor.core.config.IntConfigs;
 import com.netflix.exhibitor.core.config.StringConfigs;
@@ -173,8 +173,8 @@ public class UIResource
         if ( context.getExhibitor().getBackupManager().isActive() )
         {
             BackupConfigParser  parser = context.getExhibitor().getBackupManager().getBackupConfigParser();
-            List<BackupConfig>  configs = context.getExhibitor().getBackupManager().getConfigs();
-            for ( BackupConfig c : configs )
+            List<BackupConfigSpec>  configs = context.getExhibitor().getBackupManager().getConfigSpecs();
+            for ( BackupConfigSpec c : configs )
             {
                 ObjectNode      n = mapper.getNodeFactory().objectNode();
                 n.put("key", c.getKey());
@@ -225,8 +225,8 @@ public class UIResource
         {
             ObjectNode          backupExtraNode = mapper.getNodeFactory().objectNode();
             BackupConfigParser  parser = context.getExhibitor().getBackupManager().getBackupConfigParser();
-            List<BackupConfig>  configs = context.getExhibitor().getBackupManager().getConfigs();
-            for ( BackupConfig c : configs )
+            List<BackupConfigSpec>  configs = context.getExhibitor().getBackupManager().getConfigSpecs();
+            for ( BackupConfigSpec c : configs )
             {
                 backupExtraNode.put(c.getKey(), parser.getValues().get(c.getKey()));
             }

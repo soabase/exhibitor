@@ -7,11 +7,76 @@ import org.testng.annotations.Test;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class TestActivityQueue
 {
+    @Test
+    public void testSequential() throws Exception
+    {
+        ActivityQueue queue = new ActivityQueue();
+        queue.start();
+        try
+        {
+            final CountDownLatch    latch = new CountDownLatch(1);
+            Activity                activity1 = new Activity()
+            {
+                @Override
+                public void completed(boolean wasSuccessful)
+                {
+                }
+
+                @Override
+                public Boolean call() throws Exception
+                {
+                    latch.await();
+                    return true;
+                }
+            };
+
+            final AtomicBoolean     active = new AtomicBoolean(false);
+            Activity                activity2 = new Activity()
+            {
+                @Override
+                public void completed(boolean wasSuccessful)
+                {
+                }
+
+                @Override
+                public Boolean call() throws Exception
+                {
+                    active.set(true);
+                    return true;
+                }
+            };
+
+            queue.add(QueueGroups.MAIN, activity1);
+            queue.add(QueueGroups.MAIN, activity2);
+            for ( int i = 0; i < 10; ++i )
+            {
+                Assert.assertFalse(active.get());
+                Thread.sleep(100);
+            }
+
+            queue.add(QueueGroups.IO, activity2);
+            for ( int i = 0; i < 10; ++i )
+            {
+                if ( active.get() )
+                {
+                    break;
+                }
+                Thread.sleep(100);
+            }
+            Assert.assertTrue(active.get());
+        }
+        finally
+        {
+            Closeables.closeQuietly(queue);
+        }
+    }
+
     @Test
     public void testReplace() throws Exception
     {

@@ -12,16 +12,26 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Properties;
 
+/**
+ * Config provider that uses a properties file store locally
+ */
 public class LocalFileConfigProvider implements ConfigProvider
 {
     private final File propertiesFile;
     private final Properties defaults;
 
+    /**
+     * @param propertiesFile where to store the properties
+     */
     public LocalFileConfigProvider(File propertiesFile)
     {
         this(propertiesFile, new Properties());
     }
 
+    /**
+     * @param propertiesFile where to store the properties
+     * @param defaults default values
+     */
     public LocalFileConfigProvider(File propertiesFile, Properties defaults)
     {
         this.propertiesFile = propertiesFile;

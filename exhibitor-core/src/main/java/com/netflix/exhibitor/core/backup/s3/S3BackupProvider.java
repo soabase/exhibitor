@@ -10,7 +10,7 @@ import com.netflix.curator.RetryPolicy;
 import com.netflix.curator.retry.ExponentialBackoffRetry;
 import com.netflix.exhibitor.core.BackupProvider;
 import com.netflix.exhibitor.core.Exhibitor;
-import com.netflix.exhibitor.core.backup.BackupConfig;
+import com.netflix.exhibitor.core.backup.BackupConfigSpec;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.zookeeper.server.ByteBufferInputStream;
 import java.io.File;
@@ -23,7 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static com.netflix.exhibitor.core.config.PropertyBasedInstanceConfig.asInt;
+import static com.netflix.exhibitor.core.config.DefaultProperties.asInt;
 
 // liberally copied and modified from Priam
 public class S3BackupProvider implements BackupProvider
@@ -33,12 +33,12 @@ public class S3BackupProvider implements BackupProvider
     private final AmazonS3Client    s3Client;
     private final Compressor        compressor;
 
-    private static final BackupConfig CONFIG_THROTTLE = new BackupConfig("throttle", "Throttle (bytes/ms)", "Data throttling. Maximum bytes per millisecond.", Integer.toString(1024 * 1024), BackupConfig.Type.INTEGER);
-    private static final BackupConfig CONFIG_BUCKET = new BackupConfig("bucket-name", "S3 Bucket Name", "The S3 bucket to use", "", BackupConfig.Type.STRING);
-    private static final BackupConfig CONFIG_MAX_RETRIES = new BackupConfig("max-retries", "Max Retries", "Maximum retries when uploading/downloading S3 data", "3", BackupConfig.Type.INTEGER);
-    private static final BackupConfig CONFIG_RETRY_SLEEP_MS = new BackupConfig("retry-sleep-ms", "Retry Sleep (ms)", "Sleep time in milliseconds when retrying", "1000", BackupConfig.Type.INTEGER);
+    private static final BackupConfigSpec CONFIG_THROTTLE = new BackupConfigSpec("throttle", "Throttle (bytes/ms)", "Data throttling. Maximum bytes per millisecond.", Integer.toString(1024 * 1024), BackupConfigSpec.Type.INTEGER);
+    private static final BackupConfigSpec CONFIG_BUCKET = new BackupConfigSpec("bucket-name", "S3 Bucket Name", "The S3 bucket to use", "", BackupConfigSpec.Type.STRING);
+    private static final BackupConfigSpec CONFIG_MAX_RETRIES = new BackupConfigSpec("max-retries", "Max Retries", "Maximum retries when uploading/downloading S3 data", "3", BackupConfigSpec.Type.INTEGER);
+    private static final BackupConfigSpec CONFIG_RETRY_SLEEP_MS = new BackupConfigSpec("retry-sleep-ms", "Retry Sleep (ms)", "Sleep time in milliseconds when retrying", "1000", BackupConfigSpec.Type.INTEGER);
 
-    private static final List<BackupConfig>     CONFIGS = Arrays.asList(CONFIG_THROTTLE, CONFIG_BUCKET, CONFIG_MAX_RETRIES, CONFIG_RETRY_SLEEP_MS);
+    private static final List<BackupConfigSpec>     CONFIGS = Arrays.asList(CONFIG_THROTTLE, CONFIG_BUCKET, CONFIG_MAX_RETRIES, CONFIG_RETRY_SLEEP_MS);
 
     public S3BackupProvider(S3Credential credential)
     {
@@ -48,7 +48,7 @@ public class S3BackupProvider implements BackupProvider
     }
 
     @Override
-    public List<BackupConfig> getConfigs()
+    public List<BackupConfigSpec> getConfigs()
     {
         return CONFIGS;
     }

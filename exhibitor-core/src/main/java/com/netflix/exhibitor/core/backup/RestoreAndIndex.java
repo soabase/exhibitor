@@ -14,11 +14,18 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 
+/**
+ * activity for pulling down a backup and indexing it
+ */
 public class RestoreAndIndex implements Activity
 {
     private final Exhibitor exhibitor;
     private final String backupKeyName;
 
+    /**
+     * @param exhibitor instance
+     * @param backupKeyName the backup key
+     */
     public RestoreAndIndex(Exhibitor exhibitor, String backupKeyName)
     {
         this.exhibitor = exhibitor;

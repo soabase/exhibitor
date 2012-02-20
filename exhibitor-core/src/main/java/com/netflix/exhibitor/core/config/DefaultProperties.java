@@ -4,8 +4,24 @@ import com.netflix.exhibitor.core.state.InstanceConfig;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * The default values
+ */
 public class DefaultProperties
 {
+    public static int asInt(String s)
+    {
+        try
+        {
+            return Integer.parseInt(s);
+        }
+        catch ( NumberFormatException e )
+        {
+            // ignore
+        }
+        return 0;
+    }
+
     public static Properties get()
     {
         InstanceConfig                  source = new InstanceConfig()
