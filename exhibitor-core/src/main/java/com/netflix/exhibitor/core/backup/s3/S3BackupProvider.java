@@ -1,8 +1,8 @@
 package com.netflix.exhibitor.core.backup.s3;
 
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.*;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.io.Closeables;
@@ -30,21 +30,25 @@ public class S3BackupProvider implements BackupProvider
 {
     // TODO - add logging
 
-    private final AmazonS3Client    s3Client;
-    private final Compressor        compressor;
+    private final S3Client    s3Client;
+    private final Compressor  compressor;
 
-    private static final BackupConfigSpec CONFIG_THROTTLE = new BackupConfigSpec("throttle", "Throttle (bytes/ms)", "Data throttling. Maximum bytes per millisecond.", Integer.toString(1024 * 1024), BackupConfigSpec.Type.INTEGER);
-    private static final BackupConfigSpec CONFIG_BUCKET = new BackupConfigSpec("bucket-name", "S3 Bucket Name", "The S3 bucket to use", "", BackupConfigSpec.Type.STRING);
-    private static final BackupConfigSpec CONFIG_MAX_RETRIES = new BackupConfigSpec("max-retries", "Max Retries", "Maximum retries when uploading/downloading S3 data", "3", BackupConfigSpec.Type.INTEGER);
-    private static final BackupConfigSpec CONFIG_RETRY_SLEEP_MS = new BackupConfigSpec("retry-sleep-ms", "Retry Sleep (ms)", "Sleep time in milliseconds when retrying", "1000", BackupConfigSpec.Type.INTEGER);
+    @VisibleForTesting
+    static final BackupConfigSpec CONFIG_THROTTLE = new BackupConfigSpec("throttle", "Throttle (bytes/ms)", "Data throttling. Maximum bytes per millisecond.", Integer.toString(1024 * 1024), BackupConfigSpec.Type.INTEGER);
+    @VisibleForTesting
+    static final BackupConfigSpec CONFIG_BUCKET = new BackupConfigSpec("bucket-name", "S3 Bucket Name", "The S3 bucket to use", "", BackupConfigSpec.Type.STRING);
+    @VisibleForTesting
+    static final BackupConfigSpec CONFIG_MAX_RETRIES = new BackupConfigSpec("max-retries", "Max Retries", "Maximum retries when uploading/downloading S3 data", "3", BackupConfigSpec.Type.INTEGER);
+    @VisibleForTesting
+    static final BackupConfigSpec CONFIG_RETRY_SLEEP_MS = new BackupConfigSpec("retry-sleep-ms", "Retry Sleep (ms)", "Sleep time in milliseconds when retrying", "1000", BackupConfigSpec.Type.INTEGER);
 
     private static final List<BackupConfigSpec>     CONFIGS = Arrays.asList(CONFIG_THROTTLE, CONFIG_BUCKET, CONFIG_MAX_RETRIES, CONFIG_RETRY_SLEEP_MS);
 
-    public S3BackupProvider(S3Credential credential)
+    public S3BackupProvider(S3ClientFactory factory, S3Credential credential) throws Exception
     {
         this.compressor = new GzipCompressor();
         BasicAWSCredentials credentials = new BasicAWSCredentials(credential.getAccessKeyId(), credential.getSecretAccessKey());
-        s3Client = new AmazonS3Client(credentials);
+        s3Client = factory.makeNewClient(credentials);
     }
 
     @Override
@@ -225,7 +229,7 @@ public class S3BackupProvider implements BackupProvider
         s3Client.completeMultipartUpload(completeRequest);
     }
 
-    private void abortUpload(InitiateMultipartUploadResult initResponse)
+    private void abortUpload(InitiateMultipartUploadResult initResponse) throws Exception
     {
         AbortMultipartUploadRequest abortRequest = new AbortMultipartUploadRequest(initResponse.getBucketName(), initResponse.getKey(), initResponse.getUploadId());
         s3Client.abortMultipartUpload(abortRequest);

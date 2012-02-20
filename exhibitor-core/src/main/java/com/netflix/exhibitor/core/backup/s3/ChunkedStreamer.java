@@ -6,12 +6,19 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-class ChunkedGZipper extends OutputStream
+class ChunkedStreamer extends OutputStream
 {
-    private final List<ByteBuffer> buffers = Lists.newArrayList();
+    private final List<ByteBuffer>  buffers = Lists.newArrayList();
+    private final int               chunkSize;
 
     private ByteBuffer   currentBuffer = null;
     private State        state = State.OPEN;
+
+    ChunkedStreamer(int chunkSize)
+    {
+        this.chunkSize = chunkSize;
+        allocate();
+    }
 
     private enum State
     {
@@ -37,9 +44,9 @@ class ChunkedGZipper extends OutputStream
     {
         while ( len > 0 )
         {
-            ByteBuffer buffer = getBuffer();
+            ByteBuffer  buffer = getBuffer();
 
-            int     thisLen = Math.min(buffer.remaining(), len);
+            int         thisLen = Math.min(buffer.remaining(), len);
             buffer.put(b, off, thisLen);
             off += thisLen;
             len -= thisLen;
@@ -80,22 +87,29 @@ class ChunkedGZipper extends OutputStream
         {
             if ( currentBuffer.position() > 0 )
             {
-                buffers.add(currentBuffer);
+                push();
             }
         }
     }
 
     private ByteBuffer       getBuffer()
     {
-        if ( (currentBuffer != null) && !currentBuffer.hasRemaining() )
+        if ( !currentBuffer.hasRemaining() )
         {
-            buffers.add(currentBuffer);
-            currentBuffer = null;
-        }
-        if ( currentBuffer == null )
-        {
-            currentBuffer = ByteBuffer.allocate(GzipCompressor.CHUNK_SIZE);
+            push();
+            allocate();
         }
         return currentBuffer;
+    }
+
+    private void push()
+    {
+        currentBuffer.flip();
+        buffers.add(currentBuffer);
+    }
+
+    private void allocate()
+    {
+        currentBuffer = ByteBuffer.allocate(chunkSize);
     }
 }

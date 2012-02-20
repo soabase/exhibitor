@@ -5,6 +5,7 @@ import com.netflix.exhibitor.core.BackupProvider;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.backup.s3.PropertyBasedS3Credential;
 import com.netflix.exhibitor.core.backup.s3.S3BackupProvider;
+import com.netflix.exhibitor.core.backup.s3.S3ClientFactoryImpl;
 import com.netflix.exhibitor.core.config.DefaultProperties;
 import com.netflix.exhibitor.core.config.LocalFileConfigProvider;
 import com.netflix.exhibitor.rest.ExplorerResource;
@@ -63,7 +64,7 @@ public class ExhibitorMain implements Closeable
         if ( commandLine.hasOption("s3backup") )
         {
             PropertyBasedS3Credential credential = new PropertyBasedS3Credential(new File(commandLine.getOptionValue("s3backup")));
-            backupProvider = new S3BackupProvider(credential);
+            backupProvider = new S3BackupProvider(new S3ClientFactoryImpl(), credential);
         }
         else if ( commandLine.hasOption("filesystembackup") )
         {
