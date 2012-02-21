@@ -71,7 +71,6 @@ public class S3BackupProvider implements BackupProvider
 
         InitiateMultipartUploadRequest  initRequest = new InitiateMultipartUploadRequest(configValues.get(CONFIG_BUCKET.getKey()), key);
         InitiateMultipartUploadResult   initResponse = s3Client.initiateMultipartUpload(initRequest);
-        List<PartETag>                  partETags = Lists.newArrayList();
 
         CompressorIterator      compressorIterator = compressor.compress(source);
         try
@@ -109,32 +108,48 @@ public class S3BackupProvider implements BackupProvider
     {
         S3Object        object = s3Client.getObject(configValues.get(CONFIG_BUCKET.getKey()), key);
 
+        long            startMs = System.currentTimeMillis();
         RetryPolicy     retryPolicy = makeRetryPolicy(configValues);
-        Throttle        throttle = makeThrottle(configValues);
-
-        InputStream         in = null;
-        FileOutputStream    out = null;
-        try
+        int             retryCount = 0;
+        boolean         done = false;
+        while ( !done )
         {
-            out = new FileOutputStream(destination);
-            in = object.getObjectContent();
-
-            FileChannel             channel = out.getChannel();
-            CompressorIterator      compressorIterator = compressor.decompress(in);
-            for(;;)
+            Throttle            throttle = makeThrottle(configValues);
+            InputStream         in = null;
+            FileOutputStream    out = null;
+            try
             {
-                ByteBuffer bytes = compressorIterator.next();
-                if ( bytes == null )
+                out = new FileOutputStream(destination);
+                in = object.getObjectContent();
+
+                FileChannel             channel = out.getChannel();
+                CompressorIterator      compressorIterator = compressor.decompress(in);
+                for(;;)
                 {
-                    break;
+                    ByteBuffer bytes = compressorIterator.next();
+                    if ( bytes == null )
+                    {
+                        break;
+                    }
+
+                    throttle.throttle(bytes.limit());
+                    channel.write(bytes);
                 }
-                channel.write(bytes);
+
+                done = true;
             }
-        }
-        finally
-        {
-            Closeables.closeQuietly(in);
-            Closeables.closeQuietly(out);
+            catch ( Exception e )
+            {
+                if ( !retryPolicy.allowRetry(retryCount++, System.currentTimeMillis() - startMs) )
+                {
+                    done = true;
+                }
+            }
+            finally
+            {
+                Closeables.closeQuietly(in);
+                Closeables.closeQuietly(out);
+            }
         }
     }
 
@@ -188,7 +203,7 @@ public class S3BackupProvider implements BackupProvider
         {
             try
             {
-                return uploadChunk(bytes, initResponse, index, retryPolicy);
+                return uploadChunk(bytes, initResponse, index);
             }
             catch ( Exception e )
             {
@@ -200,7 +215,7 @@ public class S3BackupProvider implements BackupProvider
         }
     }
 
-    private PartETag uploadChunk(ByteBuffer bytes, InitiateMultipartUploadResult initResponse, int index, RetryPolicy retryPolicy) throws Exception
+    private PartETag uploadChunk(ByteBuffer bytes, InitiateMultipartUploadResult initResponse, int index) throws Exception
     {
         byte[]          md5 = md5(bytes);
         
@@ -241,7 +256,8 @@ public class S3BackupProvider implements BackupProvider
         return new String(encoded);
     }
 
-    private static byte[] md5(ByteBuffer buffer)
+    @VisibleForTesting
+    static byte[] md5(ByteBuffer buffer)
     {
         try
         {
@@ -253,9 +269,14 @@ public class S3BackupProvider implements BackupProvider
         {
             throw new RuntimeException(e);
         }
+        finally
+        {
+            buffer.rewind();
+        }
     }
 
-    private static String toHex(byte[] digest)
+    @VisibleForTesting
+    static String toHex(byte[] digest)
     {
         StringBuilder sb = new StringBuilder(digest.length * 2);
         for ( byte b : digest )

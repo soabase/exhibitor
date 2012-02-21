@@ -14,7 +14,7 @@ public class Throttle
     // the bytes that had been handled the last time we delayed to throttle,
     // and the time in milliseconds when we last throttled
     private long bytesAtLastDelay;
-    private long timeAtLastDelay;
+    private long timeAtLastDelay = System.currentTimeMillis();  // JLZ - need to initialize
 
     // current target bytes of throughput per millisecond
     private int targetBytesPerMS = -1;

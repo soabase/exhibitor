@@ -19,7 +19,6 @@ public class StandardProcessOperations implements ProcessOperations
     private final Exhibitor exhibitor;
 
     private static final String     MODIFIED_CONFIG_NAME = "exhibitor.cfg";
-    private static final String     SNAPSHOT_PREFIX = "snapshot.";
 
     public StandardProcessOperations(Exhibitor exhibitor) throws IOException
     {

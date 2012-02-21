@@ -9,13 +9,11 @@ import com.netflix.exhibitor.core.config.ConfigListener;
 import com.netflix.exhibitor.core.config.IntConfigs;
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class MonitorRunningInstance implements Closeable
 {
     private final Exhibitor                         exhibitor;
-    private final AtomicLong                        onHoldStart = new AtomicLong(0);
     private final AtomicReference<InstanceState>    currentInstanceState = new AtomicReference<InstanceState>();
     private final RepeatingActivity                 repeatingActivity;
 
@@ -77,7 +75,7 @@ public class MonitorRunningInstance implements Closeable
             if ( serverListChange )
             {
                 exhibitor.getLog().add(ActivityLog.Type.INFO, "Server list has changed");
-                restartZooKeeper(instanceState);
+                restartZooKeeper();
             }
             else
             {
@@ -86,7 +84,7 @@ public class MonitorRunningInstance implements Closeable
                     case NOT_SERVING:
                     case UNKNOWN:
                     {
-                        restartZooKeeper(instanceState);
+                        restartZooKeeper();
                         break;
                     }
 
@@ -100,7 +98,7 @@ public class MonitorRunningInstance implements Closeable
         }
     }
 
-    private void restartZooKeeper(final InstanceState instanceState)
+    private void restartZooKeeper()
     {
         if ( !exhibitor.isControlPanelSettingEnabled(ControlPanelTypes.RESTARTS) )
         {

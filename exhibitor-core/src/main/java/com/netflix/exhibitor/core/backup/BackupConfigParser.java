@@ -3,9 +3,9 @@ package com.netflix.exhibitor.core.backup;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.netflix.exhibitor.core.BackupProvider;
-import com.sun.deploy.net.URLEncoder;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.Map;
 import java.util.Set;
 
