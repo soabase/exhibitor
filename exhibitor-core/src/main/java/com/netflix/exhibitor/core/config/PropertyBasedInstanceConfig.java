@@ -6,7 +6,7 @@ import java.util.Properties;
 /**
  * Config imp that uses a Properties file
  */
-class PropertyBasedInstanceConfig implements InstanceConfig
+public class PropertyBasedInstanceConfig implements InstanceConfig
 {
     private final Properties properties;
     private final Properties defaults;
@@ -16,7 +16,7 @@ class PropertyBasedInstanceConfig implements InstanceConfig
      *
      * @param source source config
      */
-    PropertyBasedInstanceConfig(InstanceConfig source)
+    public PropertyBasedInstanceConfig(InstanceConfig source)
     {
         defaults = new Properties();
 
@@ -35,13 +35,13 @@ class PropertyBasedInstanceConfig implements InstanceConfig
      * @param properties the properties
      * @param defaults default values
      */
-    PropertyBasedInstanceConfig(Properties properties, Properties defaults)
+    public PropertyBasedInstanceConfig(Properties properties, Properties defaults)
     {
         this.properties = properties;
         this.defaults = defaults;
     }
 
-    Properties getProperties()
+    public Properties getProperties()
     {
         Properties      copy = new Properties();
         copy.putAll(properties);

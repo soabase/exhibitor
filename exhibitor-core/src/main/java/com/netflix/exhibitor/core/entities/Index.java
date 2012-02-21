@@ -2,6 +2,7 @@ package com.netflix.exhibitor.core.entities;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+@SuppressWarnings("UnusedDeclaration")
 @XmlRootElement
 public class Index
 {

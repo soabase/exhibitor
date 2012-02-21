@@ -2,7 +2,7 @@ package com.netflix.exhibitor.application;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
-import com.netflix.exhibitor.core.BackupProvider;
+import com.netflix.exhibitor.core.backup.BackupProvider;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.backup.BackupConfigSpec;

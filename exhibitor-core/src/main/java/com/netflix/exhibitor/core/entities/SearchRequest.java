@@ -4,6 +4,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Date;
 
 @XmlRootElement
+@SuppressWarnings("UnusedDeclaration")
 public class SearchRequest
 {
     private String      indexName;

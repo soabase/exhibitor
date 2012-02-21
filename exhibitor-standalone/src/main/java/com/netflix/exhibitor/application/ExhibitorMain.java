@@ -1,13 +1,13 @@
 package com.netflix.exhibitor.application;
 
 import com.google.common.collect.Sets;
-import com.netflix.exhibitor.core.BackupProvider;
+import com.netflix.exhibitor.core.backup.BackupProvider;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.backup.s3.PropertyBasedS3Credential;
 import com.netflix.exhibitor.core.backup.s3.S3BackupProvider;
 import com.netflix.exhibitor.core.backup.s3.S3ClientFactoryImpl;
 import com.netflix.exhibitor.core.config.DefaultProperties;
-import com.netflix.exhibitor.core.config.LocalFileConfigProvider;
+import com.netflix.exhibitor.core.config.local.LocalFileConfigProvider;
 import com.netflix.exhibitor.rest.ExplorerResource;
 import com.netflix.exhibitor.rest.IndexResource;
 import com.netflix.exhibitor.rest.UIContext;

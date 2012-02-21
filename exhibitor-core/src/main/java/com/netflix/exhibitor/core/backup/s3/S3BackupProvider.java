@@ -8,7 +8,7 @@ import com.google.common.collect.Lists;
 import com.google.common.io.Closeables;
 import com.netflix.curator.RetryPolicy;
 import com.netflix.curator.retry.ExponentialBackoffRetry;
-import com.netflix.exhibitor.core.BackupProvider;
+import com.netflix.exhibitor.core.backup.BackupProvider;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.backup.BackupConfigSpec;
 import org.apache.commons.codec.binary.Base64;

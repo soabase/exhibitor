@@ -12,7 +12,9 @@ import com.netflix.curator.retry.ExponentialBackoffRetry;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.ActivityQueue;
 import com.netflix.exhibitor.core.backup.BackupManager;
+import com.netflix.exhibitor.core.backup.BackupProvider;
 import com.netflix.exhibitor.core.config.ConfigListener;
+import com.netflix.exhibitor.core.config.ConfigProvider;
 import com.netflix.exhibitor.core.config.IntConfigs;
 import com.netflix.exhibitor.core.index.IndexCache;
 import com.netflix.exhibitor.core.state.CleanupManager;
@@ -202,16 +204,32 @@ public class Exhibitor implements Closeable
         return processOperations;
     }
 
+    /**
+     * Return the configured ZK connection timeout in ms
+     *
+     * @return timeout
+     */
     public int getConnectionTimeOutMs()
     {
         return connectionTimeOutMs;
     }
 
+    /**
+     * Closes/resets the ZK connection or does nothing if it hasn't been opened yet
+     *
+     * @throws IOException errors
+     */
     public synchronized void resetLocalConnection() throws IOException
     {
         closeLocalConnection();
     }
 
+    /**
+     * Return a connection ot the ZK instance (creating it if needed)
+     *
+     * @return connection
+     * @throws IOException errors
+     */
     public synchronized CuratorFramework getLocalConnection() throws IOException
     {
         if ( localConnection == null )
@@ -238,16 +256,16 @@ public class Exhibitor implements Closeable
         controlPanelSettings.get(type).set(newValue);
     }
 
-    public CleanupManager getCleanupManager()
-    {
-        return cleanupManager;
-    }
-
     public BackupManager getBackupManager()
     {
         return backupManager;
     }
-    
+
+    /**
+     * Add a listener for config changes
+     *
+     * @param listener listener
+     */
     public void addConfigListener(ConfigListener listener)
     {
         configListeners.add(listener);

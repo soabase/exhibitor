@@ -5,7 +5,6 @@ import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Sets;
-import com.netflix.exhibitor.core.BackupProvider;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.activity.Activity;
 import com.netflix.exhibitor.core.activity.ActivityLog;

@@ -1,7 +1,8 @@
-package com.netflix.exhibitor.core.config;
+package com.netflix.exhibitor.core.config.local;
 
 import com.google.common.io.Closeables;
-import com.netflix.exhibitor.core.ConfigProvider;
+import com.netflix.exhibitor.core.config.ConfigProvider;
+import com.netflix.exhibitor.core.config.PropertyBasedInstanceConfig;
 import com.netflix.exhibitor.core.state.InstanceConfig;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -23,6 +24,7 @@ public class LocalFileConfigProvider implements ConfigProvider
     /**
      * @param propertiesFile where to store the properties
      */
+    @SuppressWarnings("UnusedDeclaration")
     public LocalFileConfigProvider(File propertiesFile)
     {
         this(propertiesFile, new Properties());
