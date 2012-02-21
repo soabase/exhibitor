@@ -1,6 +1,5 @@
 package com.netflix.exhibitor.core.config;
 
-import com.netflix.exhibitor.core.state.InstanceConfig;
 import java.util.Properties;
 
 /**
@@ -61,7 +60,7 @@ public class PropertyBasedInstanceConfig implements InstanceConfig
         String propertyName = toName(config);
         return DefaultProperties.asInt(properties.getProperty(propertyName, defaults.getProperty(propertyName, "0")));
     }
-    
+
     private String toName(Enum e)
     {
         String  s = e.name();

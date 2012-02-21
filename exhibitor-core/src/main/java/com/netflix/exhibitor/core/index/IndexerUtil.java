@@ -3,6 +3,7 @@ package com.netflix.exhibitor.core.index;
 import com.google.common.io.Closeables;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.activity.QueueGroups;
+import com.netflix.exhibitor.core.config.InstanceConfig;
 import com.netflix.exhibitor.core.config.StringConfigs;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -41,7 +42,9 @@ public class IndexerUtil
 
     private static void      startIndexing(Exhibitor exhibitor, InputStream in, String name, long length, IndexActivity.CompletionListener listener) throws Exception
     {
-        File indexDirectory = new File(exhibitor.getConfig().getString(StringConfigs.LOG_INDEX_DIRECTORY), "exhibitor-" + System.currentTimeMillis());
+        InstanceConfig  config = exhibitor.getConfigManager().getConfig();
+
+        File indexDirectory = new File(config.getString(StringConfigs.LOG_INDEX_DIRECTORY), "exhibitor-" + System.currentTimeMillis());
 
         LogIndexer      logIndexer;
         try

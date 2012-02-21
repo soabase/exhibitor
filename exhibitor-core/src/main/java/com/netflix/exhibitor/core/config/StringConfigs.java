@@ -21,11 +21,6 @@ public enum StringConfigs
     ZOOKEEPER_DATA_DIRECTORY,
 
     /**
-     * The hostname of this machine
-     */
-    HOSTNAME,
-
-    /**
      * List of servers in the cluster of the form [id]:[hostname],[id]:[hostname],...
      */
     SERVERS_SPEC,

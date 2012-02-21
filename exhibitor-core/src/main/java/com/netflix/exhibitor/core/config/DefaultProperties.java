@@ -1,6 +1,5 @@
 package com.netflix.exhibitor.core.config;
 
-import com.netflix.exhibitor.core.state.InstanceConfig;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -29,13 +28,6 @@ public class DefaultProperties
             @Override
             public String getString(StringConfigs config)
             {
-                switch ( config )
-                {
-                    case HOSTNAME:
-                    {
-                        return "localhost";
-                    }
-                }
                 return "";
             }
 

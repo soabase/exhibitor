@@ -136,7 +136,7 @@ function addBackupExtraConfig(data)
     {
         var c = configExtraTab[i];
         var id = getBackupExtraId(c);
-        var fieldSize = (c.type === "s") ? 30 : 5;
+        var fieldSize = (c.type === "s") ? 60 : 5;
         extra += '<label for="' + id + '">' + c.name + '</label><input type="text" id="' + id + '" name="' + id + '" size="' + fieldSize + '" title="' + c.help + '"><br clear="all"/>';
     }
 
@@ -163,7 +163,6 @@ function submitConfigChanges()
     newConfig.zookeeperInstallDirectory = $('#config-zookeeper-install-dir').val();
     newConfig.zookeeperDataDirectory = $('#config-zookeeper-data-dir').val();
     newConfig.logIndexDirectory = $('#config-log-index-dir').val();
-    newConfig.hostname = $('#config-hostname').val();
     newConfig.serversSpec = $('#config-servers-spec').val();
     newConfig.clientPort = $('#config-client-port').val();
     newConfig.connectPort = $('#config-connect-port').val();
@@ -192,7 +191,14 @@ function submitConfigChanges()
         type: 'POST',
         url: 'set/config',
         data: payload,
-        contentType: 'application/json'
+        contentType: 'application/json',
+        success:function(data)
+        {
+            if ( data.succeeded != "true" )
+            {
+                messageDialog("Error", data.message);
+            }
+        }
     });
 }
 
@@ -206,7 +212,6 @@ function ableConfig(enable)
     $('#config-zookeeper-install-dir').prop('disabled', !enable);
     $('#config-zookeeper-data-dir').prop('disabled', !enable);
     $('#config-log-index-dir').prop('disabled', !enable);
-    $('#config-hostname').prop('disabled', !enable);
     $('#config-servers-spec').prop('disabled', !enable);
     $('#config-client-port').prop('disabled', !enable);
     $('#config-connect-port').prop('disabled', !enable);
@@ -236,7 +241,6 @@ function updateConfig()
     $('#config-zookeeper-install-dir').val(systemConfig.zookeeperInstallDirectory);
     $('#config-zookeeper-data-dir').val(systemConfig.zookeeperDataDirectory);
     $('#config-log-index-dir').val(systemConfig.logIndexDirectory);
-    $('#config-hostname').val(systemConfig.hostname);
     $('#config-servers-spec').val(systemConfig.serversSpec);
     $('#config-client-port').val(systemConfig.clientPort);
     $('#config-connect-port').val(systemConfig.connectPort);
@@ -446,7 +450,7 @@ $(function ()
     {
         return false;
     }).click(function(){
-            okCancelDialog("Update", "Are you sure? If you've changed the Hostname or Servers it can cause instance restarts.", function() {
+            okCancelDialog("Update", "Are you sure? If you've changed the Servers it can cause instance restarts.", function() {
                 submitConfigChanges();
             });
             return false;

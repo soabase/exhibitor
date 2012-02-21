@@ -2,6 +2,7 @@ package com.netflix.exhibitor.core.state;
 
 import com.google.common.collect.Iterables;
 import com.netflix.exhibitor.core.Exhibitor;
+import com.netflix.exhibitor.core.config.InstanceConfig;
 import com.netflix.exhibitor.core.config.IntConfigs;
 import com.netflix.exhibitor.core.config.StringConfigs;
 
@@ -13,18 +14,20 @@ public class InstanceStateManager
     public InstanceStateManager(Exhibitor exhibitor)
     {
         this.exhibitor = exhibitor;
-        checker = new Checker(exhibitor, this);
+        checker = new Checker(exhibitor);
     }
 
     public InstanceState getInstanceState()
     {
-        ServerList              serverList = new ServerList(exhibitor.getConfig().getString(StringConfigs.SERVERS_SPEC));
-        ServerList.ServerSpec   us = Iterables.find(serverList.getSpecs(), ServerList.isUs(exhibitor.getConfig().getString(StringConfigs.HOSTNAME)), null);
+        InstanceConfig          config = exhibitor.getConfigManager().getConfig();
+
+        ServerList              serverList = new ServerList(config.getString(StringConfigs.SERVERS_SPEC));
+        ServerList.ServerSpec   us = Iterables.find(serverList.getSpecs(), ServerList.isUs(exhibitor.getThisJVMHostname()), null);
         return new InstanceState
         (
             serverList,
-            exhibitor.getConfig().getInt(IntConfigs.CONNECT_PORT),
-            exhibitor.getConfig().getInt(IntConfigs.ELECTION_PORT),
+            config.getInt(IntConfigs.CONNECT_PORT),
+            config.getInt(IntConfigs.ELECTION_PORT),
             (us != null) ? us.getServerId() : -1,
             checker.getState()
         );

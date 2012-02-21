@@ -1,4 +1,4 @@
-package com.netflix.exhibitor.core.backup.s3;
+package com.netflix.exhibitor.core.s3;
 
 import com.amazonaws.auth.AWSCredentials;
 

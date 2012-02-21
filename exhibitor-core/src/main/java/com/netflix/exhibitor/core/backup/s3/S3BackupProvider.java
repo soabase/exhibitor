@@ -8,17 +8,19 @@ import com.google.common.collect.Lists;
 import com.google.common.io.Closeables;
 import com.netflix.curator.RetryPolicy;
 import com.netflix.curator.retry.ExponentialBackoffRetry;
-import com.netflix.exhibitor.core.backup.BackupProvider;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.backup.BackupConfigSpec;
-import org.apache.commons.codec.binary.Base64;
+import com.netflix.exhibitor.core.backup.BackupProvider;
+import com.netflix.exhibitor.core.s3.S3Client;
+import com.netflix.exhibitor.core.s3.S3ClientFactory;
+import com.netflix.exhibitor.core.s3.S3Credential;
+import com.netflix.exhibitor.core.s3.S3Utils;
 import org.apache.zookeeper.server.ByteBufferInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +32,7 @@ public class S3BackupProvider implements BackupProvider
 {
     // TODO - add logging
 
-    private final S3Client    s3Client;
+    private final S3Client s3Client;
     private final Compressor  compressor;
 
     @VisibleForTesting
@@ -217,7 +219,7 @@ public class S3BackupProvider implements BackupProvider
 
     private PartETag uploadChunk(ByteBuffer bytes, InitiateMultipartUploadResult initResponse, int index) throws Exception
     {
-        byte[]          md5 = md5(bytes);
+        byte[]          md5 = S3Utils.md5(bytes);
         
         UploadPartRequest   request = new UploadPartRequest();
         request.setBucketName(initResponse.getBucketName());
@@ -225,12 +227,12 @@ public class S3BackupProvider implements BackupProvider
         request.setUploadId(initResponse.getUploadId());
         request.setPartNumber(index);
         request.setPartSize(bytes.limit());
-        request.setMd5Digest(toBase64(md5));
+        request.setMd5Digest(S3Utils.toBase64(md5));
         request.setInputStream(new ByteBufferInputStream(bytes));
 
         UploadPartResult    response = s3Client.uploadPart(request);
         PartETag            partETag = response.getPartETag();
-        if ( !response.getPartETag().getETag().equals(toHex(md5)) )
+        if ( !response.getPartETag().getETag().equals(S3Utils.toHex(md5)) )
         {
             throw new Exception("Unable to match MD5 for part " + index);
         }
@@ -248,50 +250,5 @@ public class S3BackupProvider implements BackupProvider
     {
         AbortMultipartUploadRequest abortRequest = new AbortMultipartUploadRequest(initResponse.getBucketName(), initResponse.getKey(), initResponse.getUploadId());
         s3Client.abortMultipartUpload(abortRequest);
-    }
-
-    private static String toBase64(byte[] md5)
-    {
-        byte encoded[] = Base64.encodeBase64(md5, false);
-        return new String(encoded);
-    }
-
-    @VisibleForTesting
-    static byte[] md5(ByteBuffer buffer)
-    {
-        try
-        {
-            MessageDigest   mdigest = MessageDigest.getInstance("MD5");
-            mdigest.update(buffer);
-            return mdigest.digest();
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
-        finally
-        {
-            buffer.rewind();
-        }
-    }
-
-    @VisibleForTesting
-    static String toHex(byte[] digest)
-    {
-        StringBuilder sb = new StringBuilder(digest.length * 2);
-        for ( byte b : digest )
-        {
-            String hex = Integer.toHexString(b);
-            if ( hex.length() == 1 )
-            {
-                sb.append("0");
-            }
-            else if ( hex.length() == 8 )
-            {
-                hex = hex.substring(6);
-            }
-            sb.append(hex);
-        }
-        return sb.toString().toLowerCase();
     }
 }

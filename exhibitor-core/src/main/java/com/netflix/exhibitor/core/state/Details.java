@@ -2,6 +2,7 @@ package com.netflix.exhibitor.core.state;
 
 import com.google.common.io.Closeables;
 import com.netflix.exhibitor.core.Exhibitor;
+import com.netflix.exhibitor.core.config.InstanceConfig;
 import com.netflix.exhibitor.core.config.StringConfigs;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -22,8 +23,10 @@ class Details
 
     Details(Exhibitor exhibitor) throws IOException
     {
-        this.zooKeeperDirectory = new File(exhibitor.getConfig().getString(StringConfigs.ZOOKEEPER_INSTALL_DIRECTORY));
-        this.dataDirectory = new File(exhibitor.getConfig().getString(StringConfigs.ZOOKEEPER_DATA_DIRECTORY));
+        InstanceConfig config = exhibitor.getConfigManager().getConfig();
+
+        this.zooKeeperDirectory = new File(config.getString(StringConfigs.ZOOKEEPER_INSTALL_DIRECTORY));
+        this.dataDirectory = new File(config.getString(StringConfigs.ZOOKEEPER_DATA_DIRECTORY));
 
         configDirectory = new File(zooKeeperDirectory, "conf");
         log4jJarPath = findJar(new File(zooKeeperDirectory, "lib"), "log4j");

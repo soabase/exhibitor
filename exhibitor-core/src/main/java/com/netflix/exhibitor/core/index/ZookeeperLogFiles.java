@@ -17,7 +17,7 @@ public class ZooKeeperLogFiles
 
     public static File      getDataDir(Exhibitor exhibitor)
     {
-        String      path = exhibitor.getConfig().getString(StringConfigs.ZOOKEEPER_DATA_DIRECTORY);
+        String      path = exhibitor.getConfigManager().getConfig().getString(StringConfigs.ZOOKEEPER_DATA_DIRECTORY);
         return new File(path, "version-2");
     }
 

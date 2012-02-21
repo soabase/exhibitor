@@ -11,6 +11,7 @@ import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.QueueGroups;
 import com.netflix.exhibitor.core.activity.RepeatingActivity;
 import com.netflix.exhibitor.core.config.ConfigListener;
+import com.netflix.exhibitor.core.config.InstanceConfig;
 import com.netflix.exhibitor.core.config.IntConfigs;
 import com.netflix.exhibitor.core.config.StringConfigs;
 import com.netflix.exhibitor.core.index.ZooKeeperLogFiles;
@@ -49,6 +50,8 @@ public class BackupManager implements Closeable
      */
     public BackupManager(Exhibitor exhibitor, BackupProvider backupProvider)
     {
+        InstanceConfig config = exhibitor.getConfigManager().getConfig();
+
         this.exhibitor = exhibitor;
         this.backupProvider = Optional.fromNullable(backupProvider);
 
@@ -69,7 +72,7 @@ public class BackupManager implements Closeable
                 return true;
             }
         };
-        repeatingActivity = new RepeatingActivity(exhibitor.getActivityQueue(), QueueGroups.IO, activity, exhibitor.getConfig().getInt(IntConfigs.BACKUP_PERIOD_MS));
+        repeatingActivity = new RepeatingActivity(exhibitor.getActivityQueue(), QueueGroups.IO, activity, config.getInt(IntConfigs.BACKUP_PERIOD_MS));
     }
 
     /**
@@ -80,17 +83,17 @@ public class BackupManager implements Closeable
         if ( isActive() )
         {
             repeatingActivity.start();
-            exhibitor.addConfigListener
-                (
-                    new ConfigListener()
+            exhibitor.getConfigManager().addConfigListener
+            (
+                new ConfigListener()
+                {
+                    @Override
+                    public void configUpdated()
                     {
-                        @Override
-                        public void configUpdated()
-                        {
-                            repeatingActivity.setTimePeriodMs(exhibitor.getConfig().getInt(IntConfigs.BACKUP_PERIOD_MS));
-                        }
+                        repeatingActivity.setTimePeriodMs(exhibitor.getConfigManager().getConfig().getInt(IntConfigs.BACKUP_PERIOD_MS));
                     }
-                );
+                }
+            );
         }
     }
 
@@ -180,7 +183,7 @@ public class BackupManager implements Closeable
      */
     public BackupConfigParser  getBackupConfigParser()
     {
-        return new BackupConfigParser(exhibitor.getConfig().getString(StringConfigs.BACKUP_EXTRA), backupProvider.get());
+        return new BackupConfigParser(exhibitor.getConfigManager().getConfig().getString(StringConfigs.BACKUP_EXTRA), backupProvider.get());
     }
 
     /**
@@ -260,7 +263,7 @@ public class BackupManager implements Closeable
 
     private Map<String, String> getBackupConfig()
     {
-        String              backupExtra = exhibitor.getConfig().getString(StringConfigs.BACKUP_EXTRA);
+        String              backupExtra = exhibitor.getConfigManager().getConfig().getString(StringConfigs.BACKUP_EXTRA);
         BackupConfigParser  backupConfigParser = new BackupConfigParser(backupExtra, backupProvider.get());
         return backupConfigParser.getValues();
     }
@@ -270,7 +273,7 @@ public class BackupManager implements Closeable
         List<String>    backupKeys = backupProvider.get().getAvailableBackupKeys(exhibitor, config);
         TreeSet<Long>   sessions = getSessions(backupKeys);
 
-        while ( sessions.size() > exhibitor.getConfig().getInt(IntConfigs.BACKUP_MAX_FILES) )
+        while ( sessions.size() > exhibitor.getConfigManager().getConfig().getInt(IntConfigs.BACKUP_MAX_FILES) )
         {
             final long          session = sessions.pollFirst();
             Collection<String>  keys = Collections2.filter(backupKeys, asKey(session));
@@ -328,7 +331,7 @@ public class BackupManager implements Closeable
 
     private String makeKey(long backupSessionId, int index)
     {
-        String hostname = exhibitor.getConfig().getString(StringConfigs.HOSTNAME);
+        String hostname = exhibitor.getThisJVMHostname();
         hostname = hostname.replace(SEPARATOR, SEPARATOR_REPLACEMENT);
         return KEY_PREFIX + SEPARATOR + hostname + SEPARATOR + backupSessionId + SEPARATOR + index;
     }

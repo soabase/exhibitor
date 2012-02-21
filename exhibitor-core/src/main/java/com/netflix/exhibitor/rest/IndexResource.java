@@ -248,7 +248,7 @@ public class IndexResource
     {
         final DateFormat    format = new SimpleDateFormat("MM/dd/yyyy-HH:mm");
         final IndexCache indexCache = context.getExhibitor().getIndexCache();
-        IndexList           indexList = new IndexList(new File(context.getExhibitor().getConfig().getString(StringConfigs.LOG_INDEX_DIRECTORY)));
+        IndexList           indexList = new IndexList(new File(context.getExhibitor().getConfigManager().getConfig().getString(StringConfigs.LOG_INDEX_DIRECTORY)));
         GenericEntity<List<Index>> entity = new GenericEntity<List<Index>>
         (
             Lists.transform
@@ -387,7 +387,7 @@ public class IndexResource
 
     private File getLogFile(String indexName)
     {
-        String      indexDirectory = context.getExhibitor().getConfig().getString(StringConfigs.LOG_INDEX_DIRECTORY);
+        String      indexDirectory = context.getExhibitor().getConfigManager().getConfig().getString(StringConfigs.LOG_INDEX_DIRECTORY);
         File        indexFile = new File(indexDirectory, indexName);
         if ( !IndexMetaData.isValid(indexFile) )
         {

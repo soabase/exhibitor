@@ -1,4 +1,4 @@
-package com.netflix.exhibitor.core.state;
+package com.netflix.exhibitor.core.config;
 
 import com.netflix.exhibitor.core.config.IntConfigs;
 import com.netflix.exhibitor.core.config.StringConfigs;

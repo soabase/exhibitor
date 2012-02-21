@@ -3,8 +3,6 @@ package com.netflix.exhibitor.core;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.common.io.Closeables;
 import com.netflix.curator.framework.CuratorFramework;
 import com.netflix.curator.framework.CuratorFrameworkFactory;
@@ -14,12 +12,12 @@ import com.netflix.exhibitor.core.activity.ActivityQueue;
 import com.netflix.exhibitor.core.backup.BackupManager;
 import com.netflix.exhibitor.core.backup.BackupProvider;
 import com.netflix.exhibitor.core.config.ConfigListener;
+import com.netflix.exhibitor.core.config.ConfigManager;
 import com.netflix.exhibitor.core.config.ConfigProvider;
 import com.netflix.exhibitor.core.config.IntConfigs;
 import com.netflix.exhibitor.core.index.IndexCache;
 import com.netflix.exhibitor.core.state.CleanupManager;
 import com.netflix.exhibitor.core.state.ControlPanelTypes;
-import com.netflix.exhibitor.core.state.InstanceConfig;
 import com.netflix.exhibitor.core.state.InstanceStateManager;
 import com.netflix.exhibitor.core.state.MonitorRunningInstance;
 import com.netflix.exhibitor.core.state.ProcessOperations;
@@ -29,8 +27,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -50,17 +46,15 @@ public class Exhibitor implements Closeable
     private final ActivityQueue             activityQueue = new ActivityQueue();
     private final MonitorRunningInstance    monitorRunningInstance;
     private final InstanceStateManager      instanceStateManager;
-    private final AtomicReference<InstanceConfig> instanceConfig = new AtomicReference<InstanceConfig>();
     private final Collection<UITab>         additionalUITabs;
     private final ProcessOperations         processOperations;
     private final CleanupManager            cleanupManager;
     private final AtomicReference<State>    state = new AtomicReference<State>(State.LATENT);
-    private final ConfigProvider            configProvider;
-    private final int                       connectionTimeOutMs;
     private final IndexCache                indexCache;
     private final Map<ControlPanelTypes, AtomicBoolean> controlPanelSettings;
     private final BackupManager             backupManager;
-    private final Set<ConfigListener>       configListeners = Sets.newSetFromMap(Maps.<ConfigListener, Boolean>newConcurrentMap());
+    private final ConfigManager             configManager;
+    private final Arguments                 arguments;
 
     private CuratorFramework    localConnection;    // protected by synchronization
 
@@ -71,31 +65,34 @@ public class Exhibitor implements Closeable
         STOPPED
     }
 
-    /**
-     * @param configProvider config source
-     * @param additionalUITabs any additional tabs in the UI (can be null)
-     * @param backupProvider backup provider or null
-     * @throws IOException errors
-     */
-    public Exhibitor(ConfigProvider configProvider, Collection<UITab> additionalUITabs, BackupProvider backupProvider) throws Exception
+    public static class Arguments
     {
-        this(configProvider, additionalUITabs, backupProvider, (int)TimeUnit.MILLISECONDS.convert(30, TimeUnit.SECONDS), 1000);
+        private final int       connectionTimeOutMs;
+        private final int       logWindowSizeLines;
+        private final int       configCheckMs;
+        private final String    thisJVMHostname;
+
+        public Arguments(int connectionTimeOutMs, int logWindowSizeLines, String thisJVMHostname, int configCheckMs)
+        {
+            this.connectionTimeOutMs = connectionTimeOutMs;
+            this.logWindowSizeLines = logWindowSizeLines;
+            this.thisJVMHostname = thisJVMHostname;
+            this.configCheckMs = configCheckMs;
+        }
     }
 
     /**
      * @param configProvider config source
      * @param additionalUITabs any additional tabs in the UI (can be null)
      * @param backupProvider backup provider or null
-     * @param connectionTimeOutMs general timeout for ZK connections
-     * @param logWindowSizeLines max lines to keep in memory
+     * @param arguments startup arguments
      * @throws IOException errors
      */
-    public Exhibitor(ConfigProvider configProvider, Collection<UITab> additionalUITabs, BackupProvider backupProvider, int connectionTimeOutMs, int logWindowSizeLines) throws Exception
+    public Exhibitor(ConfigProvider configProvider, Collection<UITab> additionalUITabs, BackupProvider backupProvider, Arguments arguments) throws Exception
     {
-        log = new ActivityLog(logWindowSizeLines);
-        this.configProvider = configProvider;
-        this.connectionTimeOutMs = connectionTimeOutMs;
-        this.instanceConfig.set(configProvider.loadConfig());
+        this.arguments = arguments;
+        log = new ActivityLog(arguments.logWindowSizeLines);
+        this.configManager = new ConfigManager(this, configProvider, arguments.configCheckMs);
         this.additionalUITabs = (additionalUITabs != null) ? ImmutableList.copyOf(additionalUITabs) : ImmutableList.<UITab>of();
         this.processOperations = new StandardProcessOperations(this);
         instanceStateManager = new InstanceStateManager(this);
@@ -137,9 +134,29 @@ public class Exhibitor implements Closeable
         Preconditions.checkState(state.compareAndSet(State.LATENT, State.STARTED));
 
         activityQueue.start();
+        configManager.start();
         monitorRunningInstance.start();
         cleanupManager.start();
         backupManager.start();
+
+        configManager.addConfigListener
+        (
+            new ConfigListener()
+            {
+                @Override
+                public void configUpdated()
+                {
+                    try
+                    {
+                        resetLocalConnection();
+                    }
+                    catch ( IOException e )
+                    {
+                        log.add(ActivityLog.Type.ERROR, "Resetting connection", e);
+                    }
+                }
+            }
+        );
     }
 
     @Override
@@ -151,6 +168,7 @@ public class Exhibitor implements Closeable
         Closeables.closeQuietly(backupManager);
         Closeables.closeQuietly(cleanupManager);
         Closeables.closeQuietly(monitorRunningInstance);
+        Closeables.closeQuietly(configManager);
         Closeables.closeQuietly(activityQueue);
         closeLocalConnection();
     }
@@ -163,30 +181,9 @@ public class Exhibitor implements Closeable
         return additionalUITabs;
     }
 
-    /**
-     * @return the config instance
-     */
-    public InstanceConfig getConfig()
+    public ConfigManager getConfigManager()
     {
-        return instanceConfig.get();
-    }
-
-    /**
-     * Set new new config
-     *
-     * @param newConfig the new config
-     * @throws Exception I/O errors
-     */
-    public synchronized void updateConfig(InstanceConfig newConfig) throws Exception
-    {
-        closeLocalConnection();
-        instanceConfig.set(newConfig);
-        configProvider.storeConfig(newConfig);
-
-        for ( ConfigListener listener : configListeners )
-        {
-            listener.configUpdated();
-        }
+        return configManager;
     }
 
     public InstanceStateManager getInstanceStateManager()
@@ -211,7 +208,12 @@ public class Exhibitor implements Closeable
      */
     public int getConnectionTimeOutMs()
     {
-        return connectionTimeOutMs;
+        return arguments.connectionTimeOutMs;
+    }
+    
+    public String getThisJVMHostname()
+    {
+        return arguments.thisJVMHostname;
     }
 
     /**
@@ -236,9 +238,9 @@ public class Exhibitor implements Closeable
         {
             localConnection = CuratorFrameworkFactory.newClient
             (
-                "localhost:" + instanceConfig.get().getInt(IntConfigs.CLIENT_PORT),
-                connectionTimeOutMs * 10,
-                connectionTimeOutMs,
+                "localhost:" + configManager.getConfig().getInt(IntConfigs.CLIENT_PORT),
+                arguments.connectionTimeOutMs * 10,
+                arguments.connectionTimeOutMs,
                 new ExponentialBackoffRetry(10, 3)
             );
             localConnection.start();
@@ -259,16 +261,6 @@ public class Exhibitor implements Closeable
     public BackupManager getBackupManager()
     {
         return backupManager;
-    }
-
-    /**
-     * Add a listener for config changes
-     *
-     * @param listener listener
-     */
-    public void addConfigListener(ConfigListener listener)
-    {
-        configListeners.add(listener);
     }
 
     private synchronized void closeLocalConnection()

@@ -6,11 +6,10 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.io.Resources;
-import com.netflix.exhibitor.core.state.InstanceConfig;
-import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.QueueGroups;
-import com.netflix.exhibitor.core.backup.BackupConfigSpec;
 import com.netflix.exhibitor.core.backup.BackupConfigParser;
+import com.netflix.exhibitor.core.backup.BackupConfigSpec;
+import com.netflix.exhibitor.core.config.InstanceConfig;
 import com.netflix.exhibitor.core.config.IntConfigs;
 import com.netflix.exhibitor.core.config.StringConfigs;
 import com.netflix.exhibitor.core.entities.Result;
@@ -48,8 +47,6 @@ public class UIResource
 {
     private final UIContext context;
     private final List<UITab> tabs;
-
-    private static final String         RECURSIVE_FLAG = "*";
 
     public UIResource(@Context ContextResolver<UIContext> resolver)
     {
@@ -128,11 +125,13 @@ public class UIResource
     @Produces(MediaType.TEXT_PLAIN)
     public Response getFourLetterWord(@PathParam("word") String word) throws Exception
     {
+        InstanceConfig config = context.getExhibitor().getConfigManager().getConfig();
+
         String      value;
         try
         {
             FourLetterWord.Word wordEnum = FourLetterWord.Word.valueOf(word.toUpperCase());
-            value = new FourLetterWord(wordEnum, context.getExhibitor().getConfig(), context.getExhibitor().getConnectionTimeOutMs()).getResponse();
+            value = new FourLetterWord(wordEnum, config, context.getExhibitor().getConnectionTimeOutMs()).getResponse();
         }
         catch ( IllegalArgumentException e )
         {
@@ -195,9 +194,11 @@ public class UIResource
     @Produces(MediaType.APPLICATION_JSON)
     public String getSystemState() throws Exception
     {
-        String                      response = new FourLetterWord(FourLetterWord.Word.RUOK, context.getExhibitor().getConfig(), context.getExhibitor().getConnectionTimeOutMs()).getResponse();
-        ServerList serverList = new ServerList(context.getExhibitor().getConfig().getString(StringConfigs.SERVERS_SPEC));
-        ServerList.ServerSpec       us = Iterables.find(serverList.getSpecs(), ServerList.isUs(context.getExhibitor().getConfig().getString(StringConfigs.HOSTNAME)), null);
+        InstanceConfig              config = context.getExhibitor().getConfigManager().getConfig();
+
+        String                      response = new FourLetterWord(FourLetterWord.Word.RUOK, config, context.getExhibitor().getConnectionTimeOutMs()).getResponse();
+        ServerList serverList = new ServerList(config.getString(StringConfigs.SERVERS_SPEC));
+        ServerList.ServerSpec       us = Iterables.find(serverList.getSpecs(), ServerList.isUs(context.getExhibitor().getThisJVMHostname()), null);
 
         ObjectMapper                mapper = new ObjectMapper();
         ObjectNode                  mainNode = mapper.getNodeFactory().objectNode();
@@ -211,14 +212,15 @@ public class UIResource
         mainNode.put("backupActive", context.getExhibitor().getBackupManager().isActive());
         mainNode.put("backupsEnabled", context.getExhibitor().isControlPanelSettingEnabled(ControlPanelTypes.BACKUPS));
 
+        configNode.put("hostname", context.getExhibitor().getThisJVMHostname());
         configNode.put("serverId", (us != null) ? us.getServerId() : -1);
         for ( StringConfigs c : StringConfigs.values() )
         {
-            configNode.put(fixName(c), context.getExhibitor().getConfig().getString(c));
+            configNode.put(fixName(c), config.getString(c));
         }
         for ( IntConfigs c : IntConfigs.values() )
         {
-            configNode.put(fixName(c), context.getExhibitor().getConfig().getInt(c));
+            configNode.put(fixName(c), config.getInt(c));
         }
 
         if ( context.getExhibitor().getBackupManager().isActive() )
@@ -301,10 +303,19 @@ public class UIResource
                 return 0;
             }
         };
-        context.getExhibitor().updateConfig(wrapped);
+        
+        Result  result;
+        if ( context.getExhibitor().getConfigManager().updateConfig(wrapped) )
+        {
+            result = new Result("OK", true);
+        }
+        else
+        {
+            result = new Result("Another process has updated the config.", false);
+        }
         context.getExhibitor().resetLocalConnection();
 
-        return Response.ok(new Result("OK", true)).build();
+        return Response.ok(result).build();
     }
 
     @Path("set/{type}/{value}")
@@ -380,38 +391,6 @@ public class UIResource
         }
 
         return builder.build();
-    }
-
-    private String trimEnding(String path, String ending)
-    {
-        int     endIndex = path.length() - ending.length();
-        if ( endIndex < 1 )
-        {
-            context.getExhibitor().getLog().add(ActivityLog.Type.INFO, "Ignoring bad path in backups: " + path);
-            return null;
-        }
-        path = path.substring(0, endIndex);
-        return path;
-    }
-
-    private Map<String, String> toStringMap(InstanceConfig config)
-    {
-        Map<String, String>     map = Maps.newHashMap();
-        for ( StringConfigs c : StringConfigs.values() )
-        {
-            map.put(c.name(), config.getString(c));
-        }
-        return map;
-    }
-
-    private Map<String, Integer> toIntMap(InstanceConfig config)
-    {
-        Map<String, Integer>     map = Maps.newHashMap();
-        for ( IntConfigs c : IntConfigs.values() )
-        {
-            map.put(c.name(), config.getInt(c));
-        }
-        return map;
     }
 
     private String fixName(Enum c)

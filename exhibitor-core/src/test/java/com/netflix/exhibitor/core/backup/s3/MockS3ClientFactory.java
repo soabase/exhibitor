@@ -1,6 +1,8 @@
 package com.netflix.exhibitor.core.backup.s3;
 
 import com.amazonaws.auth.AWSCredentials;
+import com.netflix.exhibitor.core.s3.S3Client;
+import com.netflix.exhibitor.core.s3.S3ClientFactory;
 
 public class MockS3ClientFactory implements S3ClientFactory
 {

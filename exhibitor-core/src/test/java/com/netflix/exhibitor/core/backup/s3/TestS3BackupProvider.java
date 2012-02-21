@@ -8,6 +8,7 @@ import com.google.common.collect.Maps;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.google.common.io.OutputSupplier;
+import com.netflix.exhibitor.core.s3.PropertyBasedS3Credential;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import java.io.ByteArrayInputStream;
