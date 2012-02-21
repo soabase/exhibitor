@@ -44,7 +44,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class Exhibitor implements Closeable
 {
-    private final ActivityLog               log = new ActivityLog();
+    private final ActivityLog               log;
     private final ActivityQueue             activityQueue = new ActivityQueue();
     private final MonitorRunningInstance    monitorRunningInstance;
     private final InstanceStateManager      instanceStateManager;
@@ -77,7 +77,7 @@ public class Exhibitor implements Closeable
      */
     public Exhibitor(ConfigProvider configProvider, Collection<UITab> additionalUITabs, BackupProvider backupProvider) throws Exception
     {
-        this(configProvider, additionalUITabs, backupProvider, (int)TimeUnit.MILLISECONDS.convert(30, TimeUnit.SECONDS));
+        this(configProvider, additionalUITabs, backupProvider, (int)TimeUnit.MILLISECONDS.convert(30, TimeUnit.SECONDS), 1000);
     }
 
     /**
@@ -85,10 +85,12 @@ public class Exhibitor implements Closeable
      * @param additionalUITabs any additional tabs in the UI (can be null)
      * @param backupProvider backup provider or null
      * @param connectionTimeOutMs general timeout for ZK connections
+     * @param logWindowSizeLines max lines to keep in memory
      * @throws IOException errors
      */
-    public Exhibitor(ConfigProvider configProvider, Collection<UITab> additionalUITabs, BackupProvider backupProvider, int connectionTimeOutMs) throws Exception
+    public Exhibitor(ConfigProvider configProvider, Collection<UITab> additionalUITabs, BackupProvider backupProvider, int connectionTimeOutMs, int logWindowSizeLines) throws Exception
     {
+        log = new ActivityLog(logWindowSizeLines);
         this.configProvider = configProvider;
         this.connectionTimeOutMs = connectionTimeOutMs;
         this.instanceConfig.set(configProvider.loadConfig());

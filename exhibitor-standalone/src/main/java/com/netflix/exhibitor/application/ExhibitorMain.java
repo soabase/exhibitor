@@ -41,6 +41,7 @@ public class ExhibitorMain implements Closeable
         options.addOption(null, "s3backup", true, "Enables AWS S3 backup of ZooKeeper log files. The argument is the path to an AWS credential properties file with two properties: " + PropertyBasedS3Credential.PROPERTY_S3_KEY_ID + " and " + PropertyBasedS3Credential.PROPERTY_S3_SECRET_KEY);
         options.addOption(null, "filesystembackup", false, "Enables file system backup of ZooKeeper log files.");
         options.addOption(null, "timeout", true, "Connection timeout (ms) for ZK connections. Default is 30000.");
+        options.addOption(null, "loglines", true, "Max lines of logging to keep in memory for display. Default is 1000.");
         options.addOption("?", "help", false, "Print this help");
 
         CommandLine         commandLine;
@@ -72,15 +73,16 @@ public class ExhibitorMain implements Closeable
         }
         
         int         timeoutMs = Integer.parseInt(commandLine.getOptionValue("timeout", "30000"));
+        int         logWindowSizeLines = Integer.parseInt(commandLine.getOptionValue("loglines", "1000"));
 
-        ExhibitorMain exhibitorMain = new ExhibitorMain(propertiesFile, backupProvider, timeoutMs);
+        ExhibitorMain exhibitorMain = new ExhibitorMain(propertiesFile, backupProvider, timeoutMs, logWindowSizeLines);
         exhibitorMain.start();
         exhibitorMain.join();
     }
 
-    public ExhibitorMain(File propertiesFile, BackupProvider backupProvider, int timeoutMs) throws Exception
+    public ExhibitorMain(File propertiesFile, BackupProvider backupProvider, int timeoutMs, int logWindowSizeLines) throws Exception
     {
-        Exhibitor exhibitor = new Exhibitor(new LocalFileConfigProvider(propertiesFile, DefaultProperties.get()), null, backupProvider, timeoutMs);
+        Exhibitor exhibitor = new Exhibitor(new LocalFileConfigProvider(propertiesFile, DefaultProperties.get()), null, backupProvider, timeoutMs, logWindowSizeLines);
         exhibitor.start();
 
         final UIContext context = new UIContext(exhibitor);

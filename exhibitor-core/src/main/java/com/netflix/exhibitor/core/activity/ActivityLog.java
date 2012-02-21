@@ -16,13 +16,16 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+/**
+ * Logging abstraction. Logs using the standard logging but keeps a window in memory
+ * as well for display purposes
+ */
 public class ActivityLog
 {
     private final Queue<Message>    queue = new ConcurrentLinkedQueue<Message>();
+    private final int               windowSizeLines;
 
     private static final Logger     log = LoggerFactory.getLogger(ActivityLog.class);
-
-    private static final int        MAX_ENTRIES = 1000;
 
     private static class Message
     {
@@ -37,6 +40,20 @@ public class ActivityLog
         }
     }
 
+    /**
+     * @param windowSizeLines max lines to keep in memory
+     */
+    public ActivityLog(int windowSizeLines)
+    {
+        this.windowSizeLines = windowSizeLines;
+    }
+
+    /**
+     * Return the current window lines
+     *
+     * @param separator line separator
+     * @return lines
+     */
     public List<String> toDisplayList(final String separator)
     {
         Iterable<String> transformed = Iterables.transform
@@ -53,6 +70,9 @@ public class ActivityLog
         return Lists.reverse(ImmutableList.copyOf(transformed));
     }
 
+    /**
+     * Supported line types
+     */
     public enum Type
     {
         ERROR()
@@ -92,11 +112,24 @@ public class ActivityLog
         protected abstract void  log(String message, Throwable exception);
     }
 
+    /**
+     * Add a log message
+     *
+     * @param type message type
+     * @param message the messqage
+     */
     public void         add(Type type, String message)
     {
         add(type, message, null);
     }
 
+    /**
+     * Add a log message with an exception
+     *
+     * @param type message type
+     * @param message the messqage
+     * @param exception the exception
+     */
     public void         add(Type type, String message, Throwable exception)
     {
         String          queueMessage = message;
@@ -110,7 +143,7 @@ public class ActivityLog
             queueMessage += " (" + exceptionMessage + ")";
         }
 
-        while ( queue.size() > MAX_ENTRIES )  // NOTE: due to concurrency, this may make the queue shorter than MAX - that's OK (and in some cases longer)
+        while ( queue.size() > windowSizeLines )  // NOTE: due to concurrency, this may make the queue shorter than MAX - that's OK (and in some cases longer)
         {
             queue.remove();
         }

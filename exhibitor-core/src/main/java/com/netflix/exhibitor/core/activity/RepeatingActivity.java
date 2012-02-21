@@ -6,6 +6,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * Wrapper for a delayed activity that will get re-queued after it runes
+ */
 public class RepeatingActivity implements Closeable
 {
     private final QueueGroups   group;
@@ -14,6 +17,12 @@ public class RepeatingActivity implements Closeable
     private final AtomicLong    timePeriodMs;
     private final ActivityQueue queue;
 
+    /**
+     * @param queue the queue to add to
+     * @param group the queue group
+     * @param actualActivity the repeating activity
+     * @param timePeriodMs the period between executions
+     */
     public RepeatingActivity(ActivityQueue queue, QueueGroups group, final Activity actualActivity, long timePeriodMs)
     {
         this.queue = queue;
@@ -41,6 +50,9 @@ public class RepeatingActivity implements Closeable
         this.timePeriodMs = new AtomicLong(timePeriodMs);
     }
 
+    /**
+     * Must be started
+     */
     public void start()
     {
         isStarted.set(true);
@@ -53,6 +65,11 @@ public class RepeatingActivity implements Closeable
         isStarted.set(false);
     }
 
+    /**
+     * Change the time period between executions
+     *
+     * @param newTimePeriodMs new time period
+     */
     public void setTimePeriodMs(long newTimePeriodMs)
     {
         timePeriodMs.set(newTimePeriodMs);

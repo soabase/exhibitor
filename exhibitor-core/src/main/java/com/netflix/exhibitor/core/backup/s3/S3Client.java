@@ -10,6 +10,10 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.UploadPartRequest;
 import com.amazonaws.services.s3.model.UploadPartResult;
 
+/**
+ * Adapts the S3 client interface so that it can be tested - all methods are direct correlaries
+ * to the S3 client
+ */
 public interface S3Client
 {
     public InitiateMultipartUploadResult initiateMultipartUpload(InitiateMultipartUploadRequest request) throws Exception;

@@ -8,6 +8,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+/**
+ * S3 credentials imp that is file/property based
+ */
 public class PropertyBasedS3Credential implements S3Credential
 {
     private final String accessKeyId;

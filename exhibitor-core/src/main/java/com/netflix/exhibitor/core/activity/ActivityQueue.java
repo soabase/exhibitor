@@ -12,6 +12,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * A queue for activities
+ */
 public class ActivityQueue implements Closeable
 {
     private static final Logger log = LoggerFactory.getLogger(ActivityQueue.class);
@@ -84,6 +87,9 @@ public class ActivityQueue implements Closeable
         queues = builder.build();
     }
 
+    /**
+     * The queue must be started
+     */
     public void start()
     {
         for ( QueueGroups group : QueueGroups.values() )
@@ -122,24 +128,25 @@ public class ActivityQueue implements Closeable
         }
     }
 
-    public synchronized void     replace(QueueGroups group, Activity activity)
-    {
-        replace(group, activity, 0, TimeUnit.MILLISECONDS);
-    }
-
-    public synchronized void     replace(QueueGroups group, Activity activity, long delay, TimeUnit unit)
-    {
-        ActivityHolder  holder = new ActivityHolder(activity, TimeUnit.MILLISECONDS.convert(delay, unit));
-        DelayQueue<ActivityHolder> queue = queues.get(group);
-        queue.remove(holder);
-        queue.offer(holder);
-    }
-
+    /**
+     * Add an activity to the given queue
+     *
+     * @param group the queue - all activities within a queue are executed serially
+     * @param activity the activity
+     */
     public synchronized void     add(QueueGroups group, Activity activity)
     {
         add(group, activity, 0, TimeUnit.MILLISECONDS);
     }
 
+    /**
+     * Add an activity to the given queue that executes after a specified delay
+     *
+     * @param group the queue - all activities within a queue are executed serially
+     * @param activity the activity
+     * @param delay the delay
+     * @param unit the delay unit
+     */
     public synchronized void     add(QueueGroups group, Activity activity, long delay, TimeUnit unit)
     {
         ActivityHolder  holder = new ActivityHolder(activity, TimeUnit.MILLISECONDS.convert(delay, unit));
@@ -150,5 +157,33 @@ public class ActivityQueue implements Closeable
     public void close() throws IOException
     {
         service.shutdownNow();
+    }
+
+    /**
+     * Replace the given activity in the given queue. If not in the queue, adds it to the queue.
+     *
+     * @param group the queue - all activities within a queue are executed serially
+     * @param activity the activity
+     */
+    public synchronized void     replace(QueueGroups group, Activity activity)
+    {
+        replace(group, activity, 0, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Replace the given activity in the given queue. If not in the queue, adds it to the queue. The activity
+     * runs after the specified delay (the delay of the previous entry, if any, is ignored)
+     *
+     * @param group the queue - all activities within a queue are executed serially
+     * @param activity the activity
+     * @param delay the delay
+     * @param unit the delay unit
+     */
+    public synchronized void     replace(QueueGroups group, Activity activity, long delay, TimeUnit unit)
+    {
+        ActivityHolder  holder = new ActivityHolder(activity, TimeUnit.MILLISECONDS.convert(delay, unit));
+        DelayQueue<ActivityHolder> queue = queues.get(group);
+        queue.remove(holder);
+        queue.offer(holder);
     }
 }
