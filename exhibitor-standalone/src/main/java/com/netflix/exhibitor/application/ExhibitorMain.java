@@ -3,6 +3,7 @@ package com.netflix.exhibitor.application;
 import com.google.common.collect.Sets;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.backup.BackupProvider;
+import com.netflix.exhibitor.core.backup.filesystem.FileSystemBackupProvider;
 import com.netflix.exhibitor.core.backup.s3.S3BackupProvider;
 import com.netflix.exhibitor.core.config.ConfigProvider;
 import com.netflix.exhibitor.core.config.DefaultProperties;
@@ -51,7 +52,7 @@ public class ExhibitorMain implements Closeable
 
     public static void main(String[] args) throws Exception
     {
-        String      hostname = getHostname();
+        String      hostname = Exhibitor.getHostname();
 
         Options     options  = new Options();
         options.addOption(null, FILESYSTEMCONFIG, true, "Path to store Exhibitor properties (cannot be used with s3config). Exhibitor uses file system locks so you can specify a shared location so as to enable complete ensemble management. Default location is the working directory.");
@@ -217,19 +218,5 @@ public class ExhibitorMain implements Closeable
         HelpFormatter       formatter = new HelpFormatter();
         formatter.printHelp("ExhibitorMain", options);
         System.exit(0);
-    }
-
-    private static String getHostname()
-    {
-        String      host = "unknown";
-        try
-        {
-            return InetAddress.getLocalHost().getHostName();
-        }
-        catch ( UnknownHostException e )
-        {
-            // ignore
-        }
-        return host;
     }
 }

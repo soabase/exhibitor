@@ -25,6 +25,8 @@ import com.netflix.exhibitor.core.state.StandardProcessOperations;
 import com.netflix.exhibitor.rest.UITab;
 import java.io.Closeable;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -79,6 +81,25 @@ public class Exhibitor implements Closeable
             this.thisJVMHostname = thisJVMHostname;
             this.configCheckMs = configCheckMs;
         }
+    }
+
+    /**
+     * Return this VM's hostname if possible
+     *
+     * @return hostname
+     */
+    public static String getHostname()
+    {
+        String      host = "unknown";
+        try
+        {
+            return InetAddress.getLocalHost().getHostName();
+        }
+        catch ( UnknownHostException e )
+        {
+            // ignore
+        }
+        return host;
     }
 
     /**
