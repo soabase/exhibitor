@@ -194,7 +194,7 @@ function submitConfigChanges()
         contentType: 'application/json',
         success:function(data)
         {
-            if ( data.succeeded != "true" )
+            if ( !data.succeeded )
             {
                 messageDialog("Error", data.message);
             }
