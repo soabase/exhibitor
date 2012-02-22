@@ -164,7 +164,7 @@ public class ExhibitorMain implements Closeable
         Exhibitor               exhibitor = new Exhibitor(configProvider, null, backupProvider, arguments);
         exhibitor.start();
 
-        DefaultResourceConfig   application = JerseySupport.newApplication(new UIContext(exhibitor));
+        DefaultResourceConfig   application = JerseySupport.newApplicationConfig(new UIContext(exhibitor));
         ServletContainer        container = new ServletContainer(application);
         server = new Server(8080);
         Context root = new Context(server, "/", Context.SESSIONS);

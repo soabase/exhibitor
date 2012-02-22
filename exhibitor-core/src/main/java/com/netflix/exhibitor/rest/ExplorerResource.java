@@ -17,6 +17,9 @@ import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * RESt calls for the Explorer Tab (which uses the Dynatree JQuery plugin
+ */
 @Path("exhibitor/v1/ui/explorer")
 public class ExplorerResource
 {

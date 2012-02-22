@@ -7,9 +7,13 @@ import com.netflix.exhibitor.core.activity.QueueGroups;
 import com.netflix.exhibitor.core.activity.RepeatingActivity;
 import com.netflix.exhibitor.core.config.ConfigListener;
 import com.netflix.exhibitor.core.config.IntConfigs;
+import com.netflix.exhibitor.core.controlpanel.ControlPanelTypes;
 import java.io.Closeable;
 import java.io.IOException;
 
+/**
+ * Manages periodically cleaning up ZK logs
+ */
 public class CleanupManager implements Closeable
 {
     private final RepeatingActivity repeatingActivity;
@@ -29,7 +33,7 @@ public class CleanupManager implements Closeable
             @Override
             public Boolean call() throws Exception
             {
-                if ( exhibitor.isControlPanelSettingEnabled(ControlPanelTypes.CLEANUP) )
+                if ( exhibitor.getControlPanelValues().isSet(ControlPanelTypes.CLEANUP) )
                 {
                     try
                     {
@@ -63,6 +67,7 @@ public class CleanupManager implements Closeable
         );
     }
 
+    @Override
     public void close() throws IOException
     {
         repeatingActivity.close();

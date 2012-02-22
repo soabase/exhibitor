@@ -7,6 +7,7 @@ import com.netflix.exhibitor.core.activity.QueueGroups;
 import com.netflix.exhibitor.core.activity.RepeatingActivity;
 import com.netflix.exhibitor.core.config.ConfigListener;
 import com.netflix.exhibitor.core.config.IntConfigs;
+import com.netflix.exhibitor.core.controlpanel.ControlPanelTypes;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -43,16 +44,16 @@ public class MonitorRunningInstance implements Closeable
     {
         repeatingActivity.start();
         exhibitor.getConfigManager().addConfigListener
-        (
-            new ConfigListener()
-            {
-                @Override
-                public void configUpdated()
+            (
+                new ConfigListener()
                 {
-                    repeatingActivity.setTimePeriodMs(exhibitor.getConfigManager().getConfig().getInt(IntConfigs.CHECK_MS));
+                    @Override
+                    public void configUpdated()
+                    {
+                        repeatingActivity.setTimePeriodMs(exhibitor.getConfigManager().getConfig().getInt(IntConfigs.CHECK_MS));
+                    }
                 }
-            }
-        );
+            );
     }
 
     @Override
@@ -61,7 +62,7 @@ public class MonitorRunningInstance implements Closeable
         repeatingActivity.close();
     }
 
-    private void doWork()
+    private void doWork() throws Exception
     {
         InstanceState   instanceState = exhibitor.getInstanceStateManager().getInstanceState();
         InstanceState   localCurrentInstanceState = currentInstanceState.get();
@@ -98,9 +99,9 @@ public class MonitorRunningInstance implements Closeable
         }
     }
 
-    private void restartZooKeeper()
+    private void restartZooKeeper() throws Exception
     {
-        if ( !exhibitor.isControlPanelSettingEnabled(ControlPanelTypes.RESTARTS) )
+        if ( !exhibitor.getControlPanelValues().isSet(ControlPanelTypes.RESTARTS) )
         {
             return;
         }

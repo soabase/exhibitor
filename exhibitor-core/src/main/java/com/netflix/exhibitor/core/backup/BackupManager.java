@@ -14,8 +14,8 @@ import com.netflix.exhibitor.core.config.ConfigListener;
 import com.netflix.exhibitor.core.config.InstanceConfig;
 import com.netflix.exhibitor.core.config.IntConfigs;
 import com.netflix.exhibitor.core.config.StringConfigs;
+import com.netflix.exhibitor.core.controlpanel.ControlPanelTypes;
 import com.netflix.exhibitor.core.index.ZooKeeperLogFiles;
-import com.netflix.exhibitor.core.state.ControlPanelTypes;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -223,7 +223,7 @@ public class BackupManager implements Closeable
 
     private void doBackup() throws Exception
     {
-        if ( !exhibitor.isControlPanelSettingEnabled(ControlPanelTypes.BACKUPS) )
+        if ( !exhibitor.getControlPanelValues().isSet(ControlPanelTypes.BACKUPS) )
         {
             return;
         }

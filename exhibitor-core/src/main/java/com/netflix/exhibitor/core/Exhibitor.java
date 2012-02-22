@@ -2,7 +2,6 @@ package com.netflix.exhibitor.core;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Closeables;
 import com.netflix.curator.framework.CuratorFramework;
 import com.netflix.curator.framework.CuratorFrameworkFactory;
@@ -15,9 +14,9 @@ import com.netflix.exhibitor.core.config.ConfigListener;
 import com.netflix.exhibitor.core.config.ConfigManager;
 import com.netflix.exhibitor.core.config.ConfigProvider;
 import com.netflix.exhibitor.core.config.IntConfigs;
+import com.netflix.exhibitor.core.controlpanel.ControlPanelValues;
 import com.netflix.exhibitor.core.index.IndexCache;
 import com.netflix.exhibitor.core.state.CleanupManager;
-import com.netflix.exhibitor.core.state.ControlPanelTypes;
 import com.netflix.exhibitor.core.state.InstanceStateManager;
 import com.netflix.exhibitor.core.state.MonitorRunningInstance;
 import com.netflix.exhibitor.core.state.ProcessOperations;
@@ -28,8 +27,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -53,7 +50,7 @@ public class Exhibitor implements Closeable
     private final CleanupManager            cleanupManager;
     private final AtomicReference<State>    state = new AtomicReference<State>(State.LATENT);
     private final IndexCache                indexCache;
-    private final Map<ControlPanelTypes, AtomicBoolean> controlPanelSettings;
+    private final ControlPanelValues        controlPanelValues;
     private final BackupManager             backupManager;
     private final ConfigManager             configManager;
     private final Arguments                 arguments;
@@ -121,12 +118,7 @@ public class Exhibitor implements Closeable
         cleanupManager = new CleanupManager(this);
         indexCache = new IndexCache(log);
 
-        ImmutableMap.Builder<ControlPanelTypes, AtomicBoolean> builder = ImmutableMap.builder();
-        for ( ControlPanelTypes type : ControlPanelTypes.values() )
-        {
-            builder.put(type, new AtomicBoolean(true));
-        }
-        controlPanelSettings = builder.build();
+        controlPanelValues = new ControlPanelValues();
 
         this.backupManager = new BackupManager(this, backupProvider);
     }
@@ -268,15 +260,10 @@ public class Exhibitor implements Closeable
         }
         return localConnection;
     }
-    
-    public boolean isControlPanelSettingEnabled(ControlPanelTypes type)
-    {
-        return controlPanelSettings.get(type).get();
-    }
 
-    public void setControlPanelSettingEnabled(ControlPanelTypes type, boolean newValue)
+    public ControlPanelValues getControlPanelValues()
     {
-        controlPanelSettings.get(type).set(newValue);
+        return controlPanelValues;
     }
 
     public BackupManager getBackupManager()

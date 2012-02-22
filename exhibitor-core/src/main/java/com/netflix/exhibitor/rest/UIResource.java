@@ -12,9 +12,9 @@ import com.netflix.exhibitor.core.backup.BackupConfigSpec;
 import com.netflix.exhibitor.core.config.InstanceConfig;
 import com.netflix.exhibitor.core.config.IntConfigs;
 import com.netflix.exhibitor.core.config.StringConfigs;
+import com.netflix.exhibitor.core.controlpanel.ControlPanelTypes;
 import com.netflix.exhibitor.core.entities.Result;
 import com.netflix.exhibitor.core.entities.UITabSpec;
-import com.netflix.exhibitor.core.state.ControlPanelTypes;
 import com.netflix.exhibitor.core.state.FourLetterWord;
 import com.netflix.exhibitor.core.state.KillRunningInstance;
 import com.netflix.exhibitor.core.state.ServerList;
@@ -42,6 +42,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * REST calls for the general Exhibitor UI
+ */
 @Path("exhibitor/v1/ui")
 public class UIResource
 {
@@ -206,11 +209,11 @@ public class UIResource
 
         mainNode.put("version", "v0.0.1");       // TODO - correct version
         mainNode.put("running", "imok".equals(response));
-        mainNode.put("restartsEnabled", context.getExhibitor().isControlPanelSettingEnabled(ControlPanelTypes.RESTARTS));
-        mainNode.put("cleanupEnabled", context.getExhibitor().isControlPanelSettingEnabled(ControlPanelTypes.CLEANUP));
-        mainNode.put("unlistedRestartsEnabled", context.getExhibitor().isControlPanelSettingEnabled(ControlPanelTypes.UNLISTED_RESTARTS));
+        mainNode.put("restartsEnabled", context.getExhibitor().getControlPanelValues().isSet(ControlPanelTypes.RESTARTS));
+        mainNode.put("cleanupEnabled", context.getExhibitor().getControlPanelValues().isSet(ControlPanelTypes.CLEANUP));
+        mainNode.put("unlistedRestartsEnabled", context.getExhibitor().getControlPanelValues().isSet(ControlPanelTypes.UNLISTED_RESTARTS));
         mainNode.put("backupActive", context.getExhibitor().getBackupManager().isActive());
-        mainNode.put("backupsEnabled", context.getExhibitor().isControlPanelSettingEnabled(ControlPanelTypes.BACKUPS));
+        mainNode.put("backupsEnabled", context.getExhibitor().getControlPanelValues().isSet(ControlPanelTypes.BACKUPS));
 
         configNode.put("hostname", context.getExhibitor().getThisJVMHostname());
         configNode.put("serverId", (us != null) ? us.getServerId() : -1);
@@ -333,7 +336,7 @@ public class UIResource
         {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        context.getExhibitor().setControlPanelSettingEnabled(type, newValue);
+        context.getExhibitor().getControlPanelValues().set(type, newValue);
         return Response.ok(new Result("OK", true)).build();
     }
 

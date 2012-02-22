@@ -4,8 +4,12 @@ import com.google.common.collect.Iterables;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.config.InstanceConfig;
 import com.netflix.exhibitor.core.config.StringConfigs;
+import com.netflix.exhibitor.core.controlpanel.ControlPanelTypes;
 import java.util.List;
 
+/**
+ * Determines the state of the ZK server
+ */
 public class Checker
 {
     private final Exhibitor exhibitor;
@@ -15,29 +19,30 @@ public class Checker
         this.exhibitor = exhibitor;
     }
 
-    public InstanceStateTypes   getState()
+    public InstanceStateTypes   getState() throws Exception
     {
         InstanceConfig          config = exhibitor.getConfigManager().getConfig();
 
-        InstanceStateTypes      state = InstanceStateTypes.UNKNOWN;
+        InstanceStateTypes      potentialState = InstanceStateTypes.UNKNOWN;
         ServerList              serverList = new ServerList(config.getString(StringConfigs.SERVERS_SPEC));
         ServerList.ServerSpec   us = Iterables.find(serverList.getSpecs(), ServerList.isUs(exhibitor.getThisJVMHostname()), null);
         if ( us != null )
         {
-            if ( !exhibitor.isControlPanelSettingEnabled(ControlPanelTypes.RESTARTS) )
+            if ( !exhibitor.getControlPanelValues().isSet(ControlPanelTypes.RESTARTS) )
             {
-                state = InstanceStateTypes.DOWN_BECAUSE_RESTARTS_TURNED_OFF;
+                potentialState = InstanceStateTypes.DOWN_BECAUSE_RESTARTS_TURNED_OFF;
             }
         }
         else
         {
-            if ( !exhibitor.isControlPanelSettingEnabled(ControlPanelTypes.UNLISTED_RESTARTS) )
+            if ( !exhibitor.getControlPanelValues().isSet(ControlPanelTypes.UNLISTED_RESTARTS) )
             {
-                state = InstanceStateTypes.DOWN_BECAUSE_UNLISTED;
+                potentialState = InstanceStateTypes.DOWN_BECAUSE_UNLISTED;
             }
         }
 
-        String      ruok = new FourLetterWord(FourLetterWord.Word.RUOK, config, exhibitor.getConnectionTimeOutMs()).getResponse();
+        InstanceStateTypes      actualState = potentialState;
+        String                  ruok = new FourLetterWord(FourLetterWord.Word.RUOK, config, exhibitor.getConnectionTimeOutMs()).getResponse();
         if ( "imok".equals(ruok) )
         {
             // The following code depends on inside knowledge of the "srvr" response. If they change it
@@ -48,18 +53,18 @@ public class Checker
             {
                 if ( line.contains("not currently serving") )
                 {
-                    state = InstanceStateTypes.NOT_SERVING;
+                    actualState = InstanceStateTypes.NOT_SERVING;
                     break;
                 }
 
                 if ( line.toLowerCase().startsWith("mode") )
                 {
-                    state = InstanceStateTypes.SERVING;
+                    actualState = InstanceStateTypes.SERVING;
                     break;
                 }
             }
         }
 
-        return state;
+        return actualState;
     }
 }

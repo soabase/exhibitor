@@ -17,7 +17,7 @@ public class InstanceStateManager
         checker = new Checker(exhibitor);
     }
 
-    public InstanceState getInstanceState()
+    public InstanceState getInstanceState() throws Exception
     {
         InstanceConfig          config = exhibitor.getConfigManager().getConfig();
 

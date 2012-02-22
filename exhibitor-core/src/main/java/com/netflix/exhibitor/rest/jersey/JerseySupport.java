@@ -10,7 +10,14 @@ import java.util.Set;
 
 public class JerseySupport
 {
-    public static DefaultResourceConfig newApplication(UIContext context)
+    /**
+     * Return a new Jersey config instance that correctly supplies all needed Exhibitor
+     * objects
+     *
+     * @param context the UIContext
+     * @return new config
+     */
+    public static DefaultResourceConfig newApplicationConfig(UIContext context)
     {
         final Set<Object> singletons = Sets.newHashSet();
         singletons.add(context);
@@ -35,5 +42,9 @@ public class JerseySupport
                 return singletons;
             }
         };
+    }
+
+    private JerseySupport()
+    {
     }
 }
