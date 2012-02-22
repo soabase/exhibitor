@@ -69,7 +69,7 @@ label
 
 #instance-info
 {
-    width: 300px;
+    width: 400px;
     margin-bottom: 25px;
 }
 
@@ -287,6 +287,11 @@ label
     margin-top: 10px;
 }
 
+#instance-hostname, #instance-id
+{
+    font-weight: bold;
+}
+
 legend
 {
     font-size: .9em;
@@ -296,6 +301,12 @@ legend
 fieldset
 {
     border: 1px solid #888;
+}
+
+.left-label
+{
+    float: left;
+    width: 125px;
 }
 
 .ui-progressbar-value
