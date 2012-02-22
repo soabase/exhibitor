@@ -11,6 +11,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Backup provider that uses the file system
+ */
 public class FileSystemBackupProvider implements BackupProvider
 {
     private static final BackupConfigSpec CONFIG_DIRECTORY = new BackupConfigSpec("directory", "Destination Path", "The path of the directory where backups are written to", "", BackupConfigSpec.Type.STRING);

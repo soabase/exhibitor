@@ -2,15 +2,7 @@ package com.netflix.exhibitor.core.s3;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.AbortMultipartUploadRequest;
-import com.amazonaws.services.s3.model.CompleteMultipartUploadRequest;
-import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest;
-import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
-import com.amazonaws.services.s3.model.ListObjectsRequest;
-import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.UploadPartRequest;
-import com.amazonaws.services.s3.model.UploadPartResult;
+import com.amazonaws.services.s3.model.*;
 
 public class S3ClientFactoryImpl implements S3ClientFactory
 {
@@ -24,6 +16,12 @@ public class S3ClientFactoryImpl implements S3ClientFactory
             public InitiateMultipartUploadResult initiateMultipartUpload(InitiateMultipartUploadRequest request) throws Exception
             {
                 return client.initiateMultipartUpload(request);
+            }
+
+            @Override
+            public PutObjectResult putObject(PutObjectRequest request) throws Exception
+            {
+                return client.putObject(request);
             }
 
             @Override

@@ -1,6 +1,5 @@
 package com.netflix.exhibitor.application;
 
-import com.google.common.collect.Sets;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.backup.BackupProvider;
 import com.netflix.exhibitor.core.backup.filesystem.FileSystemBackupProvider;
@@ -12,10 +11,8 @@ import com.netflix.exhibitor.core.config.s3.S3ConfigArguments;
 import com.netflix.exhibitor.core.config.s3.S3ConfigProvider;
 import com.netflix.exhibitor.core.s3.PropertyBasedS3Credential;
 import com.netflix.exhibitor.core.s3.S3ClientFactoryImpl;
-import com.netflix.exhibitor.rest.ExplorerResource;
-import com.netflix.exhibitor.rest.IndexResource;
 import com.netflix.exhibitor.rest.UIContext;
-import com.netflix.exhibitor.rest.UIResource;
+import com.netflix.exhibitor.rest.jersey.JerseySupport;
 import com.sun.jersey.api.core.DefaultResourceConfig;
 import com.sun.jersey.spi.container.servlet.ServletContainer;
 import org.apache.commons.cli.CommandLine;
@@ -30,9 +27,6 @@ import org.mortbay.jetty.servlet.ServletHolder;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Set;
 
 public class ExhibitorMain implements Closeable
 {
@@ -170,28 +164,8 @@ public class ExhibitorMain implements Closeable
         Exhibitor               exhibitor = new Exhibitor(configProvider, null, backupProvider, arguments);
         exhibitor.start();
 
-        final UIContext context = new UIContext(exhibitor);
-        DefaultResourceConfig application = new DefaultResourceConfig()
-        {
-            @Override
-            public Set<Class<?>> getClasses()
-            {
-                Set<Class<?>>       classes = Sets.newHashSet();
-                classes.add(UIResource.class);
-                classes.add(IndexResource.class);
-                classes.add(ExplorerResource.class);
-                return classes;
-            }
-
-            @Override
-            public Set<Object> getSingletons()
-            {
-                Set<Object>     singletons = Sets.newHashSet();
-                singletons.add(context);
-                return singletons;
-            }
-        };
-        ServletContainer container = new ServletContainer(application);
+        DefaultResourceConfig   application = JerseySupport.newApplication(new UIContext(exhibitor));
+        ServletContainer        container = new ServletContainer(application);
         server = new Server(8080);
         Context root = new Context(server, "/", Context.SESSIONS);
         root.addServlet(new ServletHolder(container), "/*");
