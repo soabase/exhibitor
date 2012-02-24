@@ -1,6 +1,7 @@
 package com.netflix.exhibitor.rest.jersey;
 
 import com.google.common.collect.Sets;
+import com.netflix.exhibitor.rest.ClusterResource;
 import com.netflix.exhibitor.rest.ExplorerResource;
 import com.netflix.exhibitor.rest.IndexResource;
 import com.netflix.exhibitor.rest.UIContext;
@@ -27,6 +28,7 @@ public class JerseySupport
         classes.add(UIResource.class);
         classes.add(IndexResource.class);
         classes.add(ExplorerResource.class);
+        classes.add(ClusterResource.class);
 
         return new DefaultResourceConfig()
         {

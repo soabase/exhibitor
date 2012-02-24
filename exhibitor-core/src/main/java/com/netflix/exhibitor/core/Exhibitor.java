@@ -10,6 +10,7 @@ import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.ActivityQueue;
 import com.netflix.exhibitor.core.backup.BackupManager;
 import com.netflix.exhibitor.core.backup.BackupProvider;
+import com.netflix.exhibitor.core.cluster.ClusterStatus;
 import com.netflix.exhibitor.core.config.ConfigListener;
 import com.netflix.exhibitor.core.config.ConfigManager;
 import com.netflix.exhibitor.core.config.ConfigProvider;
@@ -54,6 +55,7 @@ public class Exhibitor implements Closeable
     private final BackupManager             backupManager;
     private final ConfigManager             configManager;
     private final Arguments                 arguments;
+    private final ClusterStatus             clusterStatus;
 
     private CuratorFramework    localConnection;    // protected by synchronization
 
@@ -117,6 +119,7 @@ public class Exhibitor implements Closeable
         monitorRunningInstance = new MonitorRunningInstance(this);
         cleanupManager = new CleanupManager(this);
         indexCache = new IndexCache(log);
+        clusterStatus = new ClusterStatus(this);
 
         controlPanelValues = new ControlPanelValues();
 
@@ -141,8 +144,10 @@ public class Exhibitor implements Closeable
 
     /**
      * Start the app
+     *
+     * @throws Exception errors
      */
-    public void start()
+    public void start() throws Exception
     {
         Preconditions.checkState(state.compareAndSet(State.LATENT, State.STARTED));
 
@@ -150,6 +155,7 @@ public class Exhibitor implements Closeable
         configManager.start();
         monitorRunningInstance.start();
         cleanupManager.start();
+        clusterStatus.start();
         backupManager.start();
 
         configManager.addConfigListener
@@ -179,6 +185,7 @@ public class Exhibitor implements Closeable
 
         Closeables.closeQuietly(indexCache);
         Closeables.closeQuietly(backupManager);
+        Closeables.closeQuietly(clusterStatus);
         Closeables.closeQuietly(cleanupManager);
         Closeables.closeQuietly(monitorRunningInstance);
         Closeables.closeQuietly(configManager);
@@ -192,6 +199,11 @@ public class Exhibitor implements Closeable
     public Collection<UITab> getAdditionalUITabs()
     {
         return additionalUITabs;
+    }
+
+    public ClusterStatus getClusterStatus()
+    {
+        return clusterStatus;
     }
 
     public ConfigManager getConfigManager()

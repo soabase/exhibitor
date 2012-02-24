@@ -34,13 +34,18 @@ public class FourLetterWord
 
     public FourLetterWord(Word word, InstanceConfig config, int connectionTimeOutMs)
     {
+        this(word, "localhost", config, connectionTimeOutMs);
+    }
+    
+    public FourLetterWord(Word word, String hostname, InstanceConfig config, int connectionTimeOutMs)
+    {
         Preconditions.checkNotNull(word);
 
         String  localResponse = "";
         Socket  s = null;
         try
         {
-            s = new Socket("localhost", config.getInt(IntConfigs.CLIENT_PORT));
+            s = new Socket(hostname, config.getInt(IntConfigs.CLIENT_PORT));
             s.setTcpNoDelay(true);
             s.setSoTimeout(connectionTimeOutMs);
 

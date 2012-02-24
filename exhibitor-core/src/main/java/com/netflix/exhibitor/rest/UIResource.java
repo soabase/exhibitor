@@ -9,6 +9,10 @@ import com.google.common.io.Resources;
 import com.netflix.exhibitor.core.activity.QueueGroups;
 import com.netflix.exhibitor.core.backup.BackupConfigParser;
 import com.netflix.exhibitor.core.backup.BackupConfigSpec;
+import com.netflix.exhibitor.core.cluster.ServerList;
+import com.netflix.exhibitor.core.cluster.ServerSpec;
+import com.netflix.exhibitor.core.cluster.ServerSpecWithState;
+import com.netflix.exhibitor.core.cluster.VersionedServerSpecWithState;
 import com.netflix.exhibitor.core.config.InstanceConfig;
 import com.netflix.exhibitor.core.config.IntConfigs;
 import com.netflix.exhibitor.core.config.StringConfigs;
@@ -17,7 +21,6 @@ import com.netflix.exhibitor.core.entities.Result;
 import com.netflix.exhibitor.core.entities.UITabSpec;
 import com.netflix.exhibitor.core.state.FourLetterWord;
 import com.netflix.exhibitor.core.state.KillRunningInstance;
-import com.netflix.exhibitor.core.state.ServerList;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ArrayNode;
@@ -200,12 +203,16 @@ public class UIResource
         InstanceConfig              config = context.getExhibitor().getConfigManager().getConfig();
 
         String                      response = new FourLetterWord(FourLetterWord.Word.RUOK, config, context.getExhibitor().getConnectionTimeOutMs()).getResponse();
-        ServerList serverList = new ServerList(config.getString(StringConfigs.SERVERS_SPEC));
-        ServerList.ServerSpec       us = Iterables.find(serverList.getSpecs(), ServerList.isUs(context.getExhibitor().getThisJVMHostname()), null);
+        ServerList                  serverList = new ServerList(config.getString(StringConfigs.SERVERS_SPEC));
+        ServerSpec us = Iterables.find(serverList.getSpecs(), ServerList.isUs(context.getExhibitor().getThisJVMHostname()), null);
+
+        VersionedServerSpecWithState currentStatus = context.getExhibitor().getClusterStatus().getCurrentStatus();
 
         ObjectMapper                mapper = new ObjectMapper();
         ObjectNode                  mainNode = mapper.getNodeFactory().objectNode();
         ObjectNode                  configNode = mapper.getNodeFactory().objectNode();
+        ObjectNode                  clusterNode = mapper.getNodeFactory().objectNode();
+        ArrayNode                   clusterStateNode = mapper.getNodeFactory().arrayNode();
 
         mainNode.put("version", "v0.0.1");       // TODO - correct version
         mainNode.put("running", "imok".equals(response));
@@ -238,7 +245,19 @@ public class UIResource
             configNode.put("backupExtra", backupExtraNode);
         }
 
+        for ( ServerSpecWithState spec : currentStatus.getServerSpecWithState() )
+        {
+            ObjectNode     node = mapper.getNodeFactory().objectNode();
+            node.put("serverId", spec.getSpec().getServerId());
+            node.put("hostname", spec.getSpec().getHostname());
+            node.put("status", getStatusCode(spec));
+            clusterStateNode.add(node);
+        }
+        clusterNode.put("version", currentStatus.getVersion());
+        clusterNode.put("states", clusterStateNode);
+
         mainNode.put("config", configNode);
+        mainNode.put("cluster", clusterNode);
 
         return mapper.writer().writeValueAsString(mainNode);
     }
@@ -396,7 +415,7 @@ public class UIResource
         return builder.build();
     }
 
-    private String fixName(Enum c)
+    static String fixName(Enum c)
     {
         StringBuilder   str = new StringBuilder();
         String[]        parts = c.name().toLowerCase().split("_");
@@ -419,5 +438,34 @@ public class UIResource
             }
         }
         return str.toString();
+    }
+
+    private static int getStatusCode(ServerSpecWithState specWithState)
+    {
+        int statusCode = 0;
+        switch ( specWithState.getState() )
+        {
+            case LATENT:
+            case NOT_SERVING:
+            {
+                statusCode = 0;
+                break;
+            }
+
+            case SERVING:
+            {
+                statusCode = 1;
+                break;
+            }
+
+            case UNKNOWN:
+            case DOWN_BECAUSE_UNLISTED:
+            case DOWN_BECAUSE_RESTARTS_TURNED_OFF:
+            {
+                statusCode = 3;
+                break;
+            }
+        }
+        return statusCode;
     }
 }

@@ -10,9 +10,54 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class TestActivityQueue
 {
+    @Test
+    public void     test() throws Exception
+    {
+        final CountDownLatch      latch = new CountDownLatch(2);
+        final ReentrantLock       lock = new ReentrantLock();
+        Thread                    t1 = new Thread
+        (
+
+            new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    lock.lock();
+                    latch.countDown();
+                }
+            }
+        );
+        Thread                    t2 = new Thread
+        (
+
+            new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    lock.lock();
+                    latch.countDown();
+                }
+            }
+        );
+
+        t1.start();
+        t2.start();
+        if ( latch.await(10, TimeUnit.SECONDS) )
+        {
+            System.out.println("yep");
+        }
+        else
+        {
+            System.out.println("nope");
+        }
+    }
+    
     @Test
     public void testSequential() throws Exception
     {

@@ -23,7 +23,7 @@ label
     font-size: 80%;
     padding: 3px;
     width: 100%;
-    height: 75%;
+    height: 80%;
     overflow: scroll;
     white-space: pre;
     border: 1px solid black;
@@ -67,12 +67,6 @@ label
     z-index: 99999;
 }
 
-#instance-info
-{
-    width: 400px;
-    margin-bottom: 25px;
-}
-
 #title
 {
     margin-bottom: 3px;
@@ -110,12 +104,6 @@ label
     font-size: 125%;
 }
 
-#start-stop-button-container
-{
-    margin-top: 20px;
-    margin-bottom: 20px;
-}
-
 #config-group
 {
     line-height: 2em;
@@ -138,21 +126,17 @@ label
     padding-right: 8px;
 }
 
-#control-panel label
+#base-server-item label
 {
     float: left;
     width: 250px;
     margin-bottom: 8px;
+    font-weight: normal;
 }
 
-#control-panel input
+#base-server-item input
 {
     margin-bottom: 8px;
-}
-
-#control-panel div
-{
-    clear: both;
 }
 
 #index-query-dialog label
@@ -212,11 +196,6 @@ label
     white-space: nowrap;
     font-family: monospace;
 
-}
-
-#tabs-4ltr div div
-{
-    margin-bottom: 3px;
 }
 
 #index-query-results-table td
@@ -329,4 +308,72 @@ fieldset
     margin-left: 25px;
     font-size: .75em;
     font-style: italic;
+}
+
+.cp-server-item
+{
+    padding: 10px;
+    margin-bottom: 25px;
+}
+
+.cp-server-id
+{
+    float: left;
+    width: 125px;
+}
+
+.cp-hostname
+{
+    float: left;
+    width: 500px;
+}
+
+.cp-servers-heading
+{
+    padding: 3px;
+    margin-bottom: 16px;
+}
+
+.cp-status
+{
+    float: left;
+    border: 1px solid black;
+    margin-right: 10px;
+    width: 1em;
+    height: 1em;
+    border-radius: 1em;
+    moz-border-radius: 1em;
+    webkit-border-radius: 1em;
+    khtml-border-radius: 1em;
+    background-color: #FFF;
+    box-shadow: 2px 2px 2px #888;
+}
+
+.cp-server-column-wrapper
+{
+    width: 100%;
+}
+
+.cp-server-column
+{
+    float: left;
+    margin-right: 50px;
+}
+
+.cp-server-column button
+{
+    margin-right: 15px;
+}
+
+.cp-this-server
+{
+    font-style: italic;
+    font-size: .75em;
+    margin-left: 10px;
+}
+
+.cp-server-status-message
+{
+    font-style: italic;
+    margin-bottom: 15px;
 }

@@ -1,5 +1,7 @@
 package com.netflix.exhibitor.core.state;
 
+import com.netflix.exhibitor.core.cluster.ServerList;
+
 public class InstanceState
 {
     private final int                   connectPort;

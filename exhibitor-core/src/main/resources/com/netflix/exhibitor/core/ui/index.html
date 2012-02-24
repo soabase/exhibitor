@@ -20,6 +20,7 @@
         <script type="text/javascript" src="js/jquery.appear-1.1.1.js"></script>
         <script type="text/javascript" src="js/exhibitor.js"></script>
         <script type="text/javascript" src="js/exhibitor-index.js"></script>
+        <script type="text/javascript" src="js/exhibitor-cluster.js"></script>
         <script type="text/javascript" src="js/jquery.dataTables.js"></script>
         <script type="text/javascript" src="js/Scroller.js"></script>
     </head>
@@ -31,7 +32,7 @@
                 <span id="version"></span>
             </div>
 
-            <div class="ui-widget" id="not-connected-alert">
+            <div class="ui-widget ui-helper-hidden" id="not-connected-alert">
                 <div class="ui-state-error ui-corner-all" style="padding: 0 .7em;">
                     <p><span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
                         <strong id="not-connected-message"></strong></p>
@@ -43,45 +44,38 @@
                 <li><a href="#tabs-explorer">Explorer</a></li>
                 <li><a href="#tabs-config">Config</a></li>
                 <li><a href="#tabs-restore">Restore</a></li>
-                <li><a href="#tabs-4ltr">4LTR</a></li>
             </ul>
 
 
             <div id="tabs-main" class="ui-helper-hidden">
-                <div class="ui-widget" id="instance-info">
-                    <div class="ui-state-highlight ui-corner-all" style="padding: 10px;">
-                        <span class="left-label">This Instance</span><span id="instance-hostname"></span><br/>
-                        <span class="left-label">This Server ID</span><span id="instance-id"></span><br/>
-                    </div>
-                </div>
+                <div id="base-server-item">
+                    <div class="ui-widget ui-corner-all cp-server-item ui-state-highlight">
+                        <div class="cp-servers-heading ui-state-default">
+                            <span class="cp-status" id="$BASE_ID$-status-indicator"></span><span id="$BASE_ID$-server-id" class="cp-server-id"></span> <span id="$BASE_ID$-hostname" class="cp-hostname"></span><br clear="all"/>
+                        </div>
 
-                <div id="control-panel">
-                    <div title="When on, ZooKeeper instance is automatically restarted when there is an error, config change, etc.">
-                        <label for="instance-restarts-enabled">Automatic Instance Restarts</label><input type="checkbox" id="instance-restarts-enabled" name="instance-restarts-enabled"/>
-                    </div>
-                    <div title="When on, the ZooKeeper log cleanup task is active">
-                        <label for="cleanup-enabled">Log Cleanup Task</label><input type="checkbox" id="cleanup-enabled" name="cleanup-enabled"/><br/>
-                    </div>
-                    <div title="When on, the ZooKeeper instance will get restarted even if it is not in the config list of servers">
-                        <label for="unlisted-restarts">Restarts When Unlisted</label><input type="checkbox" id="unlisted-restarts" name="unlisted-restarts"/><br/>
-                    </div>
-                    <div title="When on, the ZooKeeper log backup task is active" id="backups-enabled-control" class="ui-helper-hidden">
-                        <label for="backups-enabled">Backup Logs Task</label><input type="checkbox" id="backups-enabled" name="backups-enabled"/><br/>
-                    </div>
-                </div>
+                        <div class="cp-server-column-wrapper">
+                            <div class="cp-server-column">
+                                <div title="When on, ZooKeeper instance is automatically restarted when there is an error, config change, etc.">
+                                    <label for="$BASE_ID$-instance-restarts-enabled">Automatic Instance Restarts</label><input type="checkbox" id="$BASE_ID$-instance-restarts-enabled" name="$BASE_ID$-instance-restarts-enabled"/><br clear="all"/>
+                                </div>
+                                <div title="When on, the ZooKeeper log cleanup task is active">
+                                    <label for="$BASE_ID$-cleanup-enabled">Log Cleanup Task</label><input type="checkbox" id="$BASE_ID$-cleanup-enabled" name="$BASE_ID$-cleanup-enabled"/><br clear="all"/>
+                                </div>
+                                <div title="When on, the ZooKeeper instance will get restarted even if it is not in the config list of servers">
+                                    <label for="$BASE_ID$-unlisted-restarts">Restarts When Unlisted</label><input type="checkbox" id="$BASE_ID$-unlisted-restarts" name="unlisted-restarts"/><br clear="all"/>
+                                </div>
+                                <div title="When on, the ZooKeeper log backup task is active" id="$BASE_ID$-backups-enabled-control" class="ui-helper-hidden">
+                                    <label for="$BASE_ID$-backups-enabled">Backup Logs Task</label><input type="checkbox" id="$BASE_ID$-backups-enabled" name="backups-enabled"/><br clear="all"/>
+                                </div>
+                            </div>
 
-                <div class="ui-widget" id="start-stop-button-container">
-                    <div id="tabs-main-running" class="ui-helper-hidden">
-                        <span id="stop-button-container">
-                            <button id="stop-button">Stop ZooKeeper...</button>
-                        </span>
-                        <span style="margin-left: 10px;">ZooKeeper appears to be running</span>
-                    </div>
-                    <div id="tabs-main-not-running" class="ui-helper-hidden">
-                        <span id="start-button-container">
-                            <button id="start-button">Start ZooKeeper</button>
-                        </span>
-                        <span style="margin-left: 10px;">ZooKeeper appears to be <strong>not</strong> running</span>
+                            <div class="cp-server-column">
+                                <div id="$BASE_ID$-status-message" class="cp-server-status-message"></div>
+                                <button id="$BASE_ID$-power-button">Start/Stop</button>
+                                <button id="$BASE_ID$-4ltr-button">4LTR...</button>
+                            </div>
+                        </div><br clear="all"/>
                     </div>
                 </div>
             </div>
@@ -166,18 +160,6 @@
                 <button id="restore-open-button">Open...</button>
                 <button id="restore-delete-button">Delete...</button>
                 <button id="restore-index-button">New Index...</button>
-            </div>
-
-            <div id="tabs-4ltr" class="ui-helper-hidden">
-                <div>
-                    <div>
-                        <label for="4ltr-word">Word </label>
-                        <input type="text" id="4ltr-word" name="4ltr-word" size="5">
-                        <button id="4ltr-button">Submit</button>
-                    </div>
-                </div>
-
-                <div id="4ltr-content" class="text"></div>
             </div>
         </div>
 

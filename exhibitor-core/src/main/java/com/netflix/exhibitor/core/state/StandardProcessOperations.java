@@ -5,6 +5,8 @@ import com.google.common.io.Closeables;
 import com.google.common.io.Files;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.activity.ActivityLog;
+import com.netflix.exhibitor.core.cluster.ServerList;
+import com.netflix.exhibitor.core.cluster.ServerSpec;
 import com.netflix.exhibitor.core.config.InstanceConfig;
 import com.netflix.exhibitor.core.config.IntConfigs;
 import com.netflix.exhibitor.core.config.StringConfigs;
@@ -169,7 +171,7 @@ public class StandardProcessOperations implements ProcessOperations
         ServerList              serverList = new ServerList(config.getString(StringConfigs.SERVERS_SPEC));
 
         File                    idFile = new File(details.dataDirectory, "myid");
-        ServerList.ServerSpec   us = Iterables.find(serverList.getSpecs(), ServerList.isUs(exhibitor.getThisJVMHostname()), null);
+        ServerSpec us = Iterables.find(serverList.getSpecs(), ServerList.isUs(exhibitor.getThisJVMHostname()), null);
         if ( us != null )
         {
             Files.createParentDirs(idFile);
@@ -191,7 +193,7 @@ public class StandardProcessOperations implements ProcessOperations
         localProperties.setProperty("clientPort", Integer.toString(config.getInt(IntConfigs.CLIENT_PORT)));
 
         String          portSpec = String.format(":%d:%d", config.getInt(IntConfigs.CONNECT_PORT), config.getInt(IntConfigs.ELECTION_PORT));
-        for ( ServerList.ServerSpec spec : serverList.getSpecs() )
+        for ( ServerSpec spec : serverList.getSpecs() )
         {
             localProperties.setProperty("server." + spec.getServerId(), spec.getHostname() + portSpec);
         }

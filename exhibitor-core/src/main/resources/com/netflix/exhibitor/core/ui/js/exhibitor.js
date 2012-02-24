@@ -1,4 +1,4 @@
-var BUILTIN_TAB_QTY = 5;
+var BUILTIN_TAB_QTY = 4;
 var AUTO_REFRESH_PERIOD = 10000;
 var UPDATE_STATE_PERIOD = 10000;
 
@@ -69,17 +69,6 @@ function updateState()
                 messageDialog("", "Connection with the " + $('#app-name').html() + " server re-established.");
             }
 
-            if ( systemState.running )
-            {
-                $('#tabs-main-running').show();
-                $('#tabs-main-not-running').hide();
-            }
-            else
-            {
-                $('#tabs-main-running').hide();
-                $('#tabs-main-not-running').show();
-            }
-
             if ( systemState.backupActive )
             {
                 $('#config-backups-fieldset').show();
@@ -91,18 +80,6 @@ function updateState()
                 $('#backups-enabled-control').hide();
             }
 
-            $('#instance-restarts-enabled').prop("checked", systemState.restartsEnabled);
-            $('#instance-restarts-enabled').trigger("change");
-
-            $('#unlisted-restarts').prop("checked", systemState.unlistedRestartsEnabled);
-            $('#unlisted-restarts').trigger("change");
-
-            $('#cleanup-enabled').prop("checked", systemState.cleanupEnabled);
-            $('#cleanup-enabled').trigger("change");
-
-            $('#backups-enabled').prop("checked", systemState.backupsEnabled);
-            $('#backups-enabled').trigger("change");
-
             $('#exhibitor-valence').hide();
             $('#version').html(systemState.version);
             $('#not-connected-alert').hide();
@@ -112,6 +89,7 @@ function updateState()
                 ) ? systemConfig.serverId : "n/a");
 
             updateConfig();
+            buildServerItems();
         }).error(function ()
         {
             if ( connectedToExhibitor )
@@ -338,12 +316,31 @@ function updateCalculatorValue()
     $('#millisecond-calculator-result').html(value * unit);
 }
 
+function makeLightSwitch(id, func, disable)
+{
+    if ( disable === undefined )
+    {
+        disable = false;
+    }
+
+    if ( disable )
+    {
+        $(id).attr("disabled", true);
+    }
+    $(id).lightSwitch({
+        switchImgCover: 'lightSwitch/switchplate.png',
+        switchImg : 'lightSwitch/switch.png',
+        disabledImg : 'lightSwitch/disabled.png'
+    });
+    $(id).next('span.switch').click(func);
+}
+
 var customTabs = new Array();
 $(function ()
 {
     $.getJSON('tabs', function (data)
     {
-        var uiTabSpec = $.makeArray(data.uiTabSpec);
+        var uiTabSpec = $.makeArray(data);
         for ( var i = 0; i < uiTabSpec.length; ++i )
         {
             var tabData = {};
@@ -397,42 +394,7 @@ $(function ()
         zIndex: 99999
     });
 
-    $('#instance-restarts-enabled').lightSwitch({
-        switchImgCover: 'lightSwitch/switchplate.png',
-        switchImg : 'lightSwitch/switch.png',
-        disabledImg : 'lightSwitch/disabled.png'
-    });
-    $('#instance-restarts-enabled').next('span.switch').click(function(){
-        var isChecked = $('#instance-restarts-enabled').is(':checked');
-        $.get("set/restarts/" + (isChecked ? "true" : "false"));
-    });
-
-    $('#cleanup-enabled').lightSwitch({
-        switchImgCover: 'lightSwitch/switchplate.png',
-        switchImg : 'lightSwitch/switch.png',
-        disabledImg : 'lightSwitch/disabled.png'
-    });
-    $('#cleanup-enabled').next('span.switch').click(function(){
-        var isChecked = $('#cleanup-enabled').is(':checked');
-        $.get("set/cleanup/" + (isChecked ? "true" : "false"));
-    });
-
-    $('#unlisted-restarts').lightSwitch({
-        switchImgCover: 'lightSwitch/switchplate.png',
-        switchImg : 'lightSwitch/switch.png',
-        disabledImg : 'lightSwitch/disabled.png'
-    });
-    $('#unlisted-restarts').next('span.switch').click(function(){
-        var isChecked = $('#unlisted-restarts').is(':checked');
-        $.get("set/unlisted-restarts/" + (isChecked ? "true" : "false"));
-    });
-
-    $('#config-editable').lightSwitch({
-        switchImgCover: 'lightSwitch/switchplate.png',
-        switchImg : 'lightSwitch/switch.png',
-        disabledImg : 'lightSwitch/disabled.png'
-    });
-    $('#config-editable').next('span.switch').click(function(){
+    makeLightSwitch('#config-editable', function(){
         var isChecked = $('#config-editable').is(':checked');
         doConfigUpdates = !isChecked;
 
@@ -468,29 +430,11 @@ $(function ()
     $('#not-connected-message').html("Not connected to " + $('#app-name').html() + " server");
     $('#page-title').html($('#app-name').html() + " for ZooKeeper");
 
-    $('#4ltr-button').button().click(function ()
-    {
-        var word = $('#4ltr-word').val();
-        $('#4ltr-content').load('4ltr/' + encodeURIComponent(word));
-        return false;
-    });
-
-    $('#backups-enabled').lightSwitch({
-        switchImgCover: 'lightSwitch/switchplate.png',
-        switchImg : 'lightSwitch/switch.png',
-        disabledImg : 'lightSwitch/disabled.png'
-    });
-    $('#backups-enabled').next('span.switch').click(function(){
-        var isChecked = $('#backups-enabled').is(':checked');
-        $.get("set/backups/" + (isChecked ? "true" : "false"));
-    });
-
     window.setInterval("updateState()", UPDATE_STATE_PERIOD);
     updateState();
     ableConfig(false);
 
     $('#config-group').colorTip();
-    $('#control-panel').colorTip();
 
     $("#millisecond-calculator-dialog").dialog({
         modal: true,
