@@ -11,8 +11,6 @@ import com.netflix.exhibitor.core.backup.BackupConfigParser;
 import com.netflix.exhibitor.core.backup.BackupConfigSpec;
 import com.netflix.exhibitor.core.cluster.ServerList;
 import com.netflix.exhibitor.core.cluster.ServerSpec;
-import com.netflix.exhibitor.core.cluster.ServerSpecWithState;
-import com.netflix.exhibitor.core.cluster.VersionedServerSpecWithState;
 import com.netflix.exhibitor.core.config.InstanceConfig;
 import com.netflix.exhibitor.core.config.IntConfigs;
 import com.netflix.exhibitor.core.config.StringConfigs;
@@ -206,21 +204,12 @@ public class UIResource
         ServerList                  serverList = new ServerList(config.getString(StringConfigs.SERVERS_SPEC));
         ServerSpec us = Iterables.find(serverList.getSpecs(), ServerList.isUs(context.getExhibitor().getThisJVMHostname()), null);
 
-        VersionedServerSpecWithState currentStatus = context.getExhibitor().getClusterStatus().getCurrentStatus();
-
         ObjectMapper                mapper = new ObjectMapper();
         ObjectNode                  mainNode = mapper.getNodeFactory().objectNode();
         ObjectNode                  configNode = mapper.getNodeFactory().objectNode();
-        ObjectNode                  clusterNode = mapper.getNodeFactory().objectNode();
-        ArrayNode                   clusterStateNode = mapper.getNodeFactory().arrayNode();
 
         mainNode.put("version", "v0.0.1");       // TODO - correct version
         mainNode.put("running", "imok".equals(response));
-        mainNode.put("restartsEnabled", context.getExhibitor().getControlPanelValues().isSet(ControlPanelTypes.RESTARTS));
-        mainNode.put("cleanupEnabled", context.getExhibitor().getControlPanelValues().isSet(ControlPanelTypes.CLEANUP));
-        mainNode.put("unlistedRestartsEnabled", context.getExhibitor().getControlPanelValues().isSet(ControlPanelTypes.UNLISTED_RESTARTS));
-        mainNode.put("backupActive", context.getExhibitor().getBackupManager().isActive());
-        mainNode.put("backupsEnabled", context.getExhibitor().getControlPanelValues().isSet(ControlPanelTypes.BACKUPS));
 
         configNode.put("hostname", context.getExhibitor().getThisJVMHostname());
         configNode.put("serverId", (us != null) ? us.getServerId() : -1);
@@ -245,19 +234,7 @@ public class UIResource
             configNode.put("backupExtra", backupExtraNode);
         }
 
-        for ( ServerSpecWithState spec : currentStatus.getServerSpecWithState() )
-        {
-            ObjectNode     node = mapper.getNodeFactory().objectNode();
-            node.put("serverId", spec.getSpec().getServerId());
-            node.put("hostname", spec.getSpec().getHostname());
-            node.put("status", getStatusCode(spec));
-            clusterStateNode.add(node);
-        }
-        clusterNode.put("version", currentStatus.getVersion());
-        clusterNode.put("states", clusterStateNode);
-
         mainNode.put("config", configNode);
-        mainNode.put("cluster", clusterNode);
 
         return mapper.writer().writeValueAsString(mainNode);
     }
@@ -438,34 +415,5 @@ public class UIResource
             }
         }
         return str.toString();
-    }
-
-    private static int getStatusCode(ServerSpecWithState specWithState)
-    {
-        int statusCode = 0;
-        switch ( specWithState.getState() )
-        {
-            case LATENT:
-            case NOT_SERVING:
-            {
-                statusCode = 0;
-                break;
-            }
-
-            case SERVING:
-            {
-                statusCode = 1;
-                break;
-            }
-
-            case UNKNOWN:
-            case DOWN_BECAUSE_UNLISTED:
-            case DOWN_BECAUSE_RESTARTS_TURNED_OFF:
-            {
-                statusCode = 3;
-                break;
-            }
-        }
-        return statusCode;
     }
 }

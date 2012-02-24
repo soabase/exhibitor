@@ -174,7 +174,7 @@ function updateOneServerState(index, data)
 function updateServerState(serversList)
 {
     var localServerItemsVersion = serverItemsVersion;
-    for ( var i = 0; i < systemState.cluster.states.length; ++i )
+    for ( var i = 0; i < serversList.length; ++i )
     {
         var spec = serversList[i];
         var thisHostname = spec.hostname;
