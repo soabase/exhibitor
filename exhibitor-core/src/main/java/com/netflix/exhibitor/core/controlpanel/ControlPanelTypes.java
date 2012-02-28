@@ -9,4 +9,18 @@ public enum ControlPanelTypes
     UNLISTED_RESTARTS,
     CLEANUP,
     BACKUPS
+    ;
+    
+    public static ControlPanelTypes fuzzyFind(String s)
+    {
+        for ( ControlPanelTypes type : ControlPanelTypes.values() )
+        {
+            String  fuzzy = type.name().replace("_", "");
+            if ( fuzzy.equalsIgnoreCase(s) )
+            {
+                return type;
+            }
+        }
+        return null;
+    }
 }

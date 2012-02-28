@@ -54,6 +54,7 @@
                             <span class="cp-status" id="$BASE_ID$-status-indicator"></span><span id="$BASE_ID$-server-id" class="cp-server-id"></span> <span id="$BASE_ID$-hostname" class="cp-hostname"></span><br clear="all"/>
                         </div>
 
+                        CHOICES FOR HANDLING SERVER START ISSUES
                         <div class="cp-server-column-wrapper">
                             <div class="cp-server-column">
                                 <div title="When on, ZooKeeper instance is automatically restarted when there is an error, config change, etc.">
@@ -72,8 +73,9 @@
 
                             <div class="cp-server-column">
                                 <div id="$BASE_ID$-status-message" class="cp-server-status-message"></div>
-                                <button id="$BASE_ID$-power-button">Start/Stop</button>
+                                <button id="$BASE_ID$-power-button">Restart...</button>
                                 <button id="$BASE_ID$-4ltr-button">4LTR...</button>
+                                <button id="$BASE_ID$-log-button">Log...</button>
                             </div>
                         </div><br clear="all"/>
                     </div>
@@ -128,6 +130,7 @@
                     <fieldset>
                         <legend>Ensemble</legend>
                         <label for="config-servers-spec">Servers</label><input type="text" id="config-servers-spec" name="config-servers-spec" size="80" title="List of all servers in the ensemble (including this one) in the form: id:host,id:host,..."><br clear="all"/>
+                        <label for="config-custom">Additional Config</label><textarea id="config-custom" name="config-custom" size="80" title="Any additional config/properties to be added to the zoo.cfg file in the form: name=value - one per line." cols="60" rows="4"></textarea><br clear="all"/>
                     </fieldset>
 
                     <fieldset>
@@ -156,7 +159,29 @@
 
             <div id="tabs-restore" class="ui-helper-hidden">
                 <div><strong>Available Indexes:</strong></div>
-                <div id="restore-items"></div><br clear="all"/><br/>
+                <div id="restore-items">
+                    <table id="restore-items-table">
+                        <thead>
+                        <tr>
+                            <th></th>
+                            <th>Name</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Count</th>
+                        </tr>
+                        </thead>
+                        <tbody id="restore-items-table-body">
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div><br/>
+
                 <button id="restore-open-button">Open...</button>
                 <button id="restore-delete-button">Delete...</button>
                 <button id="restore-index-button">New Index...</button>
@@ -245,21 +270,36 @@
             </div>
         </div>
 
+        <div id="word-4ltr-dialog" class="ui-helper-hidden">
+            <label for="word-4ltr">4LTR </label><input type="text" id="word-4ltr" name="word-4ltr" size="6">
+            <button id="word-4ltr-button">Submit</button><br clear="all"/>
+            <div id="word-4ltr-text" class="text"></div>
+        </div>
+
+        <div id="log-dialog" class="ui-helper-hidden">
+            <div id="log-text" class="text"></div>
+        </div>
+
         <div id="exhibitor-valence"></div>
 
         <div id="millisecond-calculator-dialog" class="ui-helper-hidden">
-            <input type="text" id="millisecond-calculator-value" name="millisecond-calculator-value" class="mask-pint" size="10" value="1">
-            <select id="millisecond-calculator-unit" size="1">
+            <input type="text" id="lhs-millisecond-calculator-value" name="lhs-millisecond-calculator-value" class="mask-pint" size="10" value="1">
+            <select id="lhs-millisecond-calculator-unit" size="1">
+                <option value="1">Milliseconds</option>
+                <option value="1000">Seconds</option>
+                <option value="60000">Minutes</option>
+                <option value="3600000">Hours</option>
+                <option value="86400000">Days</option>
+            </select><br clear="all"/>
+            <strong>=</strong><br/>
+            <input type="text" id="rhs-millisecond-calculator-value" name="rhs-millisecond-calculator-value" class="mask-pint" size="10" value="1">
+            <select id="rhs-millisecond-calculator-unit" size="1">
+                <option value="1">Milliseconds</option>
                 <option value="1000">Seconds</option>
                 <option value="60000">Minutes</option>
                 <option value="3600000">Hours</option>
                 <option value="86400000">Days</option>
             </select><br clear="all"/><br/>
-            <div>
-                <strong>
-                    = <span id="millisecond-calculator-result"></span> ms
-                </strong>
-            </div>
         </div>
     </body>
 </html>

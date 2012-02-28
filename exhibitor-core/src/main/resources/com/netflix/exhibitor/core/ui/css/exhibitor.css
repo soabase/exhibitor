@@ -12,6 +12,11 @@ label
     font-weight: bold;
 }
 
+.ui-button-text
+{
+    font-size: .85em;
+}
+
 .info
 {
     padding: 5px;
@@ -376,4 +381,16 @@ fieldset
 {
     font-style: italic;
     margin-bottom: 15px;
+    font-size: .75em;
+    height: .75em;
+}
+
+#word-4ltr-text
+{
+    margin-top: 5px;
+}
+
+#log-text
+{
+    height: 95%;
 }

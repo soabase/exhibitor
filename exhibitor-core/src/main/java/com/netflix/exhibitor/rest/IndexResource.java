@@ -5,9 +5,11 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.QueueGroups;
+import com.netflix.exhibitor.core.backup.BackupMetaData;
 import com.netflix.exhibitor.core.backup.RestoreAndIndex;
 import com.netflix.exhibitor.core.config.StringConfigs;
 import com.netflix.exhibitor.core.entities.Index;
+import com.netflix.exhibitor.core.entities.NameAndModifiedDate;
 import com.netflix.exhibitor.core.entities.NewIndexRequest;
 import com.netflix.exhibitor.core.entities.Result;
 import com.netflix.exhibitor.core.entities.SearchId;
@@ -15,8 +17,6 @@ import com.netflix.exhibitor.core.entities.SearchRequest;
 import com.netflix.exhibitor.core.entities.SearchResult;
 import com.netflix.exhibitor.core.index.*;
 import org.apache.lucene.search.Query;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.JsonNodeFactory;
 import org.codehaus.jackson.node.ObjectNode;
@@ -65,7 +65,7 @@ public class IndexResource
     {
         if ( request.getType().equals("backup") )
         {
-            RestoreAndIndex     restoreAndIndex = new RestoreAndIndex(context.getExhibitor(), request.getValue());
+            RestoreAndIndex     restoreAndIndex = new RestoreAndIndex(context.getExhibitor(), new BackupMetaData(request.getBackup().getName(), request.getBackup().getModifiedDate()));
             context.getExhibitor().getActivityQueue().add(QueueGroups.IO, restoreAndIndex);
         }
         else
@@ -106,30 +106,24 @@ public class IndexResource
     @Path("get-backups")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public String getAvailableBackups() throws Exception
+    public Response getAvailableBackups() throws Exception
     {
-        Collection<String> names = context.getExhibitor().getBackupManager().getAvailableSessionNames();
-
-        ObjectMapper            mapper = new ObjectMapper();
-        final JsonNodeFactory   factory = mapper.getNodeFactory();
-        Collection<JsonNode>    nodes = Collections2.transform
+        Collection<BackupMetaData>  backups = context.getExhibitor().getBackupManager().getAvailableBackups();
+        Collection<NameAndModifiedDate>  transformed = Collections2.transform
         (
-            names,
-            new Function<String, JsonNode>()
+            backups,
+            new Function<BackupMetaData, NameAndModifiedDate>()
             {
                 @Override
-                public JsonNode apply(String name)
+                public NameAndModifiedDate apply(BackupMetaData backup)
                 {
-                    ObjectNode node = factory.objectNode();
-                    node.put("name", name);
-                    return node;
+                    return new NameAndModifiedDate(backup.getName(), backup.getModifiedDate());
                 }
             }
         );
-        ArrayNode tab = factory.arrayNode();
-        tab.addAll(nodes);
 
-        return mapper.writer().writeValueAsString(tab);
+        GenericEntity<Collection<NameAndModifiedDate>>       entity = new GenericEntity<Collection<NameAndModifiedDate>>(transformed){};
+        return Response.ok(entity).build();
     }
 
     @Path("get/{index-name}/{search-handle}/{doc-id}")

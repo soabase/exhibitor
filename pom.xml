@@ -10,6 +10,6 @@
     <version>0.0.1</version>
     <modules>
         <module>exhibitor-core</module>
-        <module>exhibitor-application</module>
+        <module>exhibitor-standalone</module>
     </modules>
 </project>

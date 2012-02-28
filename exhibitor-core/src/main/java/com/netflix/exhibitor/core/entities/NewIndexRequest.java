@@ -8,15 +8,18 @@ public class NewIndexRequest
 {
     private String type;
     private String value;
+    private NameAndModifiedDate backup;
 
     public NewIndexRequest()
     {
-        this("", "");
+        this("", "", null);
     }
 
-    public NewIndexRequest(String type, String value)
+    public NewIndexRequest(String type, String value, NameAndModifiedDate backup)
     {
+        this.type = type;
         this.value = value;
+        this.backup = backup;
     }
 
     public String getType()
@@ -37,5 +40,15 @@ public class NewIndexRequest
     public void setValue(String value)
     {
         this.value = value;
+    }
+
+    public NameAndModifiedDate getBackup()
+    {
+        return backup;
+    }
+
+    public void setBackup(NameAndModifiedDate backup)
+    {
+        this.backup = backup;
     }
 }

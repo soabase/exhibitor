@@ -37,7 +37,7 @@ public class MonitorRunningInstance implements Closeable
             }
         };
 
-        repeatingActivity = new RepeatingActivity(exhibitor.getActivityQueue(), QueueGroups.MAIN, activity, exhibitor.getConfigManager().getConfig().getInt(IntConfigs.CHECK_MS));
+        repeatingActivity = new RepeatingActivity(null, exhibitor.getActivityQueue(), QueueGroups.MAIN, activity, exhibitor.getConfigManager().getConfig().getInt(IntConfigs.CHECK_MS));
     }
 
     public void start()
@@ -106,27 +106,6 @@ public class MonitorRunningInstance implements Closeable
             return;
         }
 
-        exhibitor.getActivityQueue().add
-        (
-            QueueGroups.MAIN,
-            new KillRunningInstance(exhibitor)
-            {
-                @Override
-                public void completed(boolean wasSuccessful)
-                {
-                    if ( wasSuccessful )
-                    {
-                        try
-                        {
-                            exhibitor.getProcessOperations().startInstance();
-                        }
-                        catch ( Exception e )
-                        {
-                            exhibitor.getLog().add(ActivityLog.Type.ERROR, "Monitoring instance", e);
-                        }
-                    }
-                }
-            }
-        );
+        exhibitor.getActivityQueue().add(QueueGroups.MAIN, new KillRunningInstance(exhibitor));
     }
 }

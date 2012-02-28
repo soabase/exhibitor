@@ -185,7 +185,7 @@ public class TestActivityQueue
                     return true;
                 }
             };
-            repeating = new RepeatingActivity(queue, QueueGroups.MAIN, activity, DELAY);
+            repeating = new RepeatingActivity(null, queue, QueueGroups.MAIN, activity, DELAY);
             repeating.start();
 
             long                    start = System.currentTimeMillis();

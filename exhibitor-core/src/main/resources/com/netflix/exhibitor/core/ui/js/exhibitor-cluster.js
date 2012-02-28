@@ -86,10 +86,10 @@ function internalBuildServerItems(serversList)
         spec = serversList[i];
         domId = '#cp-' + i;
 
-        makeLightSwitch(domId + '-instance-restarts-enabled', function(){}, true);
-        makeLightSwitch(domId + '-cleanup-enabled', function(){}, true);
-        makeLightSwitch(domId + '-unlisted-restarts', function(){}, true);
-        makeLightSwitch(domId + '-backups-enabled', function(){}, true);
+        makeLightSwitch(domId + '-instance-restarts-enabled', null, true);
+        makeLightSwitch(domId + '-cleanup-enabled', null, true);
+        makeLightSwitch(domId + '-unlisted-restarts', null, true);
+        makeLightSwitch(domId + '-backups-enabled', null, true);
         if ( systemState.backupActive )
         {
             $(domId + '-backups-enabled-control').show();
@@ -100,6 +100,7 @@ function internalBuildServerItems(serversList)
         if ( spec.hostname === systemConfig.hostname )
         {
             hostnameContent += '<span class="cp-this-server">(This server)</span>';
+            $(domId + '-log-button').hide();
         }
 
         $(domId + '-server-id').html(serverIdContent);
@@ -108,28 +109,86 @@ function internalBuildServerItems(serversList)
         $(domId + '-power-button').button({
             disabled: true,
             icons:{
-                primary:"ui-icon-play"
+                primary:"ui-icon-alert"
             }
-        }).click(function ()
-            {
-                return false;
-            });
+        }).click(stopStartDialog(spec.hostname));
 
         $(domId + '-4ltr-button').button({
             disabled: true,
             icons:{
                 primary:"ui-icon-circle-zoomin"
             }
-        }).click(function ()
-            {
-                return false;
-            });
+        }).click(word4ltrDialog(spec.hostname));
+
+        $(domId + '-log-button').button({
+            disabled: true,
+            icons:{
+                primary:"ui-icon-info"
+            }
+        }).click(logDialog(spec.hostname));
     }
 
     $('#base-server-item').colorTip();
 }
 
-function updateOneServerState(index, data)
+function stopStartDialog(hostname)
+{
+    return function() {
+        okCancelDialog(hostname, "Are you sure you want to restart this server?", function(){
+            makeRemoteCall("cluster/restart/", hostname);
+        });
+    };
+}
+
+function logDialog(hostname)
+{
+    return function() {
+        makeRemoteCall("cluster/log/", hostname, function(text){
+            $('#log-text').text(text);
+            $('#log-dialog').dialog("option", "title", hostname);
+            $('#log-dialog').dialog("open");
+        });
+    };
+}
+
+function word4ltrDialog(hostname)
+{
+    return function() {
+        $('#word-4ltr-button').click(function(){
+            makeRemoteCall("cluster/4ltr/" + $('#word-4ltr').val() + "/", hostname, function(text){
+                $('#word-4ltr-text').text(text)
+            })
+        });
+        $('#word-4ltr-dialog').dialog("option", "title", hostname);
+        $('#word-4ltr-dialog').dialog("open");
+    };
+}
+
+function makeRemoteCall(baseUrl, hostname, callback)
+{
+    $.getJSON(baseUrl + hostname, function(data){
+        if ( data.success )
+        {
+            if ( callback )
+            {
+                callback(data.response);
+            }
+        }
+        else
+        {
+            messageDialog("Error", "Could not complete message to " + hostname + ". Message: " + data.errorMessage);
+        }
+    });
+}
+
+function handleSwitch(index, hostname, type)
+{
+    return function(isChecked) {
+        makeRemoteCall('cluster/set/' + type + "/" + isChecked + "/", hostname);
+    };
+}
+
+function updateOneServerState(index, data, hostname)
 {
     var statusColor;
     var statusMessage = "";
@@ -137,6 +196,22 @@ function updateOneServerState(index, data)
     domId = '#cp-' + index;
     if ( data.success )
     {
+        var isRunning = ((data.response.state == STATE_SERVING) || (data.response.state == STATE_NOT_SERVING));
+
+        $(domId + '-power-button').button("option", "disabled", false);
+        $(domId + '-4ltr-button').button("option", "disabled", !isRunning);
+        $(domId + '-log-button').button("option", "disabled", !isRunning);
+
+        ableLightSwitch(domId + '-instance-restarts-enabled', handleSwitch(index, hostname, "restarts"));
+        ableLightSwitch(domId + '-cleanup-enabled', handleSwitch(index, hostname, "cleanup"));
+        ableLightSwitch(domId + '-unlisted-restarts', handleSwitch(index, hostname, "unlistedRestarts"));
+        ableLightSwitch(domId + '-backups-enabled', handleSwitch(index, hostname, "backups"));
+
+        checkLightSwitch(domId + '-instance-restarts-enabled', data.response.switches.restarts);
+        checkLightSwitch(domId + '-cleanup-enabled', data.response.switches.cleanup);
+        checkLightSwitch(domId + '-unlisted-restarts', data.response.switches.unlistedRestarts);
+        checkLightSwitch(domId + '-backups-enabled', data.response.switches.backups);
+
         switch ( data.response.state )
         {
             default:
@@ -153,9 +228,14 @@ function updateOneServerState(index, data)
                 break;
             }
 
+            case STATE_NOT_SERVING:
+            {
+                statusColor = "#FF0";
+                break;
+            }
+
             case STATE_DOWN_BECAUSE_UNLISTED:
             case STATE_DOWN_BECAUSE_RESTARTS_TURNED_OFF:
-            case STATE_NOT_SERVING:
             {
                 statusColor = "#F00";
                 break;
@@ -164,6 +244,15 @@ function updateOneServerState(index, data)
     }
     else
     {
+        $(domId + '-power-button').button("option", "disabled", true);
+        $(domId + '-4ltr-button').button("option", "disabled", true);
+        $(domId + '-log-button').button("option", "disabled", true);
+
+        ableLightSwitch(domId + '-instance-restarts-enabled', null, false);
+        ableLightSwitch(domId + '-cleanup-enabled', null, false);
+        ableLightSwitch(domId + '-unlisted-restarts', null, false);
+        ableLightSwitch(domId + '-backups-enabled', null, false);
+
         statusColor = "#F00";
         statusMessage = data.errorMessage;
     }
@@ -182,14 +271,14 @@ function updateServerState(serversList)
         {
             thisHostname = "localhost";
         }
-        var callback = function(index) {
+        var callback = function(index, hostname) {
             return function(data) {
                 if ( serverItemsVersion === localServerItemsVersion )
                 {
-                    updateOneServerState(index, data);
+                    updateOneServerState(index, data, hostname);
                 }
             };
         };
-        $.getJSON('cluster/state/' + thisHostname, callback(i));
+        $.getJSON('cluster/state/' + thisHostname, callback(i, thisHostname));
     }
 }

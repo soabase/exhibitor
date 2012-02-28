@@ -1,21 +1,23 @@
-package com.netflix.exhibitor.core.backup;
+package com.netflix.exhibitor.core.config;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 /**
- * Converts between the stored version of backup config and the runtime version
+ * Converts between the stored version of encoded config and the runtime version
  */
-public class BackupConfigParser
+public class EncodedConfigParser
 {
     private final Map<String, String>       values;
     
-    BackupConfigParser(String encodedValue, BackupProvider backupProvider)
+    public EncodedConfigParser(String encodedValue)
     {
         ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
 
@@ -43,23 +45,17 @@ public class BackupConfigParser
             throw new Error(e);
         }
 
-        for ( BackupConfigSpec config : backupProvider.getConfigs() )
-        {
-            if ( !usedKeys.contains(config.getKey()) )
-            {
-                builder.put(config.getKey(), config.getDefaultValue());
-            }
-        }
-
         values = builder.build();
     }
 
     /**
      * @param values runtime values
      */
-    public BackupConfigParser(Map<String, String> values)
+    public EncodedConfigParser(Map<String, String> values)
     {
-        this.values = ImmutableMap.copyOf(values);
+        TreeMap<String, String>     localSorted = Maps.newTreeMap();
+        localSorted.putAll(values);
+        this.values = ImmutableMap.copyOf(localSorted);
     }
 
     /**

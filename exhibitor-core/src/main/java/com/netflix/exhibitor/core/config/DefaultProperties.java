@@ -28,6 +28,13 @@ public class DefaultProperties
             @Override
             public String getString(StringConfigs config)
             {
+                switch ( config )
+                {
+                    case ZOO_CFG_EXTRA:
+                    {
+                        return "syncLimit=5&tickTime=2000&initLimit=10";
+                    }
+                }
                 return "";
             }
 

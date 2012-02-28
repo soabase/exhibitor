@@ -10,6 +10,7 @@ import com.netflix.curator.RetryPolicy;
 import com.netflix.curator.retry.ExponentialBackoffRetry;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.backup.BackupConfigSpec;
+import com.netflix.exhibitor.core.backup.BackupMetaData;
 import com.netflix.exhibitor.core.backup.BackupProvider;
 import com.netflix.exhibitor.core.s3.S3Client;
 import com.netflix.exhibitor.core.s3.S3ClientFactory;
@@ -46,6 +47,9 @@ public class S3BackupProvider implements BackupProvider
 
     private static final List<BackupConfigSpec>     CONFIGS = Arrays.asList(CONFIG_THROTTLE, CONFIG_BUCKET, CONFIG_MAX_RETRIES, CONFIG_RETRY_SLEEP_MS);
 
+    private static final String       SEPARATOR = "|";
+    private static final String       SEPARATOR_REPLACEMENT = "_";
+
     public S3BackupProvider(S3ClientFactory factory, S3Credential credential) throws Exception
     {
         this.compressor = new GzipCompressor();
@@ -66,11 +70,18 @@ public class S3BackupProvider implements BackupProvider
     }
 
     @Override
-    public void uploadBackup(Exhibitor exhibitor, String key, File source, final Map<String, String> configValues) throws Exception
+    public UploadResult uploadBackup(Exhibitor exhibitor, BackupMetaData backup, File source, final Map<String, String> configValues) throws Exception
     {
+        List<BackupMetaData>    availableBackups = getAvailableBackups(exhibitor, configValues);
+        if ( availableBackups.contains(backup) )
+        {
+            return UploadResult.DUPLICATE;
+        }
+
         RetryPolicy retryPolicy = makeRetryPolicy(configValues);
         Throttle    throttle = makeThrottle(configValues);
 
+        String                          key = toKey(backup);
         InitiateMultipartUploadRequest  initRequest = new InitiateMultipartUploadRequest(configValues.get(CONFIG_BUCKET.getKey()), key);
         InitiateMultipartUploadResult   initResponse = s3Client.initiateMultipartUpload(initRequest);
 
@@ -103,12 +114,23 @@ public class S3BackupProvider implements BackupProvider
         {
             Closeables.closeQuietly(compressorIterator);
         }
+
+        UploadResult        result = UploadResult.SUCCEEDED;
+        for ( BackupMetaData existing : availableBackups )
+        {
+            if ( existing.getName().equals(backup.getName()) )
+            {
+                deleteBackup(exhibitor, existing, configValues);
+                result = UploadResult.REPLACED_OLD_VERSION;
+            }
+        }
+        return result;
     }
 
     @Override
-    public void downloadBackup(Exhibitor exhibitor, String key, File destination, Map<String, String> configValues) throws Exception
+    public void downloadBackup(Exhibitor exhibitor, BackupMetaData backup, File destination, Map<String, String> configValues) throws Exception
     {
-        S3Object        object = s3Client.getObject(configValues.get(CONFIG_BUCKET.getKey()), key);
+        S3Object        object = s3Client.getObject(configValues.get(CONFIG_BUCKET.getKey()), toKey(backup));
 
         long            startMs = System.currentTimeMillis();
         RetryPolicy     retryPolicy = makeRetryPolicy(configValues);
@@ -156,7 +178,7 @@ public class S3BackupProvider implements BackupProvider
     }
 
     @Override
-    public List<String> getAvailableBackupKeys(Exhibitor exhibitor, Map<String, String> configValues) throws Exception
+    public List<BackupMetaData> getAvailableBackups(Exhibitor exhibitor, Map<String, String> configValues) throws Exception
     {
         ListObjectsRequest  request = new ListObjectsRequest();
         request.setBucketName(configValues.get(CONFIG_BUCKET.getKey()));
@@ -164,21 +186,21 @@ public class S3BackupProvider implements BackupProvider
         return Lists.transform
         (
             listing.getObjectSummaries(),
-            new Function<S3ObjectSummary, String>()
+            new Function<S3ObjectSummary, BackupMetaData>()
             {
                 @Override
-                public String apply(S3ObjectSummary summary)
+                public BackupMetaData apply(S3ObjectSummary summary)
                 {
-                    return summary.getKey();
+                    return fromKey(summary.getKey());
                 }
             }
         );
     }
 
     @Override
-    public void deleteBackup(Exhibitor exhibitor, String key, Map<String, String> configValues) throws Exception
+    public void deleteBackup(Exhibitor exhibitor, BackupMetaData backup, Map<String, String> configValues) throws Exception
     {
-        s3Client.deleteObject(configValues.get(CONFIG_BUCKET.getKey()), key);
+        s3Client.deleteObject(configValues.get(CONFIG_BUCKET.getKey()), toKey(backup));
     }
 
     private Throttle makeThrottle(final Map<String, String> configValues)
@@ -250,5 +272,17 @@ public class S3BackupProvider implements BackupProvider
     {
         AbortMultipartUploadRequest abortRequest = new AbortMultipartUploadRequest(initResponse.getBucketName(), initResponse.getKey(), initResponse.getUploadId());
         s3Client.abortMultipartUpload(abortRequest);
+    }
+
+    private String toKey(BackupMetaData backup)
+    {
+        String  name = backup.getName().replace(SEPARATOR, SEPARATOR_REPLACEMENT);
+        return name + SEPARATOR + backup.getModifiedDate();
+    }
+    
+    private BackupMetaData fromKey(String key)
+    {
+        String[]        parts = key.split(SEPARATOR);
+        return new BackupMetaData(parts[0], Long.parseLong(parts[1]));
     }
 }

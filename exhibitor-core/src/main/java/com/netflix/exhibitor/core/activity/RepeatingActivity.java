@@ -18,12 +18,13 @@ public class RepeatingActivity implements Closeable
     private final ActivityQueue queue;
 
     /**
+     * @param log the log
      * @param queue the queue to add to
      * @param group the queue group
      * @param actualActivity the repeating activity
      * @param timePeriodMs the period between executions
      */
-    public RepeatingActivity(ActivityQueue queue, QueueGroups group, final Activity actualActivity, long timePeriodMs)
+    public RepeatingActivity(final ActivityLog log, ActivityQueue queue, QueueGroups group, final Activity actualActivity, long timePeriodMs)
     {
         this.queue = queue;
         this.group = group;
@@ -41,7 +42,14 @@ public class RepeatingActivity implements Closeable
                 boolean     result = false;
                 if ( isStarted.get() )
                 {
-                    result = actualActivity.call();
+                    try
+                    {
+                        result = actualActivity.call();
+                    }
+                    catch ( Exception e )
+                    {
+                        log.add(ActivityLog.Type.ERROR, "Unhandled exception in repeating activity - re-queueing", e);
+                    }
                     reQueue();
                 }
                 return result;

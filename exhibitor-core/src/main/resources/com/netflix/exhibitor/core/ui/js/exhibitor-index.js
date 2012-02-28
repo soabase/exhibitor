@@ -18,9 +18,15 @@ function loadBackups()
             var options = "";
             for ( var i = 0; i < names.length; ++i )
             {
-                options += '<option>' + names[i].name + '</option>';
+                var d = new Date(names[i].modifiedDate);
+                options += '<option id="existing-backup-' + i + '">' + names[i].name + ' - ' + d.toGMTString() + '</option>';
             }
             $('#new-index-backup-names').html(options);
+            for ( i = 0; i < names.length; ++i )
+            {
+                var val = JSON.stringify(names[i]);
+                $("#existing-backup-" + i).val(val);
+            }
 
             $('#new-index-backups-section').show();
         }
@@ -194,7 +200,8 @@ function initRestoreUI()
                 }
                 else if ( newIndexRequest.type === "backup" )
                 {
-                    newIndexRequest.value = $("#new-index-backup-names option:selected").text();
+                    newIndexRequest.value = "";
+                    newIndexRequest.backup = JSON.parse($("#new-index-backup-names option:selected").val());
                 }
                 else
                 {
@@ -247,58 +254,62 @@ function openRestoreDialog()
     $('#index-query-restore-dialog').dialog("open");
 }
 
+var currentRestoreItemsContent = null;
+var currentRestoreItemsDataTable = null;
 function updateRestoreItems(selectedRadio)
 {
     $.getJSON('index/indexed-logs', function(data){
-        var itemsTab = data ? $.makeArray(data.index) : new Array();
-        var items = '<table id="restore-items-table">';
-        items += '<thead><tr><th></th><th>Name</th><th>From</th><th>To</th><th>Count</th></tr></thead><tbody>';
-
-        if ( itemsTab.length == 0 )
-        {
-            items += '<tr><td></td><td></td><td></td><td></td><td></td></tr>';
-        }
+        var itemsTab = data ? $.makeArray(data) : new Array();
 
         var needsCheck = true;
+        var content = "";
         for ( var i = 0; i < itemsTab.length; ++i )
         {
             var item = itemsTab[i];
-            items += '<tr>';
-            items += '<td><input type="radio" id="restore-item-radio-' + i + '" name="restore-item-radio" value="' + item.name + '"';
+            content += '<tr>';
+            content += '<td><input type="radio" id="restore-item-radio-' + i + '" name="restore-item-radio" value="' + item.name + '"';
             if ( selectedRadio )
             {
                 if ( selectedRadio === item.name )
                 {
-                    items += " CHECKED";
+                    content += " CHECKED";
                     needsCheck = false;
                 }
             }
-            items += '></td>';
-            items += '<td>' + item.name + '</td>';
-            items += '<td>' + item.from + '</td>';
-            items += '<td>' + item.to + '</td>';
-            items += '<td>' + item.entryCount + '</td>';
-            items += '</tr>';
+            content += '></td>';
+            content += '<td>' + item.name + '</td>';
+            content += '<td>' + item.from + '</td>';
+            content += '<td>' + item.to + '</td>';
+            content += '<td>' + item.entryCount + '</td>';
+            content += '</tr>';
         }
-        items += '</tbody></table>';
 
-        $('#restore-items').html(items);
-        $('#restore-items-table').dataTable({
-            "bPaginate": false,
-            "bLengthChange": false,
-            "bSort": false,
-            "bInfo": false,
-            "bFilter": false,
-            "bAutoWidth": false
-        });
-
-        if ( needsCheck && (itemsTab.length > 0) )
+        if ( content != currentRestoreItemsContent )
         {
-            $('#restore-item-radio-0').prop("checked", true);
-        }
+            currentRestoreItemsContent = content;
 
-        $("#restore-open-button").button((itemsTab.length > 0) ? "enable" : "disable");
-        $("#restore-delete-button").button((itemsTab.length > 0) ? "enable" : "disable");
+            if ( currentRestoreItemsDataTable )
+            {
+                currentRestoreItemsDataTable.fnDestroy();
+            }
+            $('#restore-items-table-body').html(content);
+            currentRestoreItemsDataTable = $('#restore-items-table').dataTable({
+                bPaginate: false,
+                bLengthChange: false,
+                bSort: false,
+                bInfo: false,
+                bFilter: false,
+                bAutoWidth: false
+            });
+
+            if ( needsCheck && (itemsTab.length > 0) )
+            {
+                $('#restore-item-radio-0').prop("checked", true);
+            }
+
+            $("#restore-open-button").button((itemsTab.length > 0) ? "enable" : "disable");
+            $("#restore-delete-button").button((itemsTab.length > 0) ? "enable" : "disable");
+        }
     });
 }
 

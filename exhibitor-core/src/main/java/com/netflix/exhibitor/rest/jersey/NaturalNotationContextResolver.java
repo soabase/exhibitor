@@ -1,14 +1,6 @@
 package com.netflix.exhibitor.rest.jersey;
 
-import com.netflix.exhibitor.core.entities.Index;
-import com.netflix.exhibitor.core.entities.InstanceStatus;
-import com.netflix.exhibitor.core.entities.NewIndexRequest;
-import com.netflix.exhibitor.core.entities.Result;
-import com.netflix.exhibitor.core.entities.SearchId;
-import com.netflix.exhibitor.core.entities.SearchRequest;
-import com.netflix.exhibitor.core.entities.SearchResult;
-import com.netflix.exhibitor.core.entities.UITabSpec;
-import com.netflix.exhibitor.core.entities.VersionedInstanceStatus;
+import com.netflix.exhibitor.core.entities.*;
 import com.sun.jersey.api.json.JSONConfiguration;
 import com.sun.jersey.api.json.JSONJAXBContext;
 import javax.ws.rs.ext.ContextResolver;
@@ -36,7 +28,8 @@ class NaturalNotationContextResolver implements ContextResolver<JAXBContext>
                 SearchResult.class,
                 UITabSpec.class,
                 InstanceStatus.class,
-                VersionedInstanceStatus.class
+                VersionedInstanceStatus.class,
+                NameAndModifiedDate.class
             );
         }
         catch ( JAXBException e )

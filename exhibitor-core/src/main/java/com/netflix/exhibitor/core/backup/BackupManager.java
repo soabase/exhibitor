@@ -1,16 +1,13 @@
 package com.netflix.exhibitor.core.backup;
 
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.Sets;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.activity.Activity;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.QueueGroups;
 import com.netflix.exhibitor.core.activity.RepeatingActivity;
 import com.netflix.exhibitor.core.config.ConfigListener;
+import com.netflix.exhibitor.core.config.EncodedConfigParser;
 import com.netflix.exhibitor.core.config.InstanceConfig;
 import com.netflix.exhibitor.core.config.IntConfigs;
 import com.netflix.exhibitor.core.config.StringConfigs;
@@ -19,13 +16,8 @@ import com.netflix.exhibitor.core.index.ZooKeeperLogFiles;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeSet;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -37,12 +29,6 @@ public class BackupManager implements Closeable
     private final Optional<BackupProvider> backupProvider;
     private final RepeatingActivity repeatingActivity;
     private final AtomicBoolean tempDisabled = new AtomicBoolean(false);
-
-    private static final String         KEY_PREFIX = "exhibitor";
-    private static final String         SEPARATOR = "-";
-    private static final String         SEPARATOR_REPLACEMENT = "_";
-
-    private static final String         FORMAT_SPEC = "MMM d yyyy HH:mm:ss";
 
     /**
      * @param exhibitor main instance
@@ -72,7 +58,7 @@ public class BackupManager implements Closeable
                 return true;
             }
         };
-        repeatingActivity = new RepeatingActivity(exhibitor.getActivityQueue(), QueueGroups.IO, activity, config.getInt(IntConfigs.BACKUP_PERIOD_MS));
+        repeatingActivity = new RepeatingActivity(null, exhibitor.getActivityQueue(), QueueGroups.IO, activity, config.getInt(IntConfigs.BACKUP_PERIOD_MS));
     }
 
     /**
@@ -84,16 +70,16 @@ public class BackupManager implements Closeable
         {
             repeatingActivity.start();
             exhibitor.getConfigManager().addConfigListener
-            (
-                new ConfigListener()
-                {
-                    @Override
-                    public void configUpdated()
+                (
+                    new ConfigListener()
                     {
-                        repeatingActivity.setTimePeriodMs(exhibitor.getConfigManager().getConfig().getInt(IntConfigs.BACKUP_PERIOD_MS));
+                        @Override
+                        public void configUpdated()
+                        {
+                            repeatingActivity.setTimePeriodMs(exhibitor.getConfigManager().getConfig().getInt(IntConfigs.BACKUP_PERIOD_MS));
+                        }
                     }
-                }
-            );
+                );
         }
     }
 
@@ -123,57 +109,19 @@ public class BackupManager implements Closeable
      */
     public void     setTempDisabled(boolean value)
     {
-        tempDisabled.set(value);
+        tempDisabled.set(value);    // TODO - this is too hack-y
     }
 
     /**
-     * Return displayable set of backups
+     * Return list of available backups
      *
-     * @return display names
+     * @return backups
      * @throws Exception errors
      */
-    public Collection<String> getAvailableSessionNames() throws Exception
+    public List<BackupMetaData> getAvailableBackups() throws Exception
     {
-        Collection<SessionAndName> sessionAndNames = getAvailableSession();
-        return Collections2.transform
-        (
-            sessionAndNames,
-            new Function<SessionAndName, String>()
-            {
-                @Override
-                public String apply(SessionAndName sessionAndName)
-                {
-                    return sessionAndName.name;
-                }
-            }
-        );
-    }
-
-    /**
-     * Get detailed info on available restores
-     *
-     * @return details
-     * @throws Exception errors
-     */
-    public Collection<SessionAndName> getAvailableSession() throws Exception
-    {
-        final SimpleDateFormat    formatter = new SimpleDateFormat(FORMAT_SPEC);
         Map<String, String>       config = getBackupConfig();
-        List<String>              backupKeys = backupProvider.get().getAvailableBackupKeys(exhibitor, config);
-        TreeSet<Long>             sessions = getSessions(backupKeys);
-        return Collections2.transform
-        (
-            sessions,
-            new Function<Long, SessionAndName>()
-            {
-                @Override
-                public SessionAndName apply(Long nanos)
-                {
-                    String name = formatter.format(new Date(TimeUnit.MILLISECONDS.convert(nanos, TimeUnit.NANOSECONDS)));
-                    return new SessionAndName(name, nanos);
-                }
-            }
-        );
+        return backupProvider.get().getAvailableBackups(exhibitor, config);
     }
 
     /**
@@ -181,9 +129,9 @@ public class BackupManager implements Closeable
      *
      * @return backup config
      */
-    public BackupConfigParser  getBackupConfigParser()
+    public EncodedConfigParser getBackupConfigParser()
     {
-        return new BackupConfigParser(exhibitor.getConfigManager().getConfig().getString(StringConfigs.BACKUP_EXTRA), backupProvider.get());
+        return new EncodedConfigParser(exhibitor.getConfigManager().getConfig().getString(StringConfigs.BACKUP_EXTRA));
     }
 
     /**
@@ -197,28 +145,15 @@ public class BackupManager implements Closeable
     }
 
     /**
-     * Given a session ID, return all the backup keys
-     *
-     * @param session the session
-     * @return keys
-     * @throws Exception errors
-     */
-    public Collection<String> findKeyForSession(long session) throws Exception
-    {
-        List<String> backupKeys = backupProvider.get().getAvailableBackupKeys(exhibitor, getBackupConfig());
-        return Collections2.filter(backupKeys, asKey(session));
-    }
-
-    /**
      * Restore the given key to the given file
      *
-     * @param key the key
+     * @param backup the backup to pull down
      * @param destinationFile the file
      * @throws Exception errors
      */
-    public void restoreKey(String key, File destinationFile) throws Exception
+    public void restore(BackupMetaData backup, File destinationFile) throws Exception
     {
-        backupProvider.get().downloadBackup(exhibitor, key, destinationFile, getBackupConfig());
+        backupProvider.get().downloadBackup(exhibitor, backup, destinationFile, getBackupConfig());
     }
 
     private void doBackup() throws Exception
@@ -242,20 +177,30 @@ public class BackupManager implements Closeable
             return;
         }
 
-        long                backupSessionId = System.nanoTime();
-        exhibitor.getLog().add(ActivityLog.Type.INFO, "Backup starting");
-        try
+        for ( File f : zooKeeperLogFiles.getPaths() )
         {
-            int         index = 0;
-            for ( File f : zooKeeperLogFiles.getPaths() )
+            BackupMetaData metaData = new BackupMetaData(f.getName(), f.lastModified());
+            BackupProvider.UploadResult result = provider.uploadBackup(exhibitor, metaData, f, config);
+            switch ( result )
             {
-                exhibitor.getLog().add(ActivityLog.Type.INFO, "Backing up: " + f);
-                provider.uploadBackup(exhibitor, makeKey(backupSessionId, index++), f, config);
+                case SUCCEEDED:
+                {
+                    exhibitor.getLog().add(ActivityLog.Type.INFO, "Backing up: " + f);
+                    break;
+                }
+
+                case DUPLICATE:
+                {
+                    // ignore
+                    break;
+                }
+
+                case REPLACED_OLD_VERSION:
+                {
+                    exhibitor.getLog().add(ActivityLog.Type.INFO, "Updated back up for: " + f);
+                    break;
+                }
             }
-        }
-        finally
-        {
-            exhibitor.getLog().add(ActivityLog.Type.INFO, "Backup complete");
         }
 
         doRoll(config);
@@ -264,75 +209,12 @@ public class BackupManager implements Closeable
     private Map<String, String> getBackupConfig()
     {
         String              backupExtra = exhibitor.getConfigManager().getConfig().getString(StringConfigs.BACKUP_EXTRA);
-        BackupConfigParser  backupConfigParser = new BackupConfigParser(backupExtra, backupProvider.get());
-        return backupConfigParser.getValues();
+        EncodedConfigParser encodedConfigParser = new EncodedConfigParser(backupExtra);
+        return encodedConfigParser.getValues();
     }
 
     private void doRoll(Map<String, String> config) throws Exception
     {
-        List<String>    backupKeys = backupProvider.get().getAvailableBackupKeys(exhibitor, config);
-        TreeSet<Long>   sessions = getSessions(backupKeys);
-
-        while ( sessions.size() > exhibitor.getConfigManager().getConfig().getInt(IntConfigs.BACKUP_MAX_FILES) )
-        {
-            final long          session = sessions.pollFirst();
-            Collection<String>  keys = Collections2.filter(backupKeys, asKey(session));
-            for ( String key : keys )
-            {
-                exhibitor.getLog().add(ActivityLog.Type.INFO, "Deleting old backup: " + key);
-                backupProvider.get().deleteBackup(exhibitor, key, config);
-            }
-        }
-    }
-
-    private Predicate<String> asKey(final long session)
-    {
-        return new Predicate<String>()
-        {
-            @Override
-            public boolean apply(String key)
-            {
-                return (sessionFromKey(key) == session);
-            }
-        };
-    }
-
-    private TreeSet<Long> getSessions(List<String> backupKeys)
-    {
-        TreeSet<Long>   sessions = Sets.newTreeSet();
-        for ( String key : backupKeys )
-        {
-            long session = sessionFromKey(key);
-            if ( session != 0 )
-            {
-                sessions.add(session);
-            }
-        }
-        return sessions;
-    }
-
-    private static long sessionFromKey(String key)
-    {
-        long            session = 0;
-        String[]        parts = key.split(SEPARATOR);
-        if ( parts.length > 2 )
-        {
-            try
-            {
-                session = Long.parseLong(parts[2]);
-            }
-            catch ( NumberFormatException e )
-            {
-                // ignore
-            }
-        }
-        return session;
-    }
-
-    private String makeKey(long backupSessionId, int index)
-    {
-        String hostname = exhibitor.getThisJVMHostname();
-        hostname = hostname.replace(SEPARATOR, SEPARATOR_REPLACEMENT);
-        return KEY_PREFIX + SEPARATOR + hostname + SEPARATOR + backupSessionId + SEPARATOR + index;
+        // TODO
     }
 }

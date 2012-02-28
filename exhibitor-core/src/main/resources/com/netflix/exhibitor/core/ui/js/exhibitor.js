@@ -151,8 +151,19 @@ function submitConfigChanges()
     newConfig.backupPeriodMs = $('#config-backup-ms').val();
     newConfig.backupMaxFiles = $('#config-backup-max-files').val();
 
+    var zooCfgTab = $('#config-custom').val().split("\n");
+    newConfig.zooCfgExtra = {};
+    for ( var i = 0; i < zooCfgTab.length; ++i )
+    {
+        var zooCfgParts = zooCfgTab[i].split("=");
+        if ( zooCfgParts.length == 2 )
+        {
+            newConfig.zooCfgExtra[zooCfgParts[0]] = zooCfgParts[1];
+        }
+    }
+
     newConfig.backupExtra = {};
-    for ( var i = 0; i < configExtraTab.length; ++i )
+    for ( i = 0; i < configExtraTab.length; ++i )
     {
         var c = configExtraTab[i];
         var id = getBackupExtraId(c);
@@ -191,6 +202,7 @@ function ableConfig(enable)
     $('#config-zookeeper-data-dir').prop('disabled', !enable);
     $('#config-log-index-dir').prop('disabled', !enable);
     $('#config-servers-spec').prop('disabled', !enable);
+    $('#config-custom').prop('disabled', !enable);
     $('#config-client-port').prop('disabled', !enable);
     $('#config-connect-port').prop('disabled', !enable);
     $('#config-election-port').prop('disabled', !enable);
@@ -216,10 +228,17 @@ function updateConfig()
         return;
     }
 
+    var configExtra = "";
+    for ( var p in systemConfig.zooCfgExtra )
+    {
+        configExtra += p + "=" + systemConfig.zooCfgExtra[p] + "\n";
+    }
+
     $('#config-zookeeper-install-dir').val(systemConfig.zookeeperInstallDirectory);
     $('#config-zookeeper-data-dir').val(systemConfig.zookeeperDataDirectory);
     $('#config-log-index-dir').val(systemConfig.logIndexDirectory);
     $('#config-servers-spec').val(systemConfig.serversSpec);
+    $('#config-custom').val(configExtra);
     $('#config-client-port').val(systemConfig.clientPort);
     $('#config-connect-port').val(systemConfig.connectPort);
     $('#config-election-port').val(systemConfig.electionPort);
@@ -309,14 +328,41 @@ function refreshCurrentTab()
     }
 }
 
-function updateCalculatorValue()
+function updateCalculatorValue(lhs)
 {
-    var value = parseInt($('#millisecond-calculator-value').val());
-    var unit = parseInt($('#millisecond-calculator-unit').val());
-    $('#millisecond-calculator-result').html(value * unit);
+    var lhsValue = parseInt($('#lhs-millisecond-calculator-value').val());
+    var lhsUnit = parseInt($('#lhs-millisecond-calculator-unit').val());
+    var rhsValue = parseInt($('#rhs-millisecond-calculator-value').val());
+    var rhsUnit = parseInt($('#rhs-millisecond-calculator-unit').val());
+
+    if ( lhs )
+    {
+        $('#rhs-millisecond-calculator-value').val((lhsValue * lhsUnit) / rhsUnit);
+    }
+    else
+    {
+        $('#lhs-millisecond-calculator-value').val((rhsValue * rhsUnit) / lhsUnit);
+    }
 }
 
-function makeLightSwitch(id, func, disable)
+function checkLightSwitch(selector, check)
+{
+    $(selector).prop("checked", check);
+    $(selector).trigger("change");
+}
+
+function ableLightSwitch(selector, func, enable)
+{
+    var newDisable = (enable != undefined) && !enable;
+    var currentDisable = ($(selector).attr("disabled") != undefined);
+    if ( newDisable != currentDisable )
+    {
+        $(selector).next('span').remove();
+        makeLightSwitch(selector, func, newDisable);
+    }
+}
+
+function makeLightSwitch(selector, func, disable)
 {
     if ( disable === undefined )
     {
@@ -325,14 +371,25 @@ function makeLightSwitch(id, func, disable)
 
     if ( disable )
     {
-        $(id).attr("disabled", true);
+        $(selector).attr("disabled", "disabled");
     }
-    $(id).lightSwitch({
+    else
+    {
+        $(selector).removeAttr("disabled");
+    }
+
+    $(selector).lightSwitch({
         switchImgCover: 'lightSwitch/switchplate.png',
         switchImg : 'lightSwitch/switch.png',
         disabledImg : 'lightSwitch/disabled.png'
     });
-    $(id).next('span.switch').click(func);
+    if ( !disable )
+    {
+        $(selector).next('span.switch').click(function(){
+            var isChecked = $(selector).is(':checked');
+            func(isChecked);
+        });
+    }
 }
 
 var customTabs = new Array();
@@ -394,8 +451,7 @@ $(function ()
         zIndex: 99999
     });
 
-    makeLightSwitch('#config-editable', function(){
-        var isChecked = $('#config-editable').is(':checked');
+    makeLightSwitch('#config-editable', function(isChecked){
         doConfigUpdates = !isChecked;
 
         if ( !isChecked ) {
@@ -439,13 +495,36 @@ $(function ()
     $("#millisecond-calculator-dialog").dialog({
         modal: true,
         title: 'Converter',
-        autoOpen: false
+        autoOpen: false,
+        zIndex: 9999
     });
-    $('#millisecond-calculator-value').keyup(function(){
-        updateCalculatorValue();
+    $('#lhs-millisecond-calculator-value').keyup(function(){
+        updateCalculatorValue(true);
     });
-    $('#millisecond-calculator-unit').change(function(){
-        updateCalculatorValue();
+    $('#lhs-millisecond-calculator-unit').change(function(){
+        updateCalculatorValue(false);
+    });
+    $('#rhs-millisecond-calculator-value').keyup(function(){
+        updateCalculatorValue(false);
+    });
+    $('#rhs-millisecond-calculator-unit').change(function(){
+        updateCalculatorValue(true);
+    });
+
+    $('#word-4ltr-dialog').dialog({
+        modal: true,
+        autoOpen: false,
+        title: "4LTR",
+        width: 600
+    });
+    $("#word-4ltr-button").button();
+
+    $('#log-dialog').dialog({
+        modal: true,
+        autoOpen: false,
+        title: "Log",
+        width: 600,
+        height: 400
     });
 
     $.get('able-backups/true');

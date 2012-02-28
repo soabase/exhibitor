@@ -28,5 +28,10 @@ public enum StringConfigs
     /**
      * Used to store the provider-specific backup config
      */
-    BACKUP_EXTRA
+    BACKUP_EXTRA,
+
+    /**
+     * Additional properties to add to zoo.cfg
+     */
+    ZOO_CFG_EXTRA
 }

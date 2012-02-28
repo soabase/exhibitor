@@ -3,11 +3,13 @@ package com.netflix.exhibitor.core.backup.s3;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.google.common.io.OutputSupplier;
+import com.netflix.exhibitor.core.backup.BackupMetaData;
 import com.netflix.exhibitor.core.s3.PropertyBasedS3Credential;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -64,7 +66,7 @@ public class TestS3BackupProvider
         {
             MockS3Client        s3Client = new MockS3Client(object, null);
             S3BackupProvider    provider = new S3BackupProvider(new MockS3ClientFactory(s3Client), new PropertyBasedS3Credential(new Properties()));
-            provider.downloadBackup(null, "test", tempFile, Maps.<String, String>newHashMap());
+            provider.downloadBackup(null, new BackupMetaData("test", 1), tempFile, Maps.<String, String>newHashMap());
             
             Assert.assertEquals(Filer.getFileBytes(), Files.toByteArray(tempFile));
         }
@@ -97,10 +99,22 @@ public class TestS3BackupProvider
             }
         };
 
-        MockS3Client        s3Client = new MockS3Client(null, listing);
-        S3BackupProvider    provider = new S3BackupProvider(new MockS3ClientFactory(s3Client), new PropertyBasedS3Credential(new Properties()));
-        List<String>        backupKeys = provider.getAvailableBackupKeys(null, Maps.<String, String>newHashMap());
-        Assert.assertEquals(backupKeys, Arrays.asList("one", "two", "three"));
+        MockS3Client            s3Client = new MockS3Client(null, listing);
+        S3BackupProvider        provider = new S3BackupProvider(new MockS3ClientFactory(s3Client), new PropertyBasedS3Credential(new Properties()));
+        List<BackupMetaData>    backups = provider.getAvailableBackups(null, Maps.<String, String>newHashMap());
+        List<String>            backupNames = Lists.transform
+        (
+            backups,
+            new Function<BackupMetaData, String>()
+            {
+                @Override
+                public String apply(BackupMetaData metaData)
+                {
+                    return metaData.getName();
+                }
+            }
+        );
+        Assert.assertEquals(backupNames, Arrays.asList("one", "two", "three"));
     }
 
     private byte[] getUploadedBytes(File sourceFile) throws Exception
@@ -108,7 +122,7 @@ public class TestS3BackupProvider
         MockS3Client s3Client = new MockS3Client();
         S3BackupProvider provider = new S3BackupProvider(new MockS3ClientFactory(s3Client), new PropertyBasedS3Credential(new Properties()));
 
-        provider.uploadBackup(null, "test", sourceFile, Maps.<String, String>newHashMap());
+        provider.uploadBackup(null, null, sourceFile, Maps.<String, String>newHashMap());
 
         ByteArrayOutputStream   out = new ByteArrayOutputStream();
         for ( byte[] bytes : s3Client.getUploadedBytes() )

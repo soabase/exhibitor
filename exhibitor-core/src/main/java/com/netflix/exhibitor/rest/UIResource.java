@@ -6,19 +6,16 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.io.Resources;
-import com.netflix.exhibitor.core.activity.QueueGroups;
-import com.netflix.exhibitor.core.backup.BackupConfigParser;
+import com.netflix.exhibitor.core.config.EncodedConfigParser;
 import com.netflix.exhibitor.core.backup.BackupConfigSpec;
 import com.netflix.exhibitor.core.cluster.ServerList;
 import com.netflix.exhibitor.core.cluster.ServerSpec;
 import com.netflix.exhibitor.core.config.InstanceConfig;
 import com.netflix.exhibitor.core.config.IntConfigs;
 import com.netflix.exhibitor.core.config.StringConfigs;
-import com.netflix.exhibitor.core.controlpanel.ControlPanelTypes;
 import com.netflix.exhibitor.core.entities.Result;
 import com.netflix.exhibitor.core.entities.UITabSpec;
 import com.netflix.exhibitor.core.state.FourLetterWord;
-import com.netflix.exhibitor.core.state.KillRunningInstance;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ArrayNode;
@@ -124,26 +121,6 @@ public class UIResource
         return Response.ok(entity).build();
     }
 
-    @Path("4ltr/{word}")
-    @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response getFourLetterWord(@PathParam("word") String word) throws Exception
-    {
-        InstanceConfig config = context.getExhibitor().getConfigManager().getConfig();
-
-        String      value;
-        try
-        {
-            FourLetterWord.Word wordEnum = FourLetterWord.Word.valueOf(word.toUpperCase());
-            value = new FourLetterWord(wordEnum, config, context.getExhibitor().getConnectionTimeOutMs()).getResponse();
-        }
-        catch ( IllegalArgumentException e )
-        {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-        return Response.ok(value).build();
-    }
-
     @Path("tab/{index}")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
@@ -175,7 +152,7 @@ public class UIResource
 
         if ( context.getExhibitor().getBackupManager().isActive() )
         {
-            BackupConfigParser  parser = context.getExhibitor().getBackupManager().getBackupConfigParser();
+            EncodedConfigParser parser = context.getExhibitor().getBackupManager().getBackupConfigParser();
             List<BackupConfigSpec>  configs = context.getExhibitor().getBackupManager().getConfigSpecs();
             for ( BackupConfigSpec c : configs )
             {
@@ -210,6 +187,7 @@ public class UIResource
 
         mainNode.put("version", "v0.0.1");       // TODO - correct version
         mainNode.put("running", "imok".equals(response));
+        mainNode.put("backupActive", context.getExhibitor().getBackupManager().isActive());
 
         configNode.put("hostname", context.getExhibitor().getThisJVMHostname());
         configNode.put("serverId", (us != null) ? us.getServerId() : -1);
@@ -222,10 +200,18 @@ public class UIResource
             configNode.put(fixName(c), config.getInt(c));
         }
 
+        EncodedConfigParser     zooCfgParser = new EncodedConfigParser(config.getString(StringConfigs.ZOO_CFG_EXTRA));
+        ObjectNode              zooCfgNode = mapper.getNodeFactory().objectNode();
+        for ( Map.Entry<String, String> entry : zooCfgParser.getValues().entrySet() )
+        {
+            zooCfgNode.put(entry.getKey(), entry.getValue());
+        }
+        configNode.put("zooCfgExtra", zooCfgNode);
+
         if ( context.getExhibitor().getBackupManager().isActive() )
         {
             ObjectNode          backupExtraNode = mapper.getNodeFactory().objectNode();
-            BackupConfigParser  parser = context.getExhibitor().getBackupManager().getBackupConfigParser();
+            EncodedConfigParser parser = context.getExhibitor().getBackupManager().getBackupConfigParser();
             List<BackupConfigSpec>  configs = context.getExhibitor().getBackupManager().getConfigSpecs();
             for ( BackupConfigSpec c : configs )
             {
@@ -261,8 +247,19 @@ public class UIResource
                 String      value = backupExtra.get(name).getTextValue();
                 values.put(name, value);
             }
-            backupExtraValue = new BackupConfigParser(values).toEncoded();
+            backupExtraValue = new EncodedConfigParser(values).toEncoded();
         }
+
+        Map<String, String>     zooCfgValues = Maps.newHashMap();
+        JsonNode                zooCfgExtra = tree.get("zooCfgExtra");
+        Iterator<String>        fieldNames = zooCfgExtra.getFieldNames();
+        while ( fieldNames.hasNext() )
+        {
+            String      name = fieldNames.next();
+            String      value = zooCfgExtra.get(name).getTextValue();
+            zooCfgValues.put(name, value);
+        }
+        final String          zooCfgExtraValue = new EncodedConfigParser(zooCfgValues).toEncoded();
 
         final String          finalBackupExtraValue = backupExtraValue;
         InstanceConfig wrapped = new InstanceConfig()
@@ -270,9 +267,23 @@ public class UIResource
             @Override
             public String getString(StringConfigs config)
             {
-                if ( config == StringConfigs.BACKUP_EXTRA )
+                switch ( config )
                 {
-                    return finalBackupExtraValue;
+                    case BACKUP_EXTRA:
+                    {
+                        return finalBackupExtraValue;
+                    }
+
+                    case ZOO_CFG_EXTRA:
+                    {
+                        return zooCfgExtraValue;
+                    }
+
+                    default:
+                    {
+                        // NOP
+                        break;
+                    }
                 }
 
                 JsonNode node = tree.get(fixName(config));
@@ -317,46 +328,7 @@ public class UIResource
         return Response.ok(result).build();
     }
 
-    @Path("set/{type}/{value}")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response setControlPanelSetting(@PathParam("type") String typeStr, @PathParam("value") boolean newValue) throws Exception
-    {
-        ControlPanelTypes type;
-        try
-        {
-            typeStr = typeStr.replace("-", "_");
-            type = ControlPanelTypes.valueOf(typeStr.toUpperCase());
-        }
-        catch ( IllegalArgumentException e )
-        {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-        context.getExhibitor().getControlPanelValues().set(type, newValue);
-        return Response.ok(new Result("OK", true)).build();
-    }
-
-    @Path("stop")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response stopZooKeeper() throws Exception
-    {
-        context.getExhibitor().getActivityQueue().add
-        (
-            QueueGroups.MAIN,
-            new KillRunningInstance(context.getExhibitor())
-            {
-                @Override
-                public void completed(boolean wasSuccessful)
-                {
-                }
-            }
-        );
-
-        return Response.ok(new Result("OK", true)).build();
-    }
-
-    private String getLog()
+    static String getLog(UIContext context)
     {
         List<String> log = context.getExhibitor().getLog().toDisplayList("\t");
         StringBuilder str = new StringBuilder();
@@ -379,7 +351,7 @@ public class UIResource
                 @Override
                 public String getContent() throws Exception
                 {
-                    return getLog();
+                    return getLog(context);
                 }
             }
         );
