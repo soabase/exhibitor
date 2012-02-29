@@ -4,11 +4,11 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.netflix.exhibitor.core.activity.QueueGroups;
+import com.netflix.exhibitor.core.cluster.Checker;
 import com.netflix.exhibitor.core.config.InstanceConfig;
 import com.netflix.exhibitor.core.controlpanel.ControlPanelTypes;
 import com.netflix.exhibitor.core.entities.Result;
 import com.netflix.exhibitor.core.state.FourLetterWord;
-import com.netflix.exhibitor.core.state.InstanceState;
 import com.netflix.exhibitor.core.state.KillRunningInstance;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
@@ -242,8 +242,8 @@ public class ClusterResource
         }
         mainNode.put("switches", switchesNode);
 
-        InstanceState instanceState = context.getExhibitor().getInstanceStateManager().getInstanceState();
-        mainNode.put("state", instanceState.getState().getCode());
+        Checker         checker = new Checker(context.getExhibitor());
+        mainNode.put("state", checker.getState().getCode());
 
         return mapper.writer().writeValueAsString(mainNode);
     }

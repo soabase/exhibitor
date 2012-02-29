@@ -5,8 +5,12 @@ import com.netflix.exhibitor.core.activity.Activity;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.QueueGroups;
 import com.netflix.exhibitor.core.activity.RepeatingActivity;
+import com.netflix.exhibitor.core.cluster.Checker;
+import com.netflix.exhibitor.core.cluster.ServerList;
 import com.netflix.exhibitor.core.config.ConfigListener;
+import com.netflix.exhibitor.core.config.InstanceConfig;
 import com.netflix.exhibitor.core.config.IntConfigs;
+import com.netflix.exhibitor.core.config.StringConfigs;
 import com.netflix.exhibitor.core.controlpanel.ControlPanelTypes;
 import java.io.Closeable;
 import java.io.IOException;
@@ -44,16 +48,16 @@ public class MonitorRunningInstance implements Closeable
     {
         repeatingActivity.start();
         exhibitor.getConfigManager().addConfigListener
-            (
-                new ConfigListener()
+        (
+            new ConfigListener()
+            {
+                @Override
+                public void configUpdated()
                 {
-                    @Override
-                    public void configUpdated()
-                    {
-                        repeatingActivity.setTimePeriodMs(exhibitor.getConfigManager().getConfig().getInt(IntConfigs.CHECK_MS));
-                    }
+                    repeatingActivity.setTimePeriodMs(exhibitor.getConfigManager().getConfig().getInt(IntConfigs.CHECK_MS));
                 }
-            );
+            }
+        );
     }
 
     @Override
@@ -64,14 +68,16 @@ public class MonitorRunningInstance implements Closeable
 
     private void doWork() throws Exception
     {
-        InstanceState   instanceState = exhibitor.getInstanceStateManager().getInstanceState();
+        InstanceConfig  config = exhibitor.getConfigManager().getConfig();
+
+        InstanceState   instanceState = new InstanceState(new ServerList(config.getString(StringConfigs.SERVERS_SPEC)), new Checker(exhibitor).getState());
         InstanceState   localCurrentInstanceState = currentInstanceState.get();
         if ( !instanceState.equals(localCurrentInstanceState) )
         {
             boolean         serverListChange = (localCurrentInstanceState != null) && !localCurrentInstanceState.getServerList().equals(instanceState.getServerList());
             currentInstanceState.set(instanceState);
 
-            exhibitor.getLog().add(ActivityLog.Type.INFO, "State: " + instanceState.getStateDescription());
+            exhibitor.getLog().add(ActivityLog.Type.INFO, "State: " + instanceState.getState().getDescription());
 
             if ( serverListChange )
             {

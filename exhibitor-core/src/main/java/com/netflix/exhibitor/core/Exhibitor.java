@@ -16,12 +16,11 @@ import com.netflix.exhibitor.core.config.ConfigProvider;
 import com.netflix.exhibitor.core.config.IntConfigs;
 import com.netflix.exhibitor.core.controlpanel.ControlPanelValues;
 import com.netflix.exhibitor.core.index.IndexCache;
+import com.netflix.exhibitor.core.rest.UITab;
 import com.netflix.exhibitor.core.state.CleanupManager;
-import com.netflix.exhibitor.core.state.InstanceStateManager;
 import com.netflix.exhibitor.core.state.MonitorRunningInstance;
 import com.netflix.exhibitor.core.state.ProcessOperations;
 import com.netflix.exhibitor.core.state.StandardProcessOperations;
-import com.netflix.exhibitor.core.rest.UITab;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -44,7 +43,6 @@ public class Exhibitor implements Closeable
     private final ActivityLog               log;
     private final ActivityQueue             activityQueue = new ActivityQueue();
     private final MonitorRunningInstance    monitorRunningInstance;
-    private final InstanceStateManager      instanceStateManager;
     private final Collection<UITab>         additionalUITabs;
     private final ProcessOperations         processOperations;
     private final CleanupManager            cleanupManager;
@@ -113,7 +111,6 @@ public class Exhibitor implements Closeable
         this.configManager = new ConfigManager(this, configProvider, arguments.configCheckMs);
         this.additionalUITabs = (additionalUITabs != null) ? ImmutableList.copyOf(additionalUITabs) : ImmutableList.<UITab>of();
         this.processOperations = new StandardProcessOperations(this);
-        instanceStateManager = new InstanceStateManager(this);
         monitorRunningInstance = new MonitorRunningInstance(this);
         cleanupManager = new CleanupManager(this);
         indexCache = new IndexCache(log);
@@ -199,11 +196,6 @@ public class Exhibitor implements Closeable
     public ConfigManager getConfigManager()
     {
         return configManager;
-    }
-
-    public InstanceStateManager getInstanceStateManager()
-    {
-        return instanceStateManager;
     }
 
     public ActivityQueue getActivityQueue()

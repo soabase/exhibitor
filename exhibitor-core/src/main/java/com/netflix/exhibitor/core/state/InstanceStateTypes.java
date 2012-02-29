@@ -17,6 +17,11 @@ public enum InstanceStateTypes
         return code;
     }
 
+    public String   getDescription()
+    {
+        return name().toLowerCase().replace("_", " ");
+    }
+
     private InstanceStateTypes(int code)
     {
         this.code = code;
