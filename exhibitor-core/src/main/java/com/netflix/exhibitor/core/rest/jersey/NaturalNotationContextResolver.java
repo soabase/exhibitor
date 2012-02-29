@@ -1,4 +1,4 @@
-package com.netflix.exhibitor.rest.jersey;
+package com.netflix.exhibitor.core.rest.jersey;
 
 import com.netflix.exhibitor.core.entities.*;
 import com.sun.jersey.api.json.JSONConfiguration;

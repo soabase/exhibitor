@@ -1,4 +1,4 @@
-package com.netflix.exhibitor.rest;
+package com.netflix.exhibitor.core.rest;
 
 /**
  * Used to add additional tabs to the Exhibitor UI

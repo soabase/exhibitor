@@ -38,7 +38,7 @@ public enum IntConfigs
     /**
      * Max backup session to retain - default: 5
      */
-    BACKUP_MAX_FILES,
+    BACKUP_MAX_STORE_MS,
 
     /**
      * Period in ms to perform backups - default: 60000

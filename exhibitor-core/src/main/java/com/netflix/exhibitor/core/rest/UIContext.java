@@ -1,4 +1,4 @@
-package com.netflix.exhibitor.rest;
+package com.netflix.exhibitor.core.rest;
 
 import com.netflix.exhibitor.core.Exhibitor;
 import javax.ws.rs.ext.ContextResolver;

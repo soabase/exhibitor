@@ -1,11 +1,11 @@
-package com.netflix.exhibitor.rest.jersey;
+package com.netflix.exhibitor.core.rest.jersey;
 
 import com.google.common.collect.Sets;
-import com.netflix.exhibitor.rest.ClusterResource;
-import com.netflix.exhibitor.rest.ExplorerResource;
-import com.netflix.exhibitor.rest.IndexResource;
-import com.netflix.exhibitor.rest.UIContext;
-import com.netflix.exhibitor.rest.UIResource;
+import com.netflix.exhibitor.core.rest.ClusterResource;
+import com.netflix.exhibitor.core.rest.ExplorerResource;
+import com.netflix.exhibitor.core.rest.IndexResource;
+import com.netflix.exhibitor.core.rest.UIContext;
+import com.netflix.exhibitor.core.rest.UIResource;
 import com.sun.jersey.api.core.DefaultResourceConfig;
 import java.util.Set;
 

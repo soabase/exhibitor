@@ -78,9 +78,9 @@ public class DefaultProperties
                         return (int)TimeUnit.MILLISECONDS.convert(1, TimeUnit.MINUTES);
                     }
 
-                    case BACKUP_MAX_FILES:
+                    case BACKUP_MAX_STORE_MS:
                     {
-                        return 5;
+                        return (int)TimeUnit.MILLISECONDS.convert(1, TimeUnit.DAYS);
                     }
                 }
                 return 0;

@@ -149,7 +149,7 @@ function submitConfigChanges()
     newConfig.cleanupPeriodMs = $('#config-cleanup-ms').val();
     newConfig.cleanupMaxFiles = $('#config-cleanup-max-files').val();
     newConfig.backupPeriodMs = $('#config-backup-ms').val();
-    newConfig.backupMaxFiles = $('#config-backup-max-files').val();
+    newConfig.backupMaxStoreMs = $('#config-backup-max-store-ms').val();
 
     var zooCfgTab = $('#config-custom').val().split("\n");
     newConfig.zooCfgExtra = {};
@@ -210,7 +210,7 @@ function ableConfig(enable)
     $('#config-cleanup-ms').prop('disabled', !enable);
     $('#config-cleanup-max-files').prop('disabled', !enable);
     $('#config-backup-ms').prop('disabled', !enable);
-    $('#config-backup-max-files').prop('disabled', !enable);
+    $('#config-backup-max-store-ms').prop('disabled', !enable);
 
     for ( var i = 0; i < configExtraTab.length; ++i )
     {
@@ -246,7 +246,7 @@ function updateConfig()
     $('#config-cleanup-ms').val(systemConfig.cleanupPeriodMs);
     $('#config-cleanup-max-files').val(systemConfig.cleanupMaxFiles);
     $('#config-backup-ms').val(systemConfig.backupPeriodMs);
-    $('#config-backup-max-files').val(systemConfig.backupMaxFiles);
+    $('#config-backup-max-store-ms').val(systemConfig.backupMaxStoreMs);
 
     for ( i = 0; i < configExtraTab.length; ++i )
     {

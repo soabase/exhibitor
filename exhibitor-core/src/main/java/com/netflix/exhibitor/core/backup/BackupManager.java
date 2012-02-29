@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Manages backups/restores
@@ -29,6 +30,7 @@ public class BackupManager implements Closeable
     private final Optional<BackupProvider> backupProvider;
     private final RepeatingActivity repeatingActivity;
     private final AtomicBoolean tempDisabled = new AtomicBoolean(false);
+    private final AtomicLong lastRollCheck = new AtomicLong(0);
 
     /**
      * @param exhibitor main instance
@@ -215,6 +217,23 @@ public class BackupManager implements Closeable
 
     private void doRoll(Map<String, String> config) throws Exception
     {
-        // TODO
+        long        elapsed = System.currentTimeMillis() - lastRollCheck.get();
+        if ( elapsed < (exhibitor.getConfigManager().getConfig().getInt(IntConfigs.BACKUP_MAX_STORE_MS) / 3) )
+        {
+            return;
+        }
+
+        List<BackupMetaData>        availableBackups = backupProvider.get().getAvailableBackups(exhibitor, config);
+        for ( BackupMetaData backup : availableBackups )
+        {
+            long        age = System.currentTimeMillis() - backup.getModifiedDate();
+            if ( age > exhibitor.getConfigManager().getConfig().getInt(IntConfigs.BACKUP_MAX_STORE_MS) )
+            {
+                exhibitor.getLog().add(ActivityLog.Type.INFO, "Cleaning backup: " + backup);
+                backupProvider.get().deleteBackup(exhibitor, backup, config);
+            }
+        }
+
+        lastRollCheck.set(System.currentTimeMillis());
     }
 }

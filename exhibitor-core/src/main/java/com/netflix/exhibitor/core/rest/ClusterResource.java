@@ -1,4 +1,4 @@
-package com.netflix.exhibitor.rest;
+package com.netflix.exhibitor.core.rest;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;

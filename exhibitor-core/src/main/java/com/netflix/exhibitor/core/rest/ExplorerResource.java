@@ -1,4 +1,4 @@
-package com.netflix.exhibitor.rest;
+package com.netflix.exhibitor.core.rest;
 
 import com.netflix.curator.utils.ZKPaths;
 import com.netflix.exhibitor.core.activity.ActivityLog;

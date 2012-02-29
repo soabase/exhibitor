@@ -54,7 +54,6 @@
                             <span class="cp-status" id="$BASE_ID$-status-indicator"></span><span id="$BASE_ID$-server-id" class="cp-server-id"></span> <span id="$BASE_ID$-hostname" class="cp-hostname"></span><br clear="all"/>
                         </div>
 
-                        CHOICES FOR HANDLING SERVER START ISSUES
                         <div class="cp-server-column-wrapper">
                             <div class="cp-server-column">
                                 <div title="When on, ZooKeeper instance is automatically restarted when there is an error, config change, etc.">
@@ -150,7 +149,7 @@
                     <fieldset id="config-backups-fieldset">
                         <legend>Backups</legend>
                         <label for="config-backup-ms">Backup Period (ms)</label><input type="text" id="config-backup-ms" class="mask-pint" name="config-backup-ms" size="8" title="The number of milliseconds between ZooKeeper log backups"><br clear="all"/>
-                        <label for="config-backup-max-files">Max Backups</label><input type="text" id="config-backup-max-files" class="mask-pint" name="config-backup-max-files" size="5" title="The max number of backup log files to keep"><br clear="all"/>
+                        <label for="config-backup-max-store-ms">Max Save (ms)</label><input type="text" id="config-backup-max-store-ms" class="mask-pint" name="config-backup-max-store-ms" size="8" title="The max time to save backups. i.e. backups older than this will be deleted."><br clear="all"/>
                         <div id="config-backups-extra"></div>
                     </fieldset>
                 </div>
