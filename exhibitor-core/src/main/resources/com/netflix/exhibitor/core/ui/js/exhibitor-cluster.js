@@ -3,8 +3,8 @@ var currentServersSpec = null;
 var currentHostname = null;
 var serverItemsVersion = 0;
 
-var STATE_UNKNOWN = 0;
-var STATE_LATENT = 1;
+var STATE_LATENT = 0;
+var STATE_DOWN = 1;
 var STATE_NOT_SERVING = 2;
 var STATE_SERVING = 3;
 var STATE_DOWN_BECAUSE_UNLISTED = 4;
@@ -14,7 +14,7 @@ function makeServersList()
 {
     var serverList = new Array();
 
-    var specs = systemConfig.serversSpec.split(",");
+    var specs = (systemConfig.serversSpec.length > 0) ? systemConfig.serversSpec.split(",") : new Array();
     var foundUs = false;
     for ( var i = 0; i < specs.length; ++i )
     {
@@ -212,10 +212,10 @@ function updateOneServerState(index, data, hostname)
         checkLightSwitch(domId + '-unlisted-restarts', data.response.switches.unlistedRestarts);
         checkLightSwitch(domId + '-backups-enabled', data.response.switches.backups);
 
+        statusMessage = data.response.description;
         switch ( data.response.state )
         {
             default:
-            case STATE_UNKNOWN:
             case STATE_LATENT:
             {
                 statusColor = "#FFF";
@@ -229,13 +229,14 @@ function updateOneServerState(index, data, hostname)
             }
 
             case STATE_NOT_SERVING:
+            case STATE_DOWN_BECAUSE_UNLISTED:
+            case STATE_DOWN_BECAUSE_RESTARTS_TURNED_OFF:
             {
                 statusColor = "#FF0";
                 break;
             }
 
-            case STATE_DOWN_BECAUSE_UNLISTED:
-            case STATE_DOWN_BECAUSE_RESTARTS_TURNED_OFF:
+            case STATE_DOWN:
             {
                 statusColor = "#F00";
                 break;
@@ -257,7 +258,7 @@ function updateOneServerState(index, data, hostname)
         statusMessage = data.errorMessage;
     }
     $(domId + '-status-indicator').css('background-color', statusColor);
-    $(domId + '-status-message').html(statusMessage);
+    $(domId + '-status-message').html("Status: " + statusMessage);
 }
 
 function updateServerState(serversList)

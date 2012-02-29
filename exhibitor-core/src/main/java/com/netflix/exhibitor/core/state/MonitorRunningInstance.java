@@ -5,8 +5,6 @@ import com.netflix.exhibitor.core.activity.Activity;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.QueueGroups;
 import com.netflix.exhibitor.core.activity.RepeatingActivity;
-import com.netflix.exhibitor.core.cluster.Checker;
-import com.netflix.exhibitor.core.cluster.ServerList;
 import com.netflix.exhibitor.core.config.ConfigListener;
 import com.netflix.exhibitor.core.config.InstanceConfig;
 import com.netflix.exhibitor.core.config.IntConfigs;
@@ -66,11 +64,17 @@ public class MonitorRunningInstance implements Closeable
         repeatingActivity.close();
     }
 
+    public InstanceStateTypes   getCurrentInstanceState()
+    {
+        InstanceState   state = currentInstanceState.get();
+        return (state != null) ? state.getState() : InstanceStateTypes.LATENT;
+    }
+
     private void doWork() throws Exception
     {
         InstanceConfig  config = exhibitor.getConfigManager().getConfig();
 
-        InstanceState   instanceState = new InstanceState(new ServerList(config.getString(StringConfigs.SERVERS_SPEC)), new Checker(exhibitor).getState());
+        InstanceState   instanceState = new InstanceState(new ServerList(config.getString(StringConfigs.SERVERS_SPEC)), new Checker(exhibitor).calculateState());
         InstanceState   localCurrentInstanceState = currentInstanceState.get();
         if ( !instanceState.equals(localCurrentInstanceState) )
         {
@@ -88,8 +92,7 @@ public class MonitorRunningInstance implements Closeable
             {
                 switch ( instanceState.getState() )
                 {
-                    case NOT_SERVING:
-                    case UNKNOWN:
+                    case DOWN:
                     {
                         restartZooKeeper();
                         break;
@@ -112,6 +115,6 @@ public class MonitorRunningInstance implements Closeable
             return;
         }
 
-        exhibitor.getActivityQueue().add(QueueGroups.MAIN, new KillRunningInstance(exhibitor));
+        exhibitor.getActivityQueue().add(QueueGroups.MAIN, new KillRunningInstance(exhibitor, true));
     }
 }

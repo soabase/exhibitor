@@ -1,15 +1,12 @@
-package com.netflix.exhibitor.core.state;
+package com.netflix.exhibitor.core.processes;
 
-import com.google.common.io.Closeables;
 import com.netflix.exhibitor.core.Exhibitor;
+import com.netflix.exhibitor.core.config.EncodedConfigParser;
 import com.netflix.exhibitor.core.config.InstanceConfig;
 import com.netflix.exhibitor.core.config.StringConfigs;
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Properties;
 
 class Details
@@ -35,16 +32,9 @@ class Details
         properties = new Properties();
         if ( isValid() )
         {
-            InputStream in = new BufferedInputStream(new FileInputStream(new File(configDirectory, "zoo.cfg")));
-            try
-            {
-                properties.load(in);
-            }
-            finally
-            {
-                Closeables.closeQuietly(in);
-            }
-            properties.setProperty("dataDir", dataDirectory.getPath());
+            EncodedConfigParser     parser = new EncodedConfigParser(exhibitor.getConfigManager().getConfig().getString(StringConfigs.ZOO_CFG_EXTRA));
+            properties.putAll(parser.getValues());
+            properties.put("dataDir", dataDirectory.getPath());
         }
     }
 

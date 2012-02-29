@@ -1,4 +1,4 @@
-package com.netflix.exhibitor.core.cluster;
+package com.netflix.exhibitor.core.state;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;

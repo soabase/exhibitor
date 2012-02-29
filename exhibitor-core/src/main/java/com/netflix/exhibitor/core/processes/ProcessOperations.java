@@ -1,4 +1,4 @@
-package com.netflix.exhibitor.core.state;
+package com.netflix.exhibitor.core.processes;
 
 /**
  * Various inject-able operations. In most cases, you can use {@link StandardProcessOperations}

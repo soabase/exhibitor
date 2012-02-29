@@ -1,7 +1,5 @@
 package com.netflix.exhibitor.core.state;
 
-import com.netflix.exhibitor.core.cluster.ServerList;
-
 class InstanceState
 {
     private final InstanceStateTypes    state;

@@ -327,10 +327,11 @@ fieldset
     width: 125px;
 }
 
-.cp-hostname
+.cp-hostname, .cp-server-status-message
 {
     float: left;
-    width: 500px;
+    width: 350px;
+    overflow: hidden;
 }
 
 .cp-servers-heading
@@ -375,14 +376,6 @@ fieldset
     font-style: italic;
     font-size: .75em;
     margin-left: 10px;
-}
-
-.cp-server-status-message
-{
-    font-style: italic;
-    margin-bottom: 15px;
-    font-size: .75em;
-    height: .75em;
 }
 
 #word-4ltr-text

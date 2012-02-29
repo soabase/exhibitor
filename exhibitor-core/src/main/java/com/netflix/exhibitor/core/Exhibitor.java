@@ -16,11 +16,12 @@ import com.netflix.exhibitor.core.config.ConfigProvider;
 import com.netflix.exhibitor.core.config.IntConfigs;
 import com.netflix.exhibitor.core.controlpanel.ControlPanelValues;
 import com.netflix.exhibitor.core.index.IndexCache;
+import com.netflix.exhibitor.core.processes.ProcessMonitor;
+import com.netflix.exhibitor.core.processes.ProcessOperations;
+import com.netflix.exhibitor.core.processes.StandardProcessOperations;
 import com.netflix.exhibitor.core.rest.UITab;
 import com.netflix.exhibitor.core.state.CleanupManager;
 import com.netflix.exhibitor.core.state.MonitorRunningInstance;
-import com.netflix.exhibitor.core.state.ProcessOperations;
-import com.netflix.exhibitor.core.state.StandardProcessOperations;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -52,6 +53,7 @@ public class Exhibitor implements Closeable
     private final BackupManager             backupManager;
     private final ConfigManager             configManager;
     private final Arguments                 arguments;
+    private final ProcessMonitor            processMonitor;
 
     private CuratorFramework    localConnection;    // protected by synchronization
 
@@ -114,6 +116,7 @@ public class Exhibitor implements Closeable
         monitorRunningInstance = new MonitorRunningInstance(this);
         cleanupManager = new CleanupManager(this);
         indexCache = new IndexCache(log);
+        processMonitor = new ProcessMonitor(this);
 
         controlPanelValues = new ControlPanelValues();
 
@@ -176,6 +179,7 @@ public class Exhibitor implements Closeable
     {
         Preconditions.checkState(state.compareAndSet(State.STARTED, State.STOPPED));
 
+        Closeables.closeQuietly(processMonitor);
         Closeables.closeQuietly(indexCache);
         Closeables.closeQuietly(backupManager);
         Closeables.closeQuietly(cleanupManager);
@@ -263,6 +267,16 @@ public class Exhibitor implements Closeable
     public BackupManager getBackupManager()
     {
         return backupManager;
+    }
+
+    public ProcessMonitor getProcessMonitor()
+    {
+        return processMonitor;
+    }
+
+    public MonitorRunningInstance getMonitorRunningInstance()
+    {
+        return monitorRunningInstance;
     }
 
     private synchronized void closeLocalConnection()

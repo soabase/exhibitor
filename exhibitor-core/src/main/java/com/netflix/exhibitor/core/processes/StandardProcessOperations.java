@@ -1,27 +1,28 @@
-package com.netflix.exhibitor.core.state;
+package com.netflix.exhibitor.core.processes;
 
 import com.google.common.collect.Iterables;
 import com.google.common.io.Closeables;
 import com.google.common.io.Files;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.activity.ActivityLog;
-import com.netflix.exhibitor.core.cluster.ServerList;
-import com.netflix.exhibitor.core.cluster.ServerSpec;
 import com.netflix.exhibitor.core.config.InstanceConfig;
 import com.netflix.exhibitor.core.config.IntConfigs;
 import com.netflix.exhibitor.core.config.StringConfigs;
-import java.io.*;
+import com.netflix.exhibitor.core.state.ServerList;
+import com.netflix.exhibitor.core.state.ServerSpec;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.Date;
 import java.util.Properties;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class StandardProcessOperations implements ProcessOperations
 {
     private final Exhibitor exhibitor;
-
-    private static final String     MODIFIED_CONFIG_NAME = "exhibitor.cfg";
 
     public StandardProcessOperations(Exhibitor exhibitor) throws IOException
     {
@@ -50,56 +51,15 @@ public class StandardProcessOperations implements ProcessOperations
             Integer.toString(exhibitor.getConfigManager().getConfig().getInt(IntConfigs.CLEANUP_MAX_FILES))
         );
 
-        ExecutorService errorService = Executors.newSingleThreadExecutor();
-        StringWriter        errors = new StringWriter();
-        final PrintWriter   errorOut = new PrintWriter(errors);
-        try
-        {
-            Process             process = builder.start();
-            final InputStream   errorStream = process.getErrorStream();
-            errorService.submit
-            (
-                new Callable<Object>()
-                {
-                    public Object call() throws Exception
-                    {
-                        BufferedReader      in = new BufferedReader(new InputStreamReader(errorStream));
-                        for(;;)
-                        {
-                            String  line = in.readLine();
-                            if ( line == null )
-                            {
-                                break;
-                            }
-                            errorOut.println(line);
-                        }
-                        return null;
-                    }
-                }
-            );
-            process.waitFor();
-
-            errorOut.close();
-            String      errorStr = errors.toString();
-            if ( errorStr.length() > 0 )
-            {
-                exhibitor.getLog().add(ActivityLog.Type.ERROR, "Cleanup task reported errors: " + errorStr);
-            }
-            else
-            {
-                exhibitor.getLog().add(ActivityLog.Type.INFO, "Cleanup task ran successfully");
-            }
-        }
-        finally
-        {
-            errorService.shutdownNow();
-        }
+        exhibitor.getProcessMonitor().monitor(ProcessTypes.CLEANUP, builder.start(), "Cleanup task completed", ProcessMonitor.Mode.DESTROY_ON_INTERRUPT, ProcessMonitor.Streams.ERROR);
     }
 
     @Override
     public void killInstance() throws Exception
     {
         exhibitor.getLog().add(ActivityLog.Type.INFO, "Attempting to start/restart ZooKeeper");
+
+        exhibitor.getProcessMonitor().destroy(ProcessTypes.ZOOKEEPER);
 
         ProcessBuilder          builder = new ProcessBuilder("jps");
         Process                 jpsProcess = builder.start();
@@ -154,21 +114,21 @@ public class StandardProcessOperations implements ProcessOperations
     {
         Details         details = new Details(exhibitor);
 
-        File            configFile = prepConfigFile(details);
+        prepConfigFile(details);
         File            binDirectory = new File(details.zooKeeperDirectory, "bin");
         File            startScript = new File(binDirectory, "zkServer.sh");
         ProcessBuilder  builder = new ProcessBuilder(startScript.getPath(), "start").directory(binDirectory.getParentFile());
-        builder.environment().put("ZOOCFG", configFile.getName());
-        builder.start();
+
+        exhibitor.getProcessMonitor().monitor(ProcessTypes.ZOOKEEPER, builder.start(), null, ProcessMonitor.Mode.LEAVE_RUNNING_ON_INTERRUPT, ProcessMonitor.Streams.BOTH);
 
         exhibitor.getLog().add(ActivityLog.Type.INFO, "Process started via: " + startScript.getPath());
     }
 
-    private File prepConfigFile(Details details) throws IOException
+    private void prepConfigFile(Details details) throws IOException
     {
         InstanceConfig          config = exhibitor.getConfigManager().getConfig();
 
-        ServerList              serverList = new ServerList(config.getString(StringConfigs.SERVERS_SPEC));
+        ServerList serverList = new ServerList(config.getString(StringConfigs.SERVERS_SPEC));
 
         File                    idFile = new File(details.dataDirectory, "myid");
         ServerSpec us = Iterables.find(serverList.getSpecs(), ServerList.isUs(exhibitor.getThisJVMHostname()), null);
@@ -198,7 +158,7 @@ public class StandardProcessOperations implements ProcessOperations
             localProperties.setProperty("server." + spec.getServerId(), spec.getHostname() + portSpec);
         }
 
-        File            configFile = new File(details.configDirectory, MODIFIED_CONFIG_NAME);
+        File            configFile = new File(details.configDirectory, "zoo.cfg");
         OutputStream out = new BufferedOutputStream(new FileOutputStream(configFile));
         try
         {
@@ -208,7 +168,5 @@ public class StandardProcessOperations implements ProcessOperations
         {
             Closeables.closeQuietly(out);
         }
-
-        return configFile;
     }
 }

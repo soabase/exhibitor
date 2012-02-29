@@ -1,0 +1,155 @@
+package com.netflix.exhibitor.core.processes;
+
+import com.google.common.collect.Maps;
+import com.netflix.exhibitor.core.Exhibitor;
+import com.netflix.exhibitor.core.activity.ActivityLog;
+import java.io.BufferedReader;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+public class ProcessMonitor implements Closeable
+{
+    private final ExecutorService   service = Executors.newCachedThreadPool();
+    private final Exhibitor         exhibitor;
+    private final Map<ProcessTypes, ProcessHolder> processes = Maps.newConcurrentMap();
+
+    public ProcessMonitor(Exhibitor exhibitor)
+    {
+        this.exhibitor = exhibitor;
+    }
+
+    @Override
+    public void close() throws IOException
+    {
+        service.shutdownNow();
+    }
+
+    public enum Mode
+    {
+        LEAVE_RUNNING_ON_INTERRUPT,
+        DESTROY_ON_INTERRUPT
+    }
+
+    public enum Streams
+    {
+        ERROR,
+        STANDARD,
+        BOTH
+    }
+
+    private static class ProcessHolder
+    {
+        final Process           process;
+        final AtomicBoolean     isBeingClosed = new AtomicBoolean(false);
+
+        private ProcessHolder(Process process)
+        {
+            this.process = process;
+        }
+    }
+
+    public void     destroy(ProcessTypes type)
+    {
+        ProcessHolder   previousHolder = processes.remove(type);
+        closeHolder(previousHolder);
+    }
+
+    public void     monitor(ProcessTypes type, final Process process, final String completionMessage, final Mode mode, final Streams whichStreams)
+    {
+        ProcessHolder   newHolder = new ProcessHolder(process);
+        ProcessHolder   previousHolder = processes.put(type, newHolder);
+        closeHolder(previousHolder);
+
+        switch ( whichStreams )
+        {
+            case ERROR:
+            {
+                service.submit(makeStreamProc(process.getErrorStream(), type.getDescription(), ActivityLog.Type.ERROR, newHolder));
+                break;
+            }
+
+            case STANDARD:
+            {
+                service.submit(makeStreamProc(process.getInputStream(), type.getDescription(), ActivityLog.Type.INFO, newHolder));
+                break;
+            }
+
+            case BOTH:
+            {
+                service.submit(makeStreamProc(process.getErrorStream(), type.getDescription(), ActivityLog.Type.ERROR, newHolder));
+                service.submit(makeStreamProc(process.getInputStream(), type.getDescription(), ActivityLog.Type.INFO, newHolder));
+                break;
+            }
+        }
+
+        service.submit(makeEofProc(process, completionMessage, mode));
+    }
+
+    private void closeHolder(ProcessHolder previousHolder)
+    {
+        if ( previousHolder != null )
+        {
+            previousHolder.isBeingClosed.set(true);
+            previousHolder.process.destroy();
+        }
+    }
+
+    private Runnable makeEofProc(final Process process, final String completionMessage, final Mode mode)
+    {
+        return new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                try
+                {
+                    process.waitFor();
+                }
+                catch ( InterruptedException e )
+                {
+                    Thread.currentThread().interrupt();
+                    if ( mode == Mode.DESTROY_ON_INTERRUPT )
+                    {
+                        process.destroy();
+                    }
+                }
+
+                if ( completionMessage != null )
+                {
+                    exhibitor.getLog().add(ActivityLog.Type.INFO, completionMessage);
+                }
+            }
+        };
+    }
+
+    private Callable<Object> makeStreamProc(final InputStream stream, final String name, final ActivityLog.Type type, final ProcessHolder holder)
+    {
+        return new Callable<Object>()
+        {
+            public Object call() throws Exception
+            {
+                BufferedReader in = new BufferedReader(new InputStreamReader(stream));
+                for (;;)
+                {
+                    String line = in.readLine();
+                    if ( line == null )
+                    {
+                        break;
+                    }
+                    if ( !holder.isBeingClosed.get() )
+                    {
+                        exhibitor.getLog().add(type, name + ": " + line);
+                    }
+                }
+                return null;
+            }
+        };
+    }
+}

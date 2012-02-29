@@ -1,7 +1,5 @@
 package com.netflix.exhibitor.core.state;
 
-import com.netflix.exhibitor.core.cluster.ServerList;
-import com.netflix.exhibitor.core.cluster.ServerSpec;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import java.util.Arrays;

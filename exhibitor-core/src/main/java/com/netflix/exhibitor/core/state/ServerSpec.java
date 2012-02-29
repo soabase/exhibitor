@@ -1,4 +1,4 @@
-package com.netflix.exhibitor.core.cluster;
+package com.netflix.exhibitor.core.state;
 
 public class ServerSpec
 {

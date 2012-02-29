@@ -2,8 +2,8 @@ package com.netflix.exhibitor.core.state;
 
 public enum InstanceStateTypes
 {
-    UNKNOWN(0),
-    LATENT(1),
+    LATENT(0),
+    DOWN(1),
     NOT_SERVING(2),
     SERVING(3),
     DOWN_BECAUSE_UNLISTED(4),
