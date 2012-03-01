@@ -116,6 +116,7 @@ public class UIResource
                 }
             }
         );
+        names = Lists.newArrayList(names);  // move out of Google's TransformingRandomAccessList
 
         GenericEntity<List<UITabSpec>> entity = new GenericEntity<List<UITabSpec>>(names){};
         return Response.ok(entity).build();
@@ -185,7 +186,7 @@ public class UIResource
         ObjectNode                  mainNode = mapper.getNodeFactory().objectNode();
         ObjectNode                  configNode = mapper.getNodeFactory().objectNode();
 
-        mainNode.put("version", "v0.0.1");       // TODO - correct version
+        mainNode.put("version", context.getExhibitor().getVersion());
         mainNode.put("running", "imok".equals(response));
         mainNode.put("backupActive", context.getExhibitor().getBackupManager().isActive());
 

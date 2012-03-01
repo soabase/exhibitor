@@ -36,6 +36,7 @@ import javax.ws.rs.ext.ContextResolver;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -122,7 +123,8 @@ public class IndexResource
             }
         );
 
-        GenericEntity<Collection<NameAndModifiedDate>>       entity = new GenericEntity<Collection<NameAndModifiedDate>>(transformed){};
+        ArrayList<NameAndModifiedDate>                  cleaned = Lists.newArrayList(transformed);// move out of Google's TransformingRandomAccessList
+        GenericEntity<Collection<NameAndModifiedDate>>  entity = new GenericEntity<Collection<NameAndModifiedDate>>(cleaned){};
         return Response.ok(entity).build();
     }
 

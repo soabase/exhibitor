@@ -21,6 +21,7 @@ import com.netflix.exhibitor.core.processes.ProcessOperations;
 import com.netflix.exhibitor.core.processes.StandardProcessOperations;
 import com.netflix.exhibitor.core.rest.UITab;
 import com.netflix.exhibitor.core.state.CleanupManager;
+import com.netflix.exhibitor.core.state.ManifestVersion;
 import com.netflix.exhibitor.core.state.MonitorRunningInstance;
 import java.io.Closeable;
 import java.io.IOException;
@@ -54,6 +55,7 @@ public class Exhibitor implements Closeable
     private final ConfigManager             configManager;
     private final Arguments                 arguments;
     private final ProcessMonitor            processMonitor;
+    private final ManifestVersion           manifestVersion = new ManifestVersion();
 
     private CuratorFramework    localConnection;    // protected by synchronization
 
@@ -108,6 +110,8 @@ public class Exhibitor implements Closeable
      */
     public Exhibitor(ConfigProvider configProvider, Collection<UITab> additionalUITabs, BackupProvider backupProvider, Arguments arguments) throws Exception
     {
+        System.out.println(getVersion());
+
         this.arguments = arguments;
         log = new ActivityLog(arguments.logWindowSizeLines);
         this.configManager = new ConfigManager(this, configProvider, arguments.configCheckMs);
@@ -125,7 +129,7 @@ public class Exhibitor implements Closeable
 
     public String   getVersion()
     {
-        return getClass().getPackage().getImplementationVersion();
+        return manifestVersion.getVersion();
     }
 
     /**
