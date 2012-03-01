@@ -123,6 +123,11 @@ public class Exhibitor implements Closeable
         this.backupManager = new BackupManager(this, backupProvider);
     }
 
+    public String   getVersion()
+    {
+        return getClass().getPackage().getImplementationVersion();
+    }
+
     /**
      * @return logging manager
      */

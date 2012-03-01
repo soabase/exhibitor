@@ -87,13 +87,13 @@ public class TestS3BackupProvider
             {
                 List<S3ObjectSummary>       list = Lists.newArrayList();
                 S3ObjectSummary             summary = new S3ObjectSummary();
-                summary.setKey("one");
+                summary.setKey("one" + S3BackupProvider.SEPARATOR + "1234");
                 list.add(summary);
                 summary = new S3ObjectSummary();
-                summary.setKey("two");
+                summary.setKey("two" + S3BackupProvider.SEPARATOR + "1234");
                 list.add(summary);
                 summary = new S3ObjectSummary();
-                summary.setKey("three");
+                summary.setKey("three" + S3BackupProvider.SEPARATOR + "1234");
                 list.add(summary);
                 return list;
             }
@@ -119,10 +119,10 @@ public class TestS3BackupProvider
 
     private byte[] getUploadedBytes(File sourceFile) throws Exception
     {
-        MockS3Client s3Client = new MockS3Client();
-        S3BackupProvider provider = new S3BackupProvider(new MockS3ClientFactory(s3Client), new PropertyBasedS3Credential(new Properties()));
+        MockS3Client        s3Client = new MockS3Client();
+        S3BackupProvider    provider = new S3BackupProvider(new MockS3ClientFactory(s3Client), new PropertyBasedS3Credential(new Properties()));
 
-        provider.uploadBackup(null, null, sourceFile, Maps.<String, String>newHashMap());
+        provider.uploadBackup(null, new BackupMetaData("test", 10), sourceFile, Maps.<String, String>newHashMap());
 
         ByteArrayOutputStream   out = new ByteArrayOutputStream();
         for ( byte[] bytes : s3Client.getUploadedBytes() )

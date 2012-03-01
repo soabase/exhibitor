@@ -515,7 +515,8 @@ $(function ()
         modal: true,
         autoOpen: false,
         title: "4LTR",
-        width: 600
+        width: 600,
+        minHeight: 400
     });
     $("#word-4ltr-button").button();
 

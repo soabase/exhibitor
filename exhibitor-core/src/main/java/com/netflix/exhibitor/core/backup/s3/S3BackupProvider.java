@@ -47,7 +47,8 @@ public class S3BackupProvider implements BackupProvider
 
     private static final List<BackupConfigSpec>     CONFIGS = Arrays.asList(CONFIG_THROTTLE, CONFIG_BUCKET, CONFIG_MAX_RETRIES, CONFIG_RETRY_SLEEP_MS);
 
-    private static final String       SEPARATOR = "|";
+    @VisibleForTesting
+    static final String       SEPARATOR = "|";
     private static final String       SEPARATOR_REPLACEMENT = "_";
 
     public S3BackupProvider(S3ClientFactory factory, S3Credential credential) throws Exception
@@ -282,7 +283,7 @@ public class S3BackupProvider implements BackupProvider
     
     private BackupMetaData fromKey(String key)
     {
-        String[]        parts = key.split(SEPARATOR);
+        String[]        parts = key.split("\\" + SEPARATOR);
         return new BackupMetaData(parts[0], Long.parseLong(parts[1]));
     }
 }

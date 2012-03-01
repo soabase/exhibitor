@@ -18,7 +18,7 @@ public class MockS3Client implements S3Client
 
     public MockS3Client()
     {
-        this(null, null);
+        this(null, new ObjectListing());
     }
 
     public MockS3Client(S3Object object, ObjectListing listing)
