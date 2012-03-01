@@ -54,7 +54,7 @@ public class ExhibitorMain implements Closeable
         options.addOption(null, S3_CREDENTIALS, true, "Required if you use s3backup or s3config. Argument is the path to an AWS credential properties file with two properties: " + PropertyBasedS3Credential.PROPERTY_S3_KEY_ID + " and " + PropertyBasedS3Credential.PROPERTY_S3_SECRET_KEY);
         options.addOption(null, S3_BACKUP, true, "If true, enables AWS S3 backup of ZooKeeper log files (s3credentials must be provided as well).");
         options.addOption(null, S3_CONFIG, true, "Enables AWS S3 shared config files as opposed to file system config files (s3credentials must be provided as well). Argument is [bucket name]:[key].");
-        options.addOption(null, FILESYSTEMBACKUP, false, "Enables file system backup of ZooKeeper log files.");
+        options.addOption(null, FILESYSTEMBACKUP, true, "If true, enables file system backup of ZooKeeper log files.");
         options.addOption(null, TIMEOUT, true, "Connection timeout (ms) for ZK connections. Default is 30000.");
         options.addOption(null, LOGLINES, true, "Max lines of logging to keep in memory for display. Default is 1000.");
         options.addOption(null, HOSTNAME, true, "Hostname to use for this JVM. Default is: " + hostname);
@@ -105,7 +105,7 @@ public class ExhibitorMain implements Closeable
             }
             backupProvider = new S3BackupProvider(new S3ClientFactoryImpl(), awsCredentials);
         }
-        else if ( commandLine.hasOption(FILESYSTEMBACKUP) )
+        else if ( "true".equalsIgnoreCase(commandLine.getOptionValue(FILESYSTEMBACKUP)) )
         {
             backupProvider = new FileSystemBackupProvider();
         }
