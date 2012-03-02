@@ -1,49 +1,22 @@
 package com.netflix.exhibitor.core.rest;
 
-/**
- * Used to add additional tabs to the Exhibitor UI
- */
-@SuppressWarnings("UnusedDeclaration")
-public class UITab
+import javax.ws.rs.core.UriInfo;
+
+public interface UITab
 {
-    private final String        name;
-    private final String        content;
-
-    public UITab()
-    {
-        name = "";
-        content = "";
-    }
-
-    public UITab(String name)
-    {
-        this.name = name;
-        content = "";
-    }
-
-    public UITab(String name, String content)
-    {
-        this.name = name;
-        this.content = content;
-    }
-
     /**
      * Return the tab name
      *
      * @return name
      */
-    public String       getName()
-    {
-        return name;
-    }
+    String       getName();
 
     /**
      * Return the content (as text/plain) for the tab
+     * 
+     * @param info uri context
      * @return content
      * @throws Exception errors
      */
-    public String       getContent() throws Exception
-    {
-        return content;
-    }
+    String       getContent(UriInfo info) throws Exception;
 }

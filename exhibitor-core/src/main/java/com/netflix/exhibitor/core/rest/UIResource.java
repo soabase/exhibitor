@@ -30,6 +30,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.ContextResolver;
 import java.io.IOException;
 import java.net.URL;
@@ -125,13 +126,13 @@ public class UIResource
     @Path("tab/{index}")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
-    public Response getAdditionalTabContent(@PathParam("index") int index) throws Exception
+    public Response getAdditionalTabContent(@Context UriInfo info, @PathParam("index") int index) throws Exception
     {
         if ( (index < 0) || (index >= tabs.size()) )
         {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        return Response.ok(tabs.get(index).getContent()).build();
+        return Response.ok(tabs.get(index).getContent(info)).build();
     }
 
     @Path("able-backups/{value}")
@@ -347,10 +348,10 @@ public class UIResource
 
         builder.add
         (
-            new UITab("Log")
+            new UITabImpl("Log")
             {
                 @Override
-                public String getContent() throws Exception
+                public String getContent(UriInfo info) throws Exception
                 {
                     return getLog(context);
                 }

@@ -108,7 +108,7 @@ public class Exhibitor implements Closeable
      * @param arguments startup arguments
      * @throws IOException errors
      */
-    public Exhibitor(ConfigProvider configProvider, Collection<UITab> additionalUITabs, BackupProvider backupProvider, Arguments arguments) throws Exception
+    public Exhibitor(ConfigProvider configProvider, Collection<? extends UITab> additionalUITabs, BackupProvider backupProvider, Arguments arguments) throws Exception
     {
         System.out.println(getVersion());
 
