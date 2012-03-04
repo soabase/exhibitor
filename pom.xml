@@ -26,9 +26,9 @@
     </licenses>
 
     <scm>
-        <connection>scm:git:git@github.com:Netflix/PROJECT-NAME.git</connection>
-        <url>scm:git:git@github.com:Netflix/PROJECT-NAME.git</url>
-        <developerConnection>scm:git:git@github.com:Netflix/PROJECT-NAME.git</developerConnection>
+        <connection>scm:git:git@github.com:Netflix/exhibitor.git</connection>
+        <url>scm:git:git@github.com:Netflix/exhibitor.git</url>
+        <developerConnection>scm:git:git@github.com:Netflix/exhibitor.git</developerConnection>
     </scm>
 
     <build>
