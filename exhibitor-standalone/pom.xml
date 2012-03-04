@@ -6,14 +6,14 @@
     <parent>
         <groupId>com.netflix.exhibitor</groupId>
         <artifactId>exhibitor</artifactId>
-        <version>0.0.2-SNAPSHOT</version>
+        <version>1.0.0-beta1-SNAPSHOT</version>
     </parent>
 
     <dependencies>
         <dependency>
             <groupId>com.netflix.exhibitor</groupId>
             <artifactId>exhibitor-core</artifactId>
-            <version>0.0.2-SNAPSHOT</version>
+            <version>1.0.0-beta1-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.sun.jersey</groupId>
