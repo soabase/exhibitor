@@ -202,6 +202,8 @@ function updateOneServerState(index, data, hostname)
         $(domId + '-4ltr-button').button("option", "disabled", !isRunning);
         $(domId + '-log-button').button("option", "disabled", !isRunning);
 
+        $(domId + '-power-button').button("option", "label", data.response.switches.restarts ? "Restart..." : "Stop...");
+
         ableLightSwitch(domId + '-instance-restarts-enabled', handleSwitch(index, hostname, "restarts"));
         ableLightSwitch(domId + '-cleanup-enabled', handleSwitch(index, hostname, "cleanup"));
         ableLightSwitch(domId + '-unlisted-restarts', handleSwitch(index, hostname, "unlistedRestarts"));

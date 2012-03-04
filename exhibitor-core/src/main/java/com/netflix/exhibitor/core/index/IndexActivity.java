@@ -3,7 +3,6 @@ package com.netflix.exhibitor.core.index;
 import com.google.common.io.Closeables;
 import com.netflix.exhibitor.core.activity.Activity;
 import com.netflix.exhibitor.core.activity.ActivityLog;
-import java.io.InputStream;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -12,7 +11,6 @@ public class IndexActivity implements Activity
 {
     private final LogIndexer indexer;
     private final ActivityLog log;
-    private final InputStream in;
     private final CompletionListener completionListener;
 
     public interface CompletionListener
@@ -20,23 +18,17 @@ public class IndexActivity implements Activity
         public void completed();
     }
 
-    public IndexActivity(LogIndexer indexer, ActivityLog log, InputStream in)
-    {
-        this(indexer, log, in, null);
-    }
-
-    public IndexActivity(LogIndexer indexer, ActivityLog log, InputStream in, CompletionListener completionListener)
+    public IndexActivity(LogIndexer indexer, ActivityLog log, CompletionListener completionListener)
     {
         this.indexer = indexer;
         this.log = log;
-        this.in = in;
         this.completionListener = completionListener;
     }
 
     @Override
     public void completed(boolean wasSuccessful)
     {
-        Closeables.closeQuietly(in);
+        Closeables.closeQuietly(indexer);
         if ( completionListener != null )
         {
             completionListener.completed();

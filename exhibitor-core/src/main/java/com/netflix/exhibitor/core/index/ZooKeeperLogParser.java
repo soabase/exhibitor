@@ -1,5 +1,6 @@
 package com.netflix.exhibitor.core.index;
 
+import com.google.common.io.Closeables;
 import org.apache.jute.BinaryInputArchive;
 import org.apache.jute.InputArchive;
 import org.apache.jute.Record;
@@ -8,6 +9,7 @@ import org.apache.zookeeper.server.persistence.FileTxnLog;
 import org.apache.zookeeper.server.util.SerializeUtils;
 import org.apache.zookeeper.txn.TxnHeader;
 import java.io.ByteArrayInputStream;
+import java.io.Closeable;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,7 +44,6 @@ public class ZooKeeperLogParser
             throw new Exception("Invalid magic number for");
         }
 
-        int count = 0;
         while ( true )
         {
             long crcValue;
@@ -81,8 +82,6 @@ public class ZooKeeperLogParser
             }
 
             receiver.receiveEntry(hdr, record);
-
-            count++;
         }
     }
 }

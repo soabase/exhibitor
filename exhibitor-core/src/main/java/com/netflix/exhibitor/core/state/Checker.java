@@ -37,14 +37,14 @@ public class Checker
         {
             if ( !exhibitor.getControlPanelValues().isSet(ControlPanelTypes.RESTARTS) )
             {
-                potentialState = InstanceStateTypes.DOWN_BECAUSE_RESTARTS_TURNED_OFF;
+                potentialState = InstanceStateTypes.NO_RESTARTS_DOWN;
             }
         }
         else
         {
             if ( !exhibitor.getControlPanelValues().isSet(ControlPanelTypes.UNLISTED_RESTARTS) )
             {
-                potentialState = InstanceStateTypes.DOWN_BECAUSE_UNLISTED;
+                potentialState = InstanceStateTypes.UNLISTED_DOWN;
             }
         }
 

@@ -13,7 +13,7 @@ public interface UITab
 
     /**
      * Return the content (as text/plain) for the tab
-     * 
+     *
      * @param info uri context
      * @return content
      * @throws Exception errors

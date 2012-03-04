@@ -2,6 +2,7 @@ package com.netflix.exhibitor.core.index;
 
 import com.google.common.io.Closeables;
 import com.google.common.io.CountingInputStream;
+import com.google.common.io.InputSupplier;
 import org.apache.jute.Record;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
@@ -17,6 +18,7 @@ import org.apache.zookeeper.txn.DeleteTxn;
 import org.apache.zookeeper.txn.SetDataTxn;
 import org.apache.zookeeper.txn.TxnHeader;
 import java.io.BufferedInputStream;
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,7 +26,7 @@ import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class LogIndexer
+public class LogIndexer implements Closeable
 {
     private final File indexDirectory;
     private final CountingInputStream inputStream;
@@ -34,7 +36,7 @@ public class LogIndexer
     private final long sourceLength;
     private final String sourceName;
 
-    public LogIndexer(InputStream in, String sourceName, long sourceLength, File indexDirectory) throws Exception
+    public LogIndexer(InputSupplier<InputStream> source, String sourceName, long sourceLength, File indexDirectory) throws Exception
     {
         if ( !indexDirectory.exists() && !indexDirectory.mkdirs() )
         {
@@ -44,7 +46,7 @@ public class LogIndexer
         this.sourceName = sourceName;
 
         this.indexDirectory = indexDirectory;
-        inputStream = new CountingInputStream(new BufferedInputStream(in));
+        inputStream = new CountingInputStream(new BufferedInputStream(source.getInput()));
 
         IndexWriter     localWriter = null;
         NIOFSDirectory  localDirectory = null;
@@ -60,6 +62,12 @@ public class LogIndexer
         }
         writer = localWriter;
         directory = localDirectory;
+    }
+
+    @Override
+    public void close() throws IOException
+    {
+        Closeables.closeQuietly(inputStream);
     }
 
     public boolean      isValid()

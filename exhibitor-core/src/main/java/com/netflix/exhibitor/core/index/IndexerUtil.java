@@ -1,6 +1,6 @@
 package com.netflix.exhibitor.core.index;
 
-import com.google.common.io.Closeables;
+import com.google.common.io.InputSupplier;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.activity.QueueGroups;
 import com.netflix.exhibitor.core.config.InstanceConfig;
@@ -8,39 +8,46 @@ import com.netflix.exhibitor.core.config.StringConfigs;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 public class IndexerUtil
 {
     public static void      startIndexing(Exhibitor exhibitor, File path) throws Exception
     {
-
+        startIndexing(exhibitor, path, null);
     }
 
-    public static void      startIndexing(Exhibitor exhibitor, File path, IndexActivity.CompletionListener listener) throws Exception
+    public static void      startIndexing(Exhibitor exhibitor, final File path, IndexActivity.CompletionListener listener) throws Exception
     {
-        InputStream in = null;
-        try
+        if ( path.isDirectory() )
         {
-            if ( path.isDirectory() )
+            final DirectoryInputStream      stream = new DirectoryInputStream(path);    // doesn't actually open any streams until reading starts
+            InputSupplier<InputStream>      source = new InputSupplier<InputStream>()
             {
-                DirectoryInputStream        directoryInputStream = new DirectoryInputStream(path);
-                in = directoryInputStream;
-                startIndexing(exhibitor, in, path.getName(), directoryInputStream.length(), listener);
-            }
-            else
-            {
-                in = new BufferedInputStream(new FileInputStream(path));
-                startIndexing(exhibitor, in, path.getName(), path.length(), listener);
-            }
+                @Override
+                public InputStream getInput() throws IOException
+                {
+                    return stream;
+                }
+            };
+            startIndexing(exhibitor, source, path.getName(), stream.length(), listener);
         }
-        finally
+        else
         {
-            Closeables.closeQuietly(in);
+            InputSupplier<InputStream>  source = new InputSupplier<InputStream>()
+            {
+                @Override
+                public InputStream getInput() throws IOException
+                {
+                    return new BufferedInputStream(new FileInputStream(path));
+                }
+            };
+            startIndexing(exhibitor, source, path.getName(), path.length(), listener);
         }
     }
 
-    private static void      startIndexing(Exhibitor exhibitor, InputStream in, String name, long length, IndexActivity.CompletionListener listener) throws Exception
+    private static void      startIndexing(Exhibitor exhibitor, InputSupplier<InputStream> source, String name, long length, IndexActivity.CompletionListener listener) throws Exception
     {
         InstanceConfig  config = exhibitor.getConfigManager().getConfig();
 
@@ -49,11 +56,10 @@ public class IndexerUtil
         LogIndexer      logIndexer;
         try
         {
-            logIndexer = new LogIndexer(in, name, length, indexDirectory);
+            logIndexer = new LogIndexer(source, name, length, indexDirectory);
         }
         catch ( Exception e )
         {
-            Closeables.closeQuietly(in);
             if ( listener != null )
             {
                 listener.completed();
@@ -62,7 +68,7 @@ public class IndexerUtil
         }
         if ( logIndexer.isValid() )
         {
-            IndexActivity   activity = new IndexActivity(logIndexer, exhibitor.getLog(), in, listener);
+            IndexActivity   activity = new IndexActivity(logIndexer, exhibitor.getLog(), listener);
             exhibitor.getActivityQueue().add(QueueGroups.MAIN, activity);
         }
         else if ( listener != null )
