@@ -239,8 +239,7 @@ function initRestoreUI()
 function submitRestore()
 {
     var indexName = $('#index-query-dialog').attr("indexName");
-    var indexHandle = $('#index-query-dialog').attr("indexHandle");
-    $.getJSON('index/restore/' + indexName + "/" + indexHandle + "/" + selectedIndexData.docId, function(data){
+    $.getJSON('index/restore/' + indexName + "/" + selectedIndexData.docId, function(data){
         messageDialog('Restore', 'Restore request sent. Check the log for details.');
     });
 }
@@ -376,7 +375,7 @@ function viewIndex(indexName, indexHandle, isFromFilter)
             $(this).addClass('row_selected');
 
             var docId = selectedRowId.split('-').pop();
-            $.getJSON('index/get/' + indexName + "/" + indexHandle + "/" + docId, applySelectedValue);
+            $.getJSON('index/get/' + indexName + "/" + docId, applySelectedValue);
             $('#index-query-clear-restore-button').button("option", "disabled", false);
         }
     });

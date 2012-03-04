@@ -128,10 +128,10 @@ public class IndexResource
         return Response.ok(entity).build();
     }
 
-    @Path("get/{index-name}/{search-handle}/{doc-id}")
+    @Path("get/{index-name}/{doc-id}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getResult(@PathParam("index-name") String indexName, @PathParam("search-handle") String searchHandle, @PathParam("doc-id")  int docId) throws Exception
+    public Response getResult(@PathParam("index-name") String indexName, @PathParam("doc-id")  int docId) throws Exception
     {
         LogSearch logSearch = getLogSearch(indexName);
         if ( logSearch == null )
@@ -161,10 +161,10 @@ public class IndexResource
     }
 
 
-    @Path("restore/{index-name}/{search-handle}/{doc-id}")
+    @Path("restore/{index-name}/{doc-id}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response recover(@PathParam("index-name") String indexName, @PathParam("search-handle") String searchHandle, @PathParam("doc-id")  int docId) throws Exception
+    public Response recover(@PathParam("index-name") String indexName, @PathParam("doc-id")  int docId) throws Exception
     {
         LogSearch logSearch = getLogSearch(indexName);
         if ( logSearch == null )
@@ -205,8 +205,7 @@ public class IndexResource
         ObjectNode          node;
         try
         {
-            CachedSearch cachedSearch = logSearch.getCachedSearch(searchHandle);
-
+            CachedSearch        cachedSearch = logSearch.getCachedSearch(searchHandle);
             DateFormat          dateFormatter = new SimpleDateFormat(DATE_FORMAT_STR);
             ArrayNode           dataTab = JsonNodeFactory.instance.arrayNode();
             for ( int i = iDisplayStart; i < (iDisplayStart + iDisplayLength); ++i )
@@ -315,7 +314,7 @@ public class IndexResource
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        SearchId    searchId;
+        SearchId    searchHandle;
         try
         {
             boolean         hasTerms = false;
@@ -355,13 +354,13 @@ public class IndexResource
             }
             Query       query = hasTerms ? builder.build(QueryBuilder.Type.AND) : null;
             String      id = logSearch.cacheSearch(query, request.getReuseHandle(), request.getMaxResults());
-            searchId = new SearchId(id);
+            searchHandle = new SearchId(id);
         }
         finally
         {
             context.getExhibitor().getIndexCache().releaseLogSearch(logSearch.getFile());
         }
-        return Response.ok(searchId).build();
+        return Response.ok(searchHandle).build();
     }
 
     private String trimPath(String path)
