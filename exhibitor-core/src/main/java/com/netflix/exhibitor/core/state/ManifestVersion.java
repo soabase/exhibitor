@@ -55,7 +55,7 @@ public class ManifestVersion
             Closeables.closeQuietly(stream);
         }
 
-        version = (localVersion != null) ? localVersion : "dev";
+        version = (localVersion != null) ? localVersion : "dev-beta1";
     }
 
     public String getVersion()
