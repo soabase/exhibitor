@@ -1,4 +1,3 @@
-var baseServerItem = null;
 var currentServersSpec = null;
 var currentHostname = null;
 var serverItemsVersion = 0;
@@ -47,11 +46,6 @@ function makeServersList()
 
 function buildServerItems()
 {
-    if ( baseServerItem == null )
-    {
-        baseServerItem = $('#base-server-item').html();
-    }
-
     var serversList = makeServersList();
     if ( (currentServersSpec != systemConfig.serversSpec) || (currentHostname != systemConfig.hostname) )
     {
@@ -72,7 +66,7 @@ function internalBuildServerItems(serversList)
         var spec = serversList[i];
         var domId = 'cp-' + i;
 
-        var thisItem = baseServerItem;
+        var thisItem = $('#base-server-item-base').html();
         thisItem = thisItem.replace("$SERVER_ID$", spec.serverId);
         thisItem = thisItem.replace("$SERVER_HOSTNAME$", spec.hostname);
         thisItem = thisItem.replace(/\$BASE_ID\$/gi, domId);

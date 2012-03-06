@@ -49,35 +49,37 @@
 
             <div id="tabs-main" class="ui-helper-hidden">
                 <div id="base-server-item">
-                    <div class="ui-widget ui-corner-all cp-server-item ui-state-highlight">
-                        <div class="cp-servers-heading ui-state-default">
-                            <span class="cp-status" id="$BASE_ID$-status-indicator"></span><span id="$BASE_ID$-server-id" class="cp-server-id"></span> <span id="$BASE_ID$-hostname" class="cp-hostname"></span>
-                            <span id="$BASE_ID$-status-message" class="cp-server-status-message"></span><br clear="all"/>
+                </div>
+            </div>
+            <div id="base-server-item-base" class="ui-helper-hidden">
+                <div class="ui-widget ui-corner-all cp-server-item ui-state-highlight">
+                    <div class="cp-servers-heading ui-state-default">
+                        <span class="cp-status" id="$BASE_ID$-status-indicator"></span><span id="$BASE_ID$-server-id" class="cp-server-id"></span> <span id="$BASE_ID$-hostname" class="cp-hostname"></span>
+                        <span id="$BASE_ID$-status-message" class="cp-server-status-message"></span><br clear="all"/>
+                    </div>
+
+                    <div class="cp-server-column-wrapper">
+                        <div class="cp-server-column">
+                            <div title="When on, ZooKeeper instance is automatically restarted when there is an error, config change, etc.">
+                                <label for="$BASE_ID$-instance-restarts-enabled">Automatic Instance Restarts</label><input type="checkbox" id="$BASE_ID$-instance-restarts-enabled" name="$BASE_ID$-instance-restarts-enabled"/><br clear="all"/>
+                            </div>
+                            <div title="When on, the ZooKeeper log cleanup task is active">
+                                <label for="$BASE_ID$-cleanup-enabled">Log Cleanup Task</label><input type="checkbox" id="$BASE_ID$-cleanup-enabled" name="$BASE_ID$-cleanup-enabled"/><br clear="all"/>
+                            </div>
+                            <div title="When on, the ZooKeeper instance will get restarted even if it is not in the config list of servers">
+                                <label for="$BASE_ID$-unlisted-restarts">Restarts When Unlisted</label><input type="checkbox" id="$BASE_ID$-unlisted-restarts" name="unlisted-restarts"/><br clear="all"/>
+                            </div>
+                            <div title="When on, the ZooKeeper log backup task is active" id="$BASE_ID$-backups-enabled-control" class="ui-helper-hidden">
+                                <label for="$BASE_ID$-backups-enabled">Backup Logs Task</label><input type="checkbox" id="$BASE_ID$-backups-enabled" name="backups-enabled"/><br clear="all"/>
+                            </div>
                         </div>
 
-                        <div class="cp-server-column-wrapper">
-                            <div class="cp-server-column">
-                                <div title="When on, ZooKeeper instance is automatically restarted when there is an error, config change, etc.">
-                                    <label for="$BASE_ID$-instance-restarts-enabled">Automatic Instance Restarts</label><input type="checkbox" id="$BASE_ID$-instance-restarts-enabled" name="$BASE_ID$-instance-restarts-enabled"/><br clear="all"/>
-                                </div>
-                                <div title="When on, the ZooKeeper log cleanup task is active">
-                                    <label for="$BASE_ID$-cleanup-enabled">Log Cleanup Task</label><input type="checkbox" id="$BASE_ID$-cleanup-enabled" name="$BASE_ID$-cleanup-enabled"/><br clear="all"/>
-                                </div>
-                                <div title="When on, the ZooKeeper instance will get restarted even if it is not in the config list of servers">
-                                    <label for="$BASE_ID$-unlisted-restarts">Restarts When Unlisted</label><input type="checkbox" id="$BASE_ID$-unlisted-restarts" name="unlisted-restarts"/><br clear="all"/>
-                                </div>
-                                <div title="When on, the ZooKeeper log backup task is active" id="$BASE_ID$-backups-enabled-control" class="ui-helper-hidden">
-                                    <label for="$BASE_ID$-backups-enabled">Backup Logs Task</label><input type="checkbox" id="$BASE_ID$-backups-enabled" name="backups-enabled"/><br clear="all"/>
-                                </div>
-                            </div>
-
-                            <div class="cp-server-column">
-                                <button id="$BASE_ID$-power-button">Restart...</button>
-                                <button id="$BASE_ID$-4ltr-button">4LTR...</button>
-                                <button id="$BASE_ID$-log-button">Log...</button>
-                            </div>
-                        </div><br clear="all"/>
-                    </div>
+                        <div class="cp-server-column">
+                            <button id="$BASE_ID$-power-button">Restart...</button>
+                            <button id="$BASE_ID$-4ltr-button">4LTR...</button>
+                            <button id="$BASE_ID$-log-button">Log...</button>
+                        </div>
+                    </div><br clear="all"/>
                 </div>
             </div>
 

@@ -1,8 +1,8 @@
 package com.netflix.exhibitor.core.controlpanel;
 
+import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
-import com.netflix.exhibitor.core.temp.CacheBuilder;
-import com.netflix.exhibitor.core.temp.LoadingCache;
+import com.google.common.cache.LoadingCache;
 import java.util.prefs.Preferences;
 
 public class ControlPanelValues
