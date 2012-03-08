@@ -4,7 +4,7 @@
     <groupId>com.netflix.exhibitor</groupId>
     <artifactId>exhibitor</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0-beta3-SNAPSHOT</version>
+    <version>1.0-beta7-SNAPSHOT</version>
 
     <modules>
         <module>exhibitor-core</module>

@@ -102,7 +102,6 @@ function updateState()
             }
         });
 }
-updateState();
 
 var configExtraTab = new Array();
 
@@ -516,7 +515,7 @@ $(function ()
         autoOpen: false,
         title: "4LTR",
         width: 600,
-        minHeight: 400
+        height: 400
     });
     $("#word-4ltr-button").button();
 
@@ -530,5 +529,6 @@ $(function ()
 
     $.get('able-backups/true');
     initRestoreUI();
+    updateState();
     window.setInterval("refreshCurrentTab()", AUTO_REFRESH_PERIOD);
 });

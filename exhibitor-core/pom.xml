@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.netflix.exhibitor</groupId>
         <artifactId>exhibitor</artifactId>
-        <version>1.0.0-beta3-SNAPSHOT</version>
+        <version>1.0-beta7-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -39,7 +39,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>10.0.1</version>
+            <version>11.0.1</version>
         </dependency>
 
         <dependency>
@@ -75,7 +75,7 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk</artifactId>
-            <version>1.2.6</version>
+            <version>1.3.2</version>
             <scope>provided</scope>
         </dependency>
 

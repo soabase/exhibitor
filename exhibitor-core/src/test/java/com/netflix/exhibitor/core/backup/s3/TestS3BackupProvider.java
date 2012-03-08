@@ -2,6 +2,7 @@ package com.netflix.exhibitor.core.backup.s3;
 
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
@@ -59,7 +60,7 @@ public class TestS3BackupProvider
         S3Object            object = new S3Object();
         object.setBucketName("foo");
         object.setKey("test");
-        object.setObjectContent(new ByteArrayInputStream(uploadedBytes));
+        object.setObjectContent(new S3ObjectInputStream(new ByteArrayInputStream(uploadedBytes), null));
 
         File                tempFile = File.createTempFile("test", ".test");
         try

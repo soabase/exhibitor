@@ -1,8 +1,8 @@
 package com.netflix.exhibitor.core.index;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.io.Closeables;
-import com.netflix.exhibitor.core.temp.CacheBuilder;
-import com.netflix.exhibitor.core.temp.LoadingCache;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.document.NumericField;
@@ -28,7 +28,7 @@ public class LogSearch implements Closeable
     private final IndexReader reader;
     private final IndexSearcher searcher;
     private final File file;
-    private final LoadingCache<String, TopDocs> cache = CacheBuilder.newBuilder()
+    private final Cache<String, TopDocs> cache = CacheBuilder.newBuilder()
         .expireAfterAccess(5, TimeUnit.MINUTES) // does this need to be configurable?
         .build();
 

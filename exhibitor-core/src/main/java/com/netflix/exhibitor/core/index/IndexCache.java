@@ -1,11 +1,11 @@
 package com.netflix.exhibitor.core.index;
 
 import com.google.common.base.Preconditions;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Maps;
 import com.netflix.exhibitor.core.activity.ActivityLog;
-import com.netflix.exhibitor.core.temp.CacheBuilder;
-import com.netflix.exhibitor.core.temp.LoadingCache;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
