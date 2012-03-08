@@ -165,7 +165,7 @@ function makeRemoteCall(baseUrl, hostname, callback)
         {
             if ( callback )
             {
-                callback(data.response);
+                callback(eval(data.response));
             }
         }
         else

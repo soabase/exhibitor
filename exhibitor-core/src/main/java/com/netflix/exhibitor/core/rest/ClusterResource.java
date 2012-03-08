@@ -20,12 +20,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.ContextResolver;
 import java.net.URI;
-import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
@@ -119,7 +117,7 @@ public class ClusterResource
 
     @Path("4ltr/{word}/{hostname}")
     @GET
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
     public String remoteGetFourLetterWord(@Context UriInfo uriInfo, @PathParam("hostname") String hostname, @PathParam("word") final String word) throws Exception
     {
         return makeRemoteRequest
@@ -140,7 +138,7 @@ public class ClusterResource
 
     @Path("log/{hostname}")
     @GET
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
     public String remoteGetLog(@Context UriInfo uriInfo, @PathParam("hostname") String hostname) throws Exception
     {
         return makeRemoteRequest
@@ -161,15 +159,17 @@ public class ClusterResource
 
     @Path("log")
     @GET
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
     public String getLog() throws Exception
     {
-        return UIResource.getLog(context);
+        String          log = UIResource.getLog(context);
+        ObjectMapper    mapper = new ObjectMapper();
+        return mapper.writeValueAsString(log);
     }
 
     @Path("4ltr/{word}")
     @GET
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
     public String getFourLetterWord(@PathParam("word") String word) throws Exception
     {
         InstanceConfig config = context.getExhibitor().getConfigManager().getConfig();
@@ -184,7 +184,9 @@ public class ClusterResource
         {
             return "* unknown *";
         }
-        return value;
+
+        ObjectMapper    mapper = new ObjectMapper();
+        return mapper.writeValueAsString(value);
     }
 
     @Path("restart")
@@ -274,7 +276,6 @@ public class ClusterResource
                 }
                 String      remotePath = thisPath.substring(0, thisPath.length() - hostname.length());
                 UriBuilder  builder = uriInfo.getRequestUriBuilder();
-                List<PathSegment> segments = uriInfo.getPathSegments();
                 URI         remoteUri = builder.replacePath(remotePath).host(hostname).build();
 
                 WebResource         resource = webResources.get(remoteUri);
