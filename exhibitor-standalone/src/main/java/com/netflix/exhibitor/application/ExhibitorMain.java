@@ -170,7 +170,7 @@ public class ExhibitorMain implements Closeable
         DefaultResourceConfig   application = JerseySupport.newApplicationConfig(new UIContext(exhibitor));
         ServletContainer        container = new ServletContainer(application);
         server = new Server(httpPort);
-        Context root = new Context(server, "/REST", Context.SESSIONS);
+        Context root = new Context(server, "/", Context.SESSIONS);
         root.addServlet(new ServletHolder(container), "/*");
     }
 
