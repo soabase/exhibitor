@@ -267,7 +267,7 @@ public class ClusterResource
         {
             try
             {
-                String      thisPath = uriInfo.getPath();
+                String      thisPath = uriInfo.getRequestUri().getRawPath();
                 if ( !thisPath.endsWith(hostname) )
                 {
                     throw new IllegalStateException("Unknown path format: " + thisPath);
