@@ -39,7 +39,7 @@ public class MonitorRunningInstance implements Closeable
             }
         };
 
-        repeatingActivity = new RepeatingActivity(null, exhibitor.getActivityQueue(), QueueGroups.MAIN, activity, exhibitor.getConfigManager().getConfig().getInt(IntConfigs.CHECK_MS));
+        repeatingActivity = new RepeatingActivity(exhibitor.getLog(), exhibitor.getActivityQueue(), QueueGroups.MAIN, activity, exhibitor.getConfigManager().getConfig().getInt(IntConfigs.CHECK_MS));
     }
 
     public void start()

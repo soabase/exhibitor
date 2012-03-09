@@ -1,5 +1,9 @@
 package com.netflix.exhibitor.core.config;
 
+import com.google.common.collect.Maps;
+import com.netflix.exhibitor.core.backup.BackupConfigSpec;
+import com.netflix.exhibitor.core.backup.BackupProvider;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -21,8 +25,15 @@ public class DefaultProperties
         return 0;
     }
 
-    public static Properties get()
+    public static Properties get(final BackupProvider provider)
     {
+        Map<String, String>             backupDefaultValues = Maps.newHashMap();
+        for ( BackupConfigSpec spec : provider.getConfigs() )
+        {
+           backupDefaultValues.put(spec.getKey(), spec.getDefaultValue());
+        }
+        final String                    backupExtraValue = new EncodedConfigParser(backupDefaultValues).toEncoded();
+
         InstanceConfig                  source = new InstanceConfig()
         {
             @Override
@@ -33,6 +44,11 @@ public class DefaultProperties
                     case ZOO_CFG_EXTRA:
                     {
                         return "syncLimit=5&tickTime=2000&initLimit=10";
+                    }
+
+                    case BACKUP_EXTRA:
+                    {
+                        return backupExtraValue;
                     }
                 }
                 return "";

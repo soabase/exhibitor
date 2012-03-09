@@ -60,7 +60,7 @@ public class BackupManager implements Closeable
                 return true;
             }
         };
-        repeatingActivity = new RepeatingActivity(null, exhibitor.getActivityQueue(), QueueGroups.IO, activity, config.getInt(IntConfigs.BACKUP_PERIOD_MS));
+        repeatingActivity = new RepeatingActivity(exhibitor.getLog(), exhibitor.getActivityQueue(), QueueGroups.IO, activity, config.getInt(IntConfigs.BACKUP_PERIOD_MS));
     }
 
     /**
@@ -72,16 +72,16 @@ public class BackupManager implements Closeable
         {
             repeatingActivity.start();
             exhibitor.getConfigManager().addConfigListener
-                (
-                    new ConfigListener()
+            (
+                new ConfigListener()
+                {
+                    @Override
+                    public void configUpdated()
                     {
-                        @Override
-                        public void configUpdated()
-                        {
-                            repeatingActivity.setTimePeriodMs(exhibitor.getConfigManager().getConfig().getInt(IntConfigs.BACKUP_PERIOD_MS));
-                        }
+                        repeatingActivity.setTimePeriodMs(exhibitor.getConfigManager().getConfig().getInt(IntConfigs.BACKUP_PERIOD_MS));
                     }
-                );
+                }
+            );
         }
     }
 

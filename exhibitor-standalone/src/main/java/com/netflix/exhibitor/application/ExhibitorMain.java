@@ -124,7 +124,7 @@ public class ExhibitorMain implements Closeable
         else
         {
             File        propertiesFile = commandLine.hasOption(FILESYSTEMCONFIG) ? new File(commandLine.getOptionValue(FILESYSTEMCONFIG)) : new File("exhibitor.properties");
-            provider = new FileSystemConfigProvider(propertiesFile, DefaultProperties.get());
+            provider = new FileSystemConfigProvider(propertiesFile, DefaultProperties.get(backupProvider));
         }
         
         int         timeoutMs = Integer.parseInt(commandLine.getOptionValue(TIMEOUT, "30000"));

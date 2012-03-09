@@ -1,6 +1,7 @@
 package com.netflix.exhibitor.core.activity;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.Closeable;
@@ -19,7 +20,7 @@ public class ActivityQueue implements Closeable
 {
     private static final Logger log = LoggerFactory.getLogger(ActivityQueue.class);
 
-    private final ExecutorService               service = Executors.newCachedThreadPool();
+    private final ExecutorService               service = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("ActivityQueue-%d").build());
     private final Map<QueueGroups, DelayQueue<ActivityHolder>> queues;
 
     private static class ActivityHolder implements Delayed

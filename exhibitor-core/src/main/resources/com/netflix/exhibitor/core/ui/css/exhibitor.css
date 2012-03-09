@@ -321,28 +321,26 @@ fieldset
     margin-bottom: 25px;
 }
 
-.cp-server-id
-{
-    float: left;
-    width: 125px;
-}
-
-.cp-hostname, .cp-server-status-message
-{
-    float: left;
-    width: 350px;
-    overflow: hidden;
-}
-
 .cp-servers-heading
 {
     padding: 3px;
     margin-bottom: 16px;
 }
 
-.cp-status
+.cp-status-container
 {
     float: left;
+    width: 2em;
+    padding-top: 1em;
+}
+
+.cp-status-message-container
+{
+    float: left;
+}
+
+.cp-status
+{
     border: 1px solid black;
     margin-right: 10px;
     width: 1em;

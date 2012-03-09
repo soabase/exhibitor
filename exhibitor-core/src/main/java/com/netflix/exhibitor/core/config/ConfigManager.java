@@ -36,7 +36,7 @@ public class ConfigManager implements Closeable
                 return true;
             }
         };
-        repeatingActivity = new RepeatingActivity(null, exhibitor.getActivityQueue(), QueueGroups.MAIN, activity, checkMs);
+        repeatingActivity = new RepeatingActivity(exhibitor.getLog(), exhibitor.getActivityQueue(), QueueGroups.MAIN, activity, checkMs);
 
         config.set(provider.loadConfig());
     }
