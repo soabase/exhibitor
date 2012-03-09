@@ -45,7 +45,7 @@ import java.util.List;
 /**
  * REST calls for dealing with indexed (via Lucene) log files
  */
-@Path("exhibitor/v1/ui/index")
+@Path("exhibitor/v1/index")
 public class IndexResource
 {
     private final UIContext context;

@@ -129,7 +129,7 @@ function stopStartDialog(hostname)
 {
     return function() {
         okCancelDialog(hostname, "Are you sure you want to restart this server?", function(){
-            makeRemoteCall("cluster/restart/", hostname);
+            makeRemoteCall(URL_CLUSTER_RESTART_BASE, hostname);
         });
     };
 }
@@ -137,7 +137,7 @@ function stopStartDialog(hostname)
 function logDialog(hostname)
 {
     return function() {
-        makeRemoteCall("cluster/log/", hostname, function(text){
+        makeRemoteCall(URL_CLUSTER_LOG_BASE, hostname, function(text){
             $('#log-text').text(text);
             $('#log-dialog').dialog("option", "title", hostname);
             $('#log-dialog').dialog("open");
@@ -149,7 +149,7 @@ function word4ltrDialog(hostname)
 {
     return function() {
         $('#word-4ltr-button').click(function(){
-            makeRemoteCall("cluster/4ltr/" + $('#word-4ltr').val() + "/", hostname, function(text){
+            makeRemoteCall(URL_CLUSTER_4LTR_BASE + $('#word-4ltr').val() + "/", hostname, function(text){
                 $('#word-4ltr-text').text(text)
             })
         });
@@ -175,10 +175,10 @@ function makeRemoteCall(baseUrl, hostname, callback)
     });
 }
 
-function handleSwitch(index, hostname, type)
+function handleSwitch(hostname, type)
 {
     return function(isChecked) {
-        makeRemoteCall('cluster/set/' + type + "/" + isChecked + "/", hostname);
+        makeRemoteCall(URL_CLUSTER_SET_CONFIG_BASE + type + "/" + isChecked + "/", hostname);
     };
 }
 
@@ -198,10 +198,10 @@ function updateOneServerState(index, data, hostname)
 
         $(domId + '-power-button').button("option", "label", data.response.switches.restarts ? "Restart..." : "Stop...");
 
-        ableLightSwitch(domId + '-instance-restarts-enabled', handleSwitch(index, hostname, "restarts"));
-        ableLightSwitch(domId + '-cleanup-enabled', handleSwitch(index, hostname, "cleanup"));
-        ableLightSwitch(domId + '-unlisted-restarts', handleSwitch(index, hostname, "unlistedRestarts"));
-        ableLightSwitch(domId + '-backups-enabled', handleSwitch(index, hostname, "backups"));
+        ableLightSwitch(domId + '-instance-restarts-enabled', handleSwitch(hostname, "restarts"));
+        ableLightSwitch(domId + '-cleanup-enabled', handleSwitch(hostname, "cleanup"));
+        ableLightSwitch(domId + '-unlisted-restarts', handleSwitch(hostname, "unlistedRestarts"));
+        ableLightSwitch(domId + '-backups-enabled', handleSwitch(hostname, "backups"));
 
         checkLightSwitch(domId + '-instance-restarts-enabled', data.response.switches.restarts);
         checkLightSwitch(domId + '-cleanup-enabled', data.response.switches.cleanup);
@@ -276,6 +276,6 @@ function updateServerState(serversList)
                 }
             };
         };
-        $.getJSON('cluster/state/' + thisHostname, callback(i, thisHostname));
+        $.getJSON(URL_CLUSTER_GET_STATE_BASE + thisHostname, callback(i, thisHostname));
     }
 }

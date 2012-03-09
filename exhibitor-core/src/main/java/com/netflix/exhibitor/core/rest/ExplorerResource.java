@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * REST calls for the Explorer Tab (which uses the Dynatree JQuery plugin
  */
-@Path("exhibitor/v1/ui/explorer")
+@Path("exhibitor/v1/explorer")
 public class ExplorerResource
 {
     private final UIContext context;

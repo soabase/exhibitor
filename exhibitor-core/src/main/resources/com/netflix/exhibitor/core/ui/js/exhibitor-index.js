@@ -7,7 +7,7 @@ var ACTION_NAMES = [
 
 function loadBackups()
 {
-    $.getJSON('index/get-backups', function(data){
+    $.getJSON(URL_GET_BACKUPS, function(data){
         var names = $.makeArray(data);
         if ( names.length == 0 )
         {
@@ -57,7 +57,7 @@ function initRestoreUI()
                 var radio = $('input:radio:checked[name="restore-item-radio"]');
                 $.ajax({
                     type: 'DELETE',
-                    url: 'index/' + radio.val()
+                    url: URL_DELETE_INDEX_BASE + radio.val()
                 });
                 messageDialog('Index', 'Index is marked for deletion. Check the log for details.');
             });
@@ -177,10 +177,10 @@ function initRestoreUI()
         title: 'New Index',
         minWidth: 450,
         open: function(){
-            $.get('able-backups/false');
+            $.get(URL_DISABLE_BACKUPS);
         },
         beforeClose: function(){
-            $.get('able-backups/true');
+            $.get(URL_ENABLE_BACKUPS);
         }
     });
     $('#new-index-dialog').dialog("option", "buttons",
@@ -212,7 +212,7 @@ function initRestoreUI()
                 var payload = JSON.stringify(newIndexRequest);
                 $.ajax({
                     type: 'POST',
-                    url: 'index/new-index',
+                    url: URL_NEW_INDEX,
                     data: payload,
                     contentType: 'application/json'
                 });
@@ -239,7 +239,7 @@ function initRestoreUI()
 function submitRestore()
 {
     var indexName = $('#index-query-dialog').attr("indexName");
-    $.getJSON('index/restore/' + indexName + "/" + selectedIndexData.docId, function(data){
+    $.getJSON(URL_RESTORE_INDEX_BASE + indexName + "/" + selectedIndexData.docId, function(data){
         messageDialog('Restore', 'Restore request sent. Check the log for details.');
     });
 }
@@ -257,7 +257,7 @@ var currentRestoreItemsContent = null;
 var currentRestoreItemsDataTable = null;
 function updateRestoreItems(selectedRadio)
 {
-    $.getJSON('index/indexed-logs', function(data){
+    $.getJSON(URL_GET_INDEXES, function(data){
         var itemsTab = data ? $.makeArray(data) : new Array();
 
         var needsCheck = true;
@@ -343,7 +343,7 @@ function viewIndex(indexName, indexHandle, isFromFilter)
     applySelectedValue(emptyData);
     var selectedRowId = -1;
     $('#index-query-results-table').dataTable({
-        sAjaxSource: "index/dataTable/" + indexName + "/" + indexHandle,
+        sAjaxSource: URL_INDEX_DATA_BASE + indexName + "/" + indexHandle,
         bDestroy: true,
         bProcessing: true,
         bServerSide: true,
@@ -375,7 +375,7 @@ function viewIndex(indexName, indexHandle, isFromFilter)
             $(this).addClass('row_selected');
 
             var docId = selectedRowId.split('-').pop();
-            $.getJSON('index/get/' + indexName + "/" + docId, applySelectedValue);
+            $.getJSON(URL_GET_INDEX_BASE + indexName + "/" + docId, applySelectedValue);
             $('#index-query-clear-restore-button').button("option", "disabled", false);
         }
     });
@@ -384,7 +384,7 @@ function viewIndex(indexName, indexHandle, isFromFilter)
     $('#index-query-clear-restore-button').button("option", "disabled", true);
 
     $('#index-query-results-dialog').bind('dialogclose', function(event, ui) {
-        $.get('index/release-cache/' + indexName + '/' + indexHandle);
+        $.get(URL_RELEASE_CACHE_INDEX_SEARCH_BASE + indexName + '/' + indexHandle);
     });
 
     $('#index-query-results-dialog').dialog("option", "title", 'Results for ' + indexName);
@@ -411,7 +411,7 @@ function filterIndex(indexName, searchRequest, isFromFilter)
     var payload = JSON.stringify(searchRequest);
     $.ajax({
         type: 'POST',
-        url: 'index/cache-search',
+        url: URL_CACHE_INDEX_SEARCH,
         data: payload,
         contentType: 'application/json',
         success: function(data){

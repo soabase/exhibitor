@@ -2,6 +2,33 @@ var BUILTIN_TAB_QTY = 4;
 var AUTO_REFRESH_PERIOD = 5000;
 var UPDATE_STATE_PERIOD = 10000;
 
+var URL_GET_BACKUPS = "../index/get-backups";
+var URL_NEW_INDEX = "../index/new-index";
+var URL_DELETE_INDEX_BASE = "../index/";
+var URL_RESTORE_INDEX_BASE = "../index/restore/";
+var URL_INDEX_DATA_BASE = "../index/dataTable/";
+var URL_GET_INDEX_BASE = "../index/get/";
+var URL_GET_INDEXES = "../index/indexed-logs";
+var URL_CACHE_INDEX_SEARCH = "../index/cache-search";
+var URL_RELEASE_CACHE_INDEX_SEARCH_BASE = "../index/release-cache/";
+
+var URL_CLUSTER_LOG_BASE = "../cluster/log/";
+var URL_CLUSTER_RESTART_BASE = "../cluster/restart/";
+var URL_CLUSTER_4LTR_BASE = "../cluster/4ltr/";
+var URL_CLUSTER_SET_CONFIG_BASE = "../cluster/set/";
+var URL_CLUSTER_GET_STATE_BASE = "../cluster/state/";
+
+var URL_EXPLORER_NODE_DATA = "../explorer/node-data";
+var URL_EXPLORER_NODE = "../explorer/node";
+
+var URL_DISABLE_BACKUPS = "able-backups/false";
+var URL_ENABLE_BACKUPS = "able-backups/true";
+var URL_GET_BACKUP_CONFIG = "backup-config";
+var URL_GET_STATE = "state";
+var URL_SET_CONFIG = "set/config";
+var URL_GET_TABS = "tabs";
+var URL_RESTART = "stop";
+
 var doConfigUpdates = true;
 
 function messageDialog(title, message)
@@ -48,59 +75,57 @@ function updateState()
 {
     if ( !hasBackupConfig )
     {
-        $.getJSON('backup-config', function(data){
+        $.getJSON(URL_GET_BACKUP_CONFIG, function(data){
             hasBackupConfig = true;
             addBackupExtraConfig(data);
         });
         return;
     }
 
-    $.getJSON('state',
-        function (data)
+    $.getJSON(URL_GET_STATE, function (data){
+        systemState = data;
+        if ( doConfigUpdates ) {
+            systemConfig = systemState.config;
+        }
+
+        if ( !connectedToExhibitor )
         {
-            systemState = data;
-            if ( doConfigUpdates ) {
-                systemConfig = systemState.config;
-            }
+            connectedToExhibitor = true;
+            messageDialog("", "Connection with the " + $('#app-name').html() + " server re-established.");
+        }
 
-            if ( !connectedToExhibitor )
-            {
-                connectedToExhibitor = true;
-                messageDialog("", "Connection with the " + $('#app-name').html() + " server re-established.");
-            }
-
-            if ( systemState.backupActive )
-            {
-                $('#config-backups-fieldset').show();
-                $('#backups-enabled-control').show();
-            }
-            else
-            {
-                $('#config-backups-fieldset').hide();
-                $('#backups-enabled-control').hide();
-            }
-
-            $('#exhibitor-valence').hide();
-            $('#version').html(systemState.version);
-            $('#not-connected-alert').hide();
-            $('#instance-hostname').html(systemConfig.hostname);
-            $('#instance-id').html((
-                systemConfig.serverId > 0
-                ) ? systemConfig.serverId : "n/a");
-
-            updateConfig();
-            buildServerItems();
-        }).error(function ()
+        if ( systemState.backupActive )
         {
-            if ( connectedToExhibitor )
-            {
-                $('#exhibitor-valence').height($(document).height());
-                $('#exhibitor-valence').show();
-                $('#not-connected-alert').show();
-                connectedToExhibitor = false;
-                messageDialog("Error", "The browser lost connection with the " + $('#app-name').html() + " server.");
-            }
-        });
+            $('#config-backups-fieldset').show();
+            $('#backups-enabled-control').show();
+        }
+        else
+        {
+            $('#config-backups-fieldset').hide();
+            $('#backups-enabled-control').hide();
+        }
+
+        $('#exhibitor-valence').hide();
+        $('#version').html(systemState.version);
+        $('#not-connected-alert').hide();
+        $('#instance-hostname').html(systemConfig.hostname);
+        $('#instance-id').html((
+            systemConfig.serverId > 0
+            ) ? systemConfig.serverId : "n/a");
+
+        updateConfig();
+        buildServerItems();
+    }).error(function ()
+    {
+        if ( connectedToExhibitor )
+        {
+            $('#exhibitor-valence').height($(document).height());
+            $('#exhibitor-valence').show();
+            $('#not-connected-alert').show();
+            connectedToExhibitor = false;
+            messageDialog("Error", "The browser lost connection with the " + $('#app-name').html() + " server.");
+        }
+    });
 }
 
 var configExtraTab = new Array();
@@ -177,7 +202,7 @@ function submitConfigChanges()
     var payload = JSON.stringify(newConfig);
     $.ajax({
         type: 'POST',
-        url: 'set/config',
+        url: URL_SET_CONFIG,
         data: payload,
         contentType: 'application/json',
         success:function(data)
@@ -264,12 +289,11 @@ function initExplorer()
             $.ajax
                 (
                     {
-                        url:"explorer/node-data",
-                        data:{"key":node.data.key},
-                        cache:false,
-                        dataType:'json',
-                        success:function (data)
-                        {
+                        url: URL_EXPLORER_NODE_DATA,
+                        data: {"key":node.data.key},
+                        cache: false,
+                        dataType: 'json',
+                        success:function (data){
                             $("#path").text(node.data.key);
                             $("#stat").text(data.stat);
                             $("#data-bytes").text(data.bytes);
@@ -290,7 +314,7 @@ function initExplorer()
             node.appendAjax
                 (
                     {
-                        url:"explorer/node",
+                        url: URL_EXPLORER_NODE,
                         data:{"key":node.data.key},
                         cache:false
                     }
@@ -301,8 +325,7 @@ function initExplorer()
         {
             if ( node.getEventTargetType(event) == "expander" )
             {
-                node.reloadChildren(function (node, isOk)
-                {
+                node.reloadChildren(function (node, isOk){
                 });
             }
             return true;
@@ -394,8 +417,7 @@ function makeLightSwitch(selector, func, disable)
 var customTabs = new Array();
 $(function ()
 {
-    $.getJSON('tabs', function (data)
-    {
+    $.getJSON(URL_GET_TABS, function (data){
         var uiTabSpec = $.makeArray(data);
         for ( var i = 0; i < uiTabSpec.length; ++i )
         {
@@ -431,7 +453,7 @@ $(function ()
         {
             okCancelDialog("Restart ZooKeeper", "Are you sure you want to restart ZooKeeper?", function ()
             {
-                $.get("stop");
+                $.get(URL_RESTART);
                 messageDialog("Restart ZooKeeper", "Stop request sent. Check the log for details.");
             });
             return false;
@@ -527,7 +549,7 @@ $(function ()
         height: 400
     });
 
-    $.get('able-backups/true');
+    $.get(URL_ENABLE_BACKUPS);
     initRestoreUI();
     updateState();
     window.setInterval("refreshCurrentTab()", AUTO_REFRESH_PERIOD);

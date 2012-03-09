@@ -30,7 +30,7 @@ import java.util.concurrent.Callable;
  * REST calls for dealing with indexed (via Lucene) log files
  */
 @SuppressWarnings("UnusedDeclaration")
-@Path("exhibitor/v1/ui/cluster")
+@Path("exhibitor/v1/cluster")
 public class ClusterResource
 {
     private final UIContext context;
