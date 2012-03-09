@@ -46,9 +46,12 @@ public class DefaultProperties
     public static Properties get(final BackupProvider provider)
     {
         Map<String, String>             backupDefaultValues = Maps.newHashMap();
-        for ( BackupConfigSpec spec : provider.getConfigs() )
+        if ( provider != null )
         {
-           backupDefaultValues.put(spec.getKey(), spec.getDefaultValue());
+            for ( BackupConfigSpec spec : provider.getConfigs() )
+            {
+               backupDefaultValues.put(spec.getKey(), spec.getDefaultValue());
+            }
         }
         final String                    backupExtraValue = new EncodedConfigParser(backupDefaultValues).toEncoded();
 
