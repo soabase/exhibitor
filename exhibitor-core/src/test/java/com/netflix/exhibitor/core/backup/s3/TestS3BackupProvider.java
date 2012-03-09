@@ -88,13 +88,13 @@ public class TestS3BackupProvider
             {
                 List<S3ObjectSummary>       list = Lists.newArrayList();
                 S3ObjectSummary             summary = new S3ObjectSummary();
-                summary.setKey("one" + S3BackupProvider.SEPARATOR + "1234");
+                summary.setKey("exhibitor-backup" + S3BackupProvider.SEPARATOR + "one" + S3BackupProvider.SEPARATOR + "1234");
                 list.add(summary);
                 summary = new S3ObjectSummary();
-                summary.setKey("two" + S3BackupProvider.SEPARATOR + "1234");
+                summary.setKey("exhibitor-backup" + S3BackupProvider.SEPARATOR + "two" + S3BackupProvider.SEPARATOR + "1234");
                 list.add(summary);
                 summary = new S3ObjectSummary();
-                summary.setKey("three" + S3BackupProvider.SEPARATOR + "1234");
+                summary.setKey("exhibitor-backup" + S3BackupProvider.SEPARATOR + "three" + S3BackupProvider.SEPARATOR + "1234");
                 list.add(summary);
                 return list;
             }

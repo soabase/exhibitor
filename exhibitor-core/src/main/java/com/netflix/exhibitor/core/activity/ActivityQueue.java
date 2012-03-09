@@ -115,7 +115,7 @@ public class ActivityQueue implements Closeable
                                 }
                                 catch ( Throwable e )
                                 {
-                                    log.error("Unhandled exception in background task", e);
+                                     log.error("Unhandled exception in background task", e);
                                 }
                             }
                         }
