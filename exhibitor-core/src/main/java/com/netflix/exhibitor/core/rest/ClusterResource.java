@@ -23,14 +23,19 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.netflix.exhibitor.core.activity.QueueGroups;
 import com.netflix.exhibitor.core.config.InstanceConfig;
+import com.netflix.exhibitor.core.config.IntConfigs;
+import com.netflix.exhibitor.core.config.StringConfigs;
 import com.netflix.exhibitor.core.controlpanel.ControlPanelTypes;
 import com.netflix.exhibitor.core.entities.Result;
 import com.netflix.exhibitor.core.state.FourLetterWord;
 import com.netflix.exhibitor.core.state.InstanceStateTypes;
 import com.netflix.exhibitor.core.state.KillRunningInstance;
+import com.netflix.exhibitor.core.state.ServerList;
+import com.netflix.exhibitor.core.state.ServerSpec;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.ObjectNode;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -42,6 +47,7 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.ContextResolver;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.util.concurrent.Callable;
 
 /**
@@ -267,6 +273,51 @@ public class ClusterResource
         mainNode.put("description", state.getDescription());
 
         return mapper.writer().writeValueAsString(mainNode);
+    }
+
+    @Path("list")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public String   getClusterAsJson() throws Exception
+    {
+        InstanceConfig      config = context.getExhibitor().getConfigManager().getConfig();
+
+        ObjectMapper        mapper = new ObjectMapper();
+        ObjectNode          node = mapper.getNodeFactory().objectNode();
+
+        ArrayNode serversNode = mapper.getNodeFactory().arrayNode();
+        ServerList          serverList = new ServerList(config.getString(StringConfigs.SERVERS_SPEC));
+        for ( ServerSpec spec : serverList.getSpecs() )
+        {
+            serversNode.add(spec.getHostname());
+        }
+        node.put("servers", serversNode);
+        node.put("port", config.getInt(IntConfigs.CLIENT_PORT));
+
+        return mapper.writer().writeValueAsString(node);
+    }
+
+    @Path("list")
+    @GET
+    @Produces(MediaType.APPLICATION_FORM_URLENCODED)
+    public String   getClusterAsExhibitor() throws Exception
+    {
+        InstanceConfig      config = context.getExhibitor().getConfigManager().getConfig();
+
+        StringBuilder       response = new StringBuilder();
+
+        ServerList          serverList = new ServerList(config.getString(StringConfigs.SERVERS_SPEC));
+        response.append("count=").append(serverList.getSpecs().size());
+
+        int                 index = 0;
+        for ( ServerSpec spec : serverList.getSpecs() )
+        {
+            response.append("&server").append(index++).append("=").append(URLEncoder.encode(spec.getHostname(), "UTF-8"));
+        }
+
+        response.append("&port=").append(config.getInt(IntConfigs.CLIENT_PORT));
+
+        return response.toString();
     }
 
     private String    makeRemoteRequest(UriInfo uriInfo, String hostname, Callable<String> proc) throws Exception
