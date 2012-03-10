@@ -385,3 +385,19 @@ fieldset
 {
     height: 95%;
 }
+
+.caution-fieldset
+{
+    border-color: #8b0000;
+}
+
+.caution-legend
+{
+    color: #8b0000;
+    font-weight: bold;
+}
+
+#config-warning
+{
+    float: right;
+}

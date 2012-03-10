@@ -72,7 +72,7 @@ public class ConfigManager implements Closeable
 
     public InstanceConfig getConfig()
     {
-        return config.get().getConfig();
+        return config.get().getConfig().getConfigForThisInstance("");
     }
     
     /**

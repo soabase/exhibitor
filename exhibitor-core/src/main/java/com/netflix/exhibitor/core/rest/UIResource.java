@@ -199,7 +199,7 @@ public class UIResource
 
         String                      response = new FourLetterWord(FourLetterWord.Word.RUOK, config, context.getExhibitor().getConnectionTimeOutMs()).getResponse();
         ServerList                  serverList = new ServerList(config.getString(StringConfigs.SERVERS_SPEC));
-        ServerSpec us = Iterables.find(serverList.getSpecs(), ServerList.isUs(context.getExhibitor().getThisJVMHostname()), null);
+        ServerSpec                  us = Iterables.find(serverList.getSpecs(), ServerList.isUs(context.getExhibitor().getThisJVMHostname()), null);
 
         ObjectMapper                mapper = new ObjectMapper();
         ObjectNode                  mainNode = mapper.getNodeFactory().objectNode();
@@ -243,6 +243,14 @@ public class UIResource
         mainNode.put("config", configNode);
 
         return mapper.writer().writeValueAsString(mainNode);
+    }
+
+    @Path("set/config-rolling")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response setConfigRolling(String newConfigJson) throws Exception
+    {
+        return null;
     }
 
     @Path("set/config")

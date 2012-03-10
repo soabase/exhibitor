@@ -119,37 +119,40 @@
                         </div>
                     </div>
                     <div>
-                        <button id="config-button">Save...</button>
+                        <button id="config-button">Commit...</button>
                     </div>
                     <div>
                         <button id="calculator-button">Calculator...</button>
                     </div>
                 </div>
+                <div id="config-warning">
+                    Note: sections colored in <span class="caution-legend">bold red</span> can cause server restarts when changed.
+                </div>
                 <br clear="all"/>
 
                 <div id="config-group">
-                    <fieldset>
-                        <legend>Paths</legend>
+                    <fieldset class="caution-fieldset">
+                        <legend class="caution-legend">Paths</legend>
                         <label for="config-zookeeper-install-dir">ZooKeeper Install Dir</label><input type="text" id="config-zookeeper-install-dir" name="config-zookeeper-install-dir" size="60" title="The directory where the ZooKeeper server is installed"><br clear="all"/>
                         <label for="config-zookeeper-data-dir">ZooKeeper Data Dir</label><input type="text" id="config-zookeeper-data-dir" name="config-zookeeper-data-dir" size="60" title="The directory where the ZooKeeper data is stored"><br clear="all"/>
-                        <label for="config-log-index-dir">Log Index Dir</label><input type="text" id="config-log-index-dir" name="config-log-index-dir" size="60" title="The directory where indexed ZooKeeper logs should be kept."><br clear="all"/>
                     </fieldset>
 
-                    <fieldset>
-                        <legend>Ensemble</legend>
+                    <fieldset class="caution-fieldset">
+                        <legend class="caution-legend">Ensemble</legend>
                         <label for="config-servers-spec">Servers</label><input type="text" id="config-servers-spec" name="config-servers-spec" size="80" title="List of all servers in the ensemble (including this one) in the form: id:host,id:host,..."><br clear="all"/>
                         <label for="config-custom">Additional Config</label><textarea id="config-custom" name="config-custom" size="80" title="Any additional config/properties to be added to the zoo.cfg file in the form: name=value - one per line." cols="60" rows="4"></textarea><br clear="all"/>
                     </fieldset>
 
-                    <fieldset>
-                        <legend>Ports</legend>
+                    <fieldset class="caution-fieldset">
+                        <legend class="caution-legend">Ports</legend>
                         <label for="config-client-port">Client Port</label><input type="text" id="config-client-port" class="mask-pint" name="config-client-port" size="8" title="The port that clients connect to ZooKeeper (usually 2181)"><br clear="all"/>
                         <label for="config-connect-port">Connect Port</label><input type="text" id="config-connect-port" class="mask-pint" name="config-connect-port" size="8" title="The port that other ZooKeeper instances connect to ZooKeeper (usually 2888)"><br clear="all"/>
                         <label for="config-election-port">Election Port</label><input type="text" id="config-election-port" class="mask-pint" name="config-election-port" size="8" title="The port that other ZooKeeper instances connect for election to ZooKeeper (usually 3888)"><br clear="all"/>
                     </fieldset>
 
                     <fieldset>
-                        <legend>Periods/Maximums</legend>
+                        <legend>Miscellaneous</legend>
+                        <label for="config-log-index-dir">Log Index Dir</label><input type="text" id="config-log-index-dir" name="config-log-index-dir" size="60" title="The directory where indexed ZooKeeper logs should be kept."><br clear="all"/>
                         <label for="config-check-ms">Live Check (ms)</label><input type="text" id="config-check-ms" class="mask-pint" name="config-check-ms" size="8" title="The number of milliseconds between live-ness checks on the ZooKeeper server"><br clear="all"/>
                         <label for="config-cleanup-ms">Cleanup Period (ms)</label><input type="text" id="config-cleanup-ms" class="mask-pint" name="config-cleanup-ms" size="8" title="The number of milliseconds between ZooKeeper log file cleanups"><br clear="all"/>
                         <label for="config-cleanup-max-files">Cleanup: Max Log Files</label><input type="text" id="config-cleanup-max-files" class="mask-pint" name="config-cleanup-max-files" size="2" title="The max number of ZooKeeper log files to keep when cleaning up"><br clear="all"/>
@@ -308,6 +311,17 @@
                 <option value="3600000">Hours</option>
                 <option value="86400000">Days</option>
             </select><br clear="all"/><br/>
+        </div>
+
+        <div id="config-commit-dialog" class="ui-helper-hidden">
+            <span class="ui-icon ui-icon-alert" style="float: left; margin:0 7px 5px 0;"></span>
+            <span><strong>Warning</strong></span>
+            <br clear="all">
+            <div>
+                The changes you've made require that ZooKeeper instances get reconfigured and restarted. You
+                can do this all at once (which can cause the ensemble to appear to be down for several minutes)
+                or you can do a rolling release of the config.
+            </div>
         </div>
     </body>
 </html>

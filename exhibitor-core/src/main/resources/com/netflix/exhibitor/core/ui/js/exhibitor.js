@@ -26,6 +26,7 @@ var URL_ENABLE_BACKUPS = "able-backups/true";
 var URL_GET_BACKUP_CONFIG = "backup-config";
 var URL_GET_STATE = "state";
 var URL_SET_CONFIG = "set/config";
+var URL_SET_CONFIG_ROLLING = "set/config-rolling";
 var URL_GET_TABS = "tabs";
 var URL_RESTART = "stop";
 
@@ -159,7 +160,7 @@ function addBackupExtraConfig(data)
     ableConfig(isChecked);
 }
 
-function submitConfigChanges()
+function submitConfigChanges(rolling)
 {
     var newConfig = {};
     newConfig.zookeeperInstallDirectory = $('#config-zookeeper-install-dir').val();
@@ -489,9 +490,12 @@ $(function ()
     {
         return false;
     }).click(function(){
+            $('#config-commit-dialog').dialog("open");
+/*
             okCancelDialog("Update", "Are you sure? If you've changed the Servers it can cause instance restarts.", function() {
                 submitConfigChanges();
             });
+*/
             return false;
         });
 
@@ -548,6 +552,33 @@ $(function ()
         width: 600,
         height: 400
     });
+
+    $('#config-commit-dialog').dialog({
+        width: 500,
+        modal: true,
+        autoOpen: false,
+        title: "Config Change Warning"
+    });
+    $("#config-commit-dialog").dialog("option", "buttons", {
+            'Cancel': function (){
+                $(this).dialog("close");
+            },
+
+            'All At Once...': function (){
+                okCancelDialog("All At Once", "Are you sure you want to commit all at once?", function() {
+                    $(this).dialog("close");
+                    submitConfigChanges(false);
+                });
+            },
+
+            'Rolling Release...': function (){
+                okCancelDialog("Rolling Release", "Are you sure you want to do a rolling release?", function() {
+                    $(this).dialog("close");
+                    submitConfigChanges(true);
+                });
+            }
+        }
+    );
 
     $.get(URL_ENABLE_BACKUPS);
     initRestoreUI();

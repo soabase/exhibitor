@@ -18,24 +18,17 @@
 
 package com.netflix.exhibitor.core.config;
 
-public class LoadedInstanceConfig
+import java.util.Collection;
+
+public interface ConfigCollection
 {
-    private final ConfigCollection      config;
-    private final long                  lastModified;
+    public InstanceConfig       getConfigForThisInstance(String hostname);
 
-    public LoadedInstanceConfig(ConfigCollection config, long lastModified)
-    {
-        this.config = config;
-        this.lastModified = lastModified;
-    }
+    public InstanceConfig       getRootConfig();
 
-    public ConfigCollection getConfig()
-    {
-        return config;
-    }
+    public InstanceConfig       getRollingConfig();
 
-    public long getLastModified()
-    {
-        return lastModified;
-    }
+    public boolean              isRolling();
+    
+    public Collection<String>   getRollingHostNames();
 }
