@@ -21,12 +21,13 @@ var URL_CLUSTER_GET_STATE_BASE = "../cluster/state/";
 var URL_EXPLORER_NODE_DATA = "../explorer/node-data";
 var URL_EXPLORER_NODE = "../explorer/node";
 
+var URL_GET_STATE = "../config/get-state";
+var URL_SET_CONFIG = "../config/set";
+var URL_SET_CONFIG_ROLLING = "../config/set-rolling";
+
 var URL_DISABLE_BACKUPS = "able-backups/false";
 var URL_ENABLE_BACKUPS = "able-backups/true";
 var URL_GET_BACKUP_CONFIG = "backup-config";
-var URL_GET_STATE = "state";
-var URL_SET_CONFIG = "set/config";
-var URL_SET_CONFIG_ROLLING = "set/config-rolling";
 var URL_GET_TABS = "tabs";
 var URL_RESTART = "stop";
 
@@ -552,6 +553,8 @@ $(function ()
         width: 600,
         height: 400
     });
+
+    $('#rolling-config-floater-button').button();
 
     $('#config-commit-dialog').dialog({
         width: 500,

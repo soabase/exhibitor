@@ -21,15 +21,22 @@ package com.netflix.exhibitor.core.config;
 import com.google.common.collect.ImmutableList;
 import java.util.Collection;
 
-class ConfigCollectionAdapter implements ConfigCollection
+class ConfigCollectionImpl implements ConfigCollection
 {
     private final InstanceConfig rootConfig;
     private final InstanceConfig rollingConfig;
+    private ImmutableList<String> rollingHostNames;
 
-    ConfigCollectionAdapter(InstanceConfig rootConfig, InstanceConfig rollingConfig)
+    ConfigCollectionImpl(InstanceConfig rootConfig, InstanceConfig rollingConfig)
+    {
+        this(rootConfig, rollingConfig, ImmutableList.<String>of());
+    }
+    
+    ConfigCollectionImpl(InstanceConfig rootConfig, InstanceConfig rollingConfig, Collection<String> rollingHostNames)
     {
         this.rootConfig = rootConfig;
         this.rollingConfig = rollingConfig;
+        this.rollingHostNames = ImmutableList.copyOf(rollingHostNames);
     }
 
     @Override
@@ -59,6 +66,6 @@ class ConfigCollectionAdapter implements ConfigCollection
     @Override
     public Collection<String> getRollingHostNames()
     {
-        return ImmutableList.of();  // TODO
+        return rollingHostNames;
     }
 }

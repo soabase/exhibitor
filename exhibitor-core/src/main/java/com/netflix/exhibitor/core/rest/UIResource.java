@@ -20,27 +20,17 @@ package com.netflix.exhibitor.core.rest;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.io.Resources;
-import com.netflix.exhibitor.core.config.EncodedConfigParser;
 import com.netflix.exhibitor.core.backup.BackupConfigSpec;
-import com.netflix.exhibitor.core.state.ServerList;
-import com.netflix.exhibitor.core.state.ServerSpec;
-import com.netflix.exhibitor.core.config.InstanceConfig;
-import com.netflix.exhibitor.core.config.IntConfigs;
-import com.netflix.exhibitor.core.config.StringConfigs;
+import com.netflix.exhibitor.core.config.EncodedConfigParser;
 import com.netflix.exhibitor.core.entities.Result;
 import com.netflix.exhibitor.core.entities.UITabSpec;
-import com.netflix.exhibitor.core.state.FourLetterWord;
-import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.ObjectNode;
 import javax.activation.MimetypesFileTypeMap;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -54,9 +44,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -188,179 +176,6 @@ public class UIResource
         }
 
         return mapper.writer().writeValueAsString(node);
-    }
-
-    @Path("state")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public String getSystemState() throws Exception
-    {
-        InstanceConfig              config = context.getExhibitor().getConfigManager().getConfig();
-
-        String                      response = new FourLetterWord(FourLetterWord.Word.RUOK, config, context.getExhibitor().getConnectionTimeOutMs()).getResponse();
-        ServerList                  serverList = new ServerList(config.getString(StringConfigs.SERVERS_SPEC));
-        ServerSpec                  us = Iterables.find(serverList.getSpecs(), ServerList.isUs(context.getExhibitor().getThisJVMHostname()), null);
-
-        ObjectMapper                mapper = new ObjectMapper();
-        ObjectNode                  mainNode = mapper.getNodeFactory().objectNode();
-        ObjectNode                  configNode = mapper.getNodeFactory().objectNode();
-
-        mainNode.put("version", context.getExhibitor().getVersion());
-        mainNode.put("running", "imok".equals(response));
-        mainNode.put("backupActive", context.getExhibitor().getBackupManager().isActive());
-
-        configNode.put("hostname", context.getExhibitor().getThisJVMHostname());
-        configNode.put("serverId", (us != null) ? us.getServerId() : -1);
-        for ( StringConfigs c : StringConfigs.values() )
-        {
-            configNode.put(fixName(c), config.getString(c));
-        }
-        for ( IntConfigs c : IntConfigs.values() )
-        {
-            configNode.put(fixName(c), config.getInt(c));
-        }
-
-        EncodedConfigParser     zooCfgParser = new EncodedConfigParser(config.getString(StringConfigs.ZOO_CFG_EXTRA));
-        ObjectNode              zooCfgNode = mapper.getNodeFactory().objectNode();
-        for ( Map.Entry<String, String> entry : zooCfgParser.getValues().entrySet() )
-        {
-            zooCfgNode.put(entry.getKey(), entry.getValue());
-        }
-        configNode.put("zooCfgExtra", zooCfgNode);
-
-        if ( context.getExhibitor().getBackupManager().isActive() )
-        {
-            ObjectNode          backupExtraNode = mapper.getNodeFactory().objectNode();
-            EncodedConfigParser parser = context.getExhibitor().getBackupManager().getBackupConfigParser();
-            List<BackupConfigSpec>  configs = context.getExhibitor().getBackupManager().getConfigSpecs();
-            for ( BackupConfigSpec c : configs )
-            {
-                backupExtraNode.put(c.getKey(), parser.getValues().get(c.getKey()));
-            }
-            configNode.put("backupExtra", backupExtraNode);
-        }
-
-        mainNode.put("config", configNode);
-
-        return mapper.writer().writeValueAsString(mainNode);
-    }
-
-    @Path("set/config-rolling")
-    @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response setConfigRolling(String newConfigJson) throws Exception
-    {
-        InstanceConfig  wrapped = parseToConfig(newConfigJson);
-
-        return null;
-    }
-
-    @Path("set/config")
-    @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response setConfig(String newConfigJson) throws Exception
-    {
-        // TODO - should flush caches as needed
-
-        InstanceConfig wrapped = parseToConfig(newConfigJson);
-        
-        Result  result;
-        if ( context.getExhibitor().getConfigManager().updateConfig(wrapped) )
-        {
-            result = new Result("OK", true);
-        }
-        else
-        {
-            result = new Result("Another process has updated the config.", false);
-        }
-        context.getExhibitor().resetLocalConnection();
-
-        return Response.ok(result).build();
-    }
-
-    private InstanceConfig parseToConfig(String newConfigJson) throws IOException
-    {
-        ObjectMapper mapper = new ObjectMapper();
-        final JsonNode tree = mapper.reader().readTree(newConfigJson);
-
-        String                backupExtraValue = "";
-        if ( tree.has("backupExtra") )
-        {
-            Map<String, String> values = Maps.newHashMap();
-            JsonNode                backupExtra = tree.get("backupExtra");
-            Iterator<String> fieldNames = backupExtra.getFieldNames();
-            while ( fieldNames.hasNext() )
-            {
-                String      name = fieldNames.next();
-                String      value = backupExtra.get(name).getTextValue();
-                values.put(name, value);
-            }
-            backupExtraValue = new EncodedConfigParser(values).toEncoded();
-        }
-
-        Map<String, String>     zooCfgValues = Maps.newHashMap();
-        JsonNode                zooCfgExtra = tree.get("zooCfgExtra");
-        Iterator<String>        fieldNames = zooCfgExtra.getFieldNames();
-        while ( fieldNames.hasNext() )
-        {
-            String      name = fieldNames.next();
-            String      value = zooCfgExtra.get(name).getTextValue();
-            zooCfgValues.put(name, value);
-        }
-        final String          zooCfgExtraValue = new EncodedConfigParser(zooCfgValues).toEncoded();
-
-        final String          finalBackupExtraValue = backupExtraValue;
-        return new InstanceConfig()
-        {
-            @Override
-            public String getString(StringConfigs config)
-            {
-                switch ( config )
-                {
-                    case BACKUP_EXTRA:
-                    {
-                        return finalBackupExtraValue;
-                    }
-
-                    case ZOO_CFG_EXTRA:
-                    {
-                        return zooCfgExtraValue;
-                    }
-
-                    default:
-                    {
-                        // NOP
-                        break;
-                    }
-                }
-
-                JsonNode node = tree.get(fixName(config));
-                if ( node == null )
-                {
-                    return "";
-                }
-                return node.getTextValue();
-            }
-
-            @Override
-            public int getInt(IntConfigs config)
-            {
-                JsonNode node = tree.get(fixName(config));
-                if ( node == null )
-                {
-                    return 0;
-                }
-                try
-                {
-                    return Integer.parseInt(node.getTextValue());
-                }
-                catch ( NumberFormatException e )
-                {
-                    // ignore
-                }
-                return 0;
-            }
-        };
     }
 
     static String getLog(UIContext context)

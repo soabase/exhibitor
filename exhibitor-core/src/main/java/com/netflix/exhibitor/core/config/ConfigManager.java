@@ -18,7 +18,6 @@
 
 package com.netflix.exhibitor.core.config;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.netflix.exhibitor.core.Exhibitor;
@@ -27,7 +26,6 @@ import com.netflix.exhibitor.core.activity.QueueGroups;
 import com.netflix.exhibitor.core.activity.RepeatingActivity;
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -78,7 +76,12 @@ public class ConfigManager implements Closeable
     {
         return config.get().getConfig().getConfigForThisInstance(exhibitor.getThisJVMHostname());
     }
-    
+
+    public boolean              isRolling()
+    {
+        return config.get().getConfig().isRolling();
+    }
+
     /**
      * Add a listener for config changes
      *
@@ -94,7 +97,7 @@ public class ConfigManager implements Closeable
         // TODO - reject if in rolling config change
 
         final InstanceConfig    currentConfig = config.get().getConfig().getRootConfig();
-        ConfigCollection        newCollection = new ConfigCollectionAdapter(currentConfig, newConfig);
+        ConfigCollection        newCollection = new ConfigCollectionImpl(currentConfig, newConfig);
         return internalUpdateConfig(newCollection);
     }
 
@@ -102,7 +105,7 @@ public class ConfigManager implements Closeable
     {
         // TODO - reject if in rolling config change
 
-        ConfigCollection        newCollection = new ConfigCollectionAdapter(newConfig, null);
+        ConfigCollection        newCollection = new ConfigCollectionImpl(newConfig, null);
         return internalUpdateConfig(newCollection);
     }
 
