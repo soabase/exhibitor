@@ -19,8 +19,8 @@
 package com.netflix.exhibitor.core.config.filesystem;
 
 import com.google.common.io.Closeables;
+import com.netflix.exhibitor.core.config.ConfigCollection;
 import com.netflix.exhibitor.core.config.ConfigProvider;
-import com.netflix.exhibitor.core.config.InstanceConfig;
 import com.netflix.exhibitor.core.config.LoadedInstanceConfig;
 import com.netflix.exhibitor.core.config.PropertyBasedInstanceConfig;
 import java.io.BufferedOutputStream;
@@ -88,7 +88,7 @@ public class FileSystemConfigProvider implements ConfigProvider
     }
 
     @Override
-    public LoadedInstanceConfig storeConfig(InstanceConfig config, long compareLastModified) throws Exception
+    public LoadedInstanceConfig storeConfig(ConfigCollection config, long compareLastModified) throws Exception
     {
         PropertyBasedInstanceConfig     propertyBasedInstanceConfig = new PropertyBasedInstanceConfig(config);
 

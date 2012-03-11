@@ -314,10 +314,9 @@
         </div>
 
         <div id="config-commit-dialog" class="ui-helper-hidden">
-            <span class="ui-icon ui-icon-alert" style="float: left; margin:0 7px 5px 0;"></span>
-            <span><strong>Warning</strong></span>
-            <br clear="all">
+            <div id="config-commit-dialog-icon" class="ui-icon ui-icon-alert"></div>
             <div>
+                <strong>Warning</strong><br/>
                 The changes you've made require that ZooKeeper instances get reconfigured and restarted. You
                 can do this all at once (which can cause the ensemble to appear to be down for several minutes)
                 or you can do a rolling release of the config.

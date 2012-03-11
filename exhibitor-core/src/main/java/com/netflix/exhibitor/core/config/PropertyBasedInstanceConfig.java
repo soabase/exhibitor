@@ -45,11 +45,11 @@ public class PropertyBasedInstanceConfig implements ConfigCollection
     /**
      * Used to wrap an existing config
      *
-     * @param source source config
+     * @param configCollection source config
      */
-    public PropertyBasedInstanceConfig(InstanceConfig source)
+    public PropertyBasedInstanceConfig(ConfigCollection configCollection)
     {
-        this(buildPropertiesFromSource(source), new Properties());
+        this(buildPropertiesFromCollection(configCollection), new Properties());
     }
 
     /**
@@ -111,18 +111,24 @@ public class PropertyBasedInstanceConfig implements ConfigCollection
         return prefix + s;
     }
 
-    private static Properties buildPropertiesFromSource(InstanceConfig source)
+    private static Properties buildPropertiesFromCollection(ConfigCollection collection)
     {
         Properties      properties = new Properties();
+        buildPropertiesFromSource(collection.getRootConfig(), properties, ROOT_PROPERTY_PREFIX);
+        buildPropertiesFromSource(collection.getRollingConfig(), properties, ROLLING_PROPERTY_PREFIX);
+        return properties;
+    }
+
+    private static void buildPropertiesFromSource(InstanceConfig source, Properties properties, String prefix)
+    {
         for ( StringConfigs config : StringConfigs.values() )
         {
-            properties.setProperty(toName(config, ROOT_PROPERTY_PREFIX), source.getString(config));
+            properties.setProperty(toName(config, prefix), source.getString(config));
         }
         for ( IntConfigs config : IntConfigs.values() )
         {
-            properties.setProperty(toName(config, ROOT_PROPERTY_PREFIX), Integer.toString(source.getInt(config)));
+            properties.setProperty(toName(config, prefix), Integer.toString(source.getInt(config)));
         }
-        return properties;
     }
 
     private Collection<String> internalGetRollingHostNames()

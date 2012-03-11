@@ -250,6 +250,8 @@ public class UIResource
     @Produces(MediaType.APPLICATION_JSON)
     public Response setConfigRolling(String newConfigJson) throws Exception
     {
+        InstanceConfig  wrapped = parseToConfig(newConfigJson);
+
         return null;
     }
 
@@ -260,15 +262,33 @@ public class UIResource
     {
         // TODO - should flush caches as needed
 
-        ObjectMapper          mapper = new ObjectMapper();
-        final JsonNode        tree = mapper.reader().readTree(newConfigJson);
+        InstanceConfig wrapped = parseToConfig(newConfigJson);
+        
+        Result  result;
+        if ( context.getExhibitor().getConfigManager().updateConfig(wrapped) )
+        {
+            result = new Result("OK", true);
+        }
+        else
+        {
+            result = new Result("Another process has updated the config.", false);
+        }
+        context.getExhibitor().resetLocalConnection();
+
+        return Response.ok(result).build();
+    }
+
+    private InstanceConfig parseToConfig(String newConfigJson) throws IOException
+    {
+        ObjectMapper mapper = new ObjectMapper();
+        final JsonNode tree = mapper.reader().readTree(newConfigJson);
 
         String                backupExtraValue = "";
         if ( tree.has("backupExtra") )
         {
-            Map<String, String>     values = Maps.newHashMap();
+            Map<String, String> values = Maps.newHashMap();
             JsonNode                backupExtra = tree.get("backupExtra");
-            Iterator<String>        fieldNames = backupExtra.getFieldNames();
+            Iterator<String> fieldNames = backupExtra.getFieldNames();
             while ( fieldNames.hasNext() )
             {
                 String      name = fieldNames.next();
@@ -290,7 +310,7 @@ public class UIResource
         final String          zooCfgExtraValue = new EncodedConfigParser(zooCfgValues).toEncoded();
 
         final String          finalBackupExtraValue = backupExtraValue;
-        InstanceConfig wrapped = new InstanceConfig()
+        return new InstanceConfig()
         {
             @Override
             public String getString(StringConfigs config)
@@ -341,19 +361,6 @@ public class UIResource
                 return 0;
             }
         };
-        
-        Result  result;
-        if ( context.getExhibitor().getConfigManager().updateConfig(wrapped) )
-        {
-            result = new Result("OK", true);
-        }
-        else
-        {
-            result = new Result("Another process has updated the config.", false);
-        }
-        context.getExhibitor().resetLocalConnection();
-
-        return Response.ok(result).build();
     }
 
     static String getLog(UIContext context)

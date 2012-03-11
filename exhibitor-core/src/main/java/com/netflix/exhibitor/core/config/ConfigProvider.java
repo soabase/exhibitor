@@ -40,5 +40,5 @@ public interface ConfigProvider
      * @throws Exception errors
      * @return return updated loaded values or null
      */
-    public LoadedInstanceConfig storeConfig(InstanceConfig config, long compareLastModified) throws Exception;
+    public LoadedInstanceConfig storeConfig(ConfigCollection config, long compareLastModified) throws Exception;
 }

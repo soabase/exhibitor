@@ -123,7 +123,7 @@ public class DefaultProperties
                 return 0;
             }
         };
-        PropertyBasedInstanceConfig     config = new PropertyBasedInstanceConfig(source);
+        PropertyBasedInstanceConfig     config = new PropertyBasedInstanceConfig(new ConfigCollectionAdapter(source, null));
         return config.getProperties();
     }
 

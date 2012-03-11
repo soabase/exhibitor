@@ -18,6 +18,7 @@
 
 package com.netflix.exhibitor.core.config;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.netflix.exhibitor.core.Exhibitor;
@@ -26,11 +27,13 @@ import com.netflix.exhibitor.core.activity.QueueGroups;
 import com.netflix.exhibitor.core.activity.RepeatingActivity;
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ConfigManager implements Closeable
 {
+    private final Exhibitor exhibitor;
     private final ConfigProvider provider;
     private final RepeatingActivity repeatingActivity;
     private final AtomicReference<LoadedInstanceConfig> config = new AtomicReference<LoadedInstanceConfig>();
@@ -38,6 +41,7 @@ public class ConfigManager implements Closeable
 
     public ConfigManager(Exhibitor exhibitor, ConfigProvider provider, int checkMs) throws Exception
     {
+        this.exhibitor = exhibitor;
         this.provider = provider;
 
         Activity    activity = new Activity()
@@ -72,7 +76,7 @@ public class ConfigManager implements Closeable
 
     public InstanceConfig getConfig()
     {
-        return config.get().getConfig().getConfigForThisInstance("");
+        return config.get().getConfig().getConfigForThisInstance(exhibitor.getThisJVMHostname());
     }
     
     /**
@@ -85,9 +89,26 @@ public class ConfigManager implements Closeable
         configListeners.add(listener);
     }
 
-    public synchronized boolean updateConfig(InstanceConfig newConfig) throws Exception
+    public synchronized boolean startRollingConfig(final InstanceConfig newConfig) throws Exception
     {
-        LoadedInstanceConfig updated = provider.storeConfig(newConfig, config.get().getLastModified());
+        // TODO - reject if in rolling config change
+
+        final InstanceConfig    currentConfig = config.get().getConfig().getRootConfig();
+        ConfigCollection        newCollection = new ConfigCollectionAdapter(currentConfig, newConfig);
+        return internalUpdateConfig(newCollection);
+    }
+
+    public synchronized boolean updateConfig(final InstanceConfig newConfig) throws Exception
+    {
+        // TODO - reject if in rolling config change
+
+        ConfigCollection        newCollection = new ConfigCollectionAdapter(newConfig, null);
+        return internalUpdateConfig(newCollection);
+    }
+
+    private boolean internalUpdateConfig(ConfigCollection newCollection) throws Exception
+    {
+        LoadedInstanceConfig updated = provider.storeConfig(newCollection, config.get().getLastModified());
         if ( updated != null )
         {
             config.set(updated);
@@ -115,4 +136,5 @@ public class ConfigManager implements Closeable
             notifyListeners();
         }
     }
+
 }

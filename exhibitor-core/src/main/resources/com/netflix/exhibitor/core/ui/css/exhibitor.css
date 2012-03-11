@@ -401,3 +401,9 @@ fieldset
 {
     float: right;
 }
+
+#config-commit-dialog-icon
+{
+    float: left;
+    margin: 0 7px 100px 0;
+}

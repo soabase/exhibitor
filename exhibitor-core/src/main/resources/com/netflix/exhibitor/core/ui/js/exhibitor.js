@@ -203,7 +203,7 @@ function submitConfigChanges(rolling)
     var payload = JSON.stringify(newConfig);
     $.ajax({
         type: 'POST',
-        url: URL_SET_CONFIG,
+        url: rolling ? URL_SET_CONFIG_ROLLING : URL_SET_CONFIG,
         data: payload,
         contentType: 'application/json',
         success:function(data)
@@ -555,6 +555,7 @@ $(function ()
 
     $('#config-commit-dialog').dialog({
         width: 500,
+        height: 250,
         modal: true,
         autoOpen: false,
         title: "Config Change Warning"
