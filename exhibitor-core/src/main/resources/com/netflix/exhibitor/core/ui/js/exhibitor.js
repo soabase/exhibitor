@@ -163,7 +163,7 @@ function addBackupExtraConfig(data)
     ableConfig(isChecked);
 }
 
-function submitConfigChanges(rolling)
+function buildNewConfig()
 {
     var newConfig = {};
     newConfig.zookeeperInstallDirectory = $('#config-zookeeper-install-dir').val();
@@ -200,6 +200,13 @@ function submitConfigChanges(rolling)
 
     newConfig.connectionTimeoutMs = systemConfig.connectionTimeoutMs;
     newConfig.serverId = systemConfig.serverId;
+
+    return newConfig;
+}
+
+function submitConfigChanges(rolling)
+{
+    var newConfig = buildNewConfig();
 
     systemConfig = newConfig;
 
@@ -447,6 +454,42 @@ function cancelRollingConfig(forceCommit)
     $.get(forceCommit ? URL_FORCE_COMMIT_ROLLING : URL_ROLLBACK_ROLLING);
 }
 
+function checkConfigConfirmation()
+{
+    var     newConfig = buildNewConfig();
+    var     hasEnsembleLevelChange =
+        (newConfig.zookeeperInstallDirectory != systemConfig.zookeeperInstallDirectory)
+        || (newConfig.zookeeperDataDirectory != systemConfig.zookeeperDataDirectory)
+        || (newConfig.serversSpec != systemConfig.serversSpec)
+        || (newConfig.clientPort != systemConfig.clientPort)
+        || (newConfig.connectPort != systemConfig.connectPort)
+        || (newConfig.electionPort != systemConfig.electionPort)
+    ;
+
+    if ( !hasEnsembleLevelChange )
+    {
+        for ( var p in systemConfig.zooCfgExtra )
+        {
+            if ( newConfig.zooCfgExtra[p] != systemConfig.zooCfgExtra[p] )
+            {
+                hasEnsembleLevelChange = true;
+                break;
+            }
+        }
+    }
+
+    if ( hasEnsembleLevelChange )
+    {
+        $('#config-commit-dialog').dialog("open");
+    }
+    else
+    {
+        okCancelDialog("Commit", "The changes will not require any server restarts and so will be applied immediately", function(){
+            submitConfigChanges(false);
+        });
+    }
+}
+
 var customTabs = new Array();
 $(function ()
 {
@@ -511,18 +554,10 @@ $(function ()
         icons:{
             primary:"ui-icon-disk"
         }
-    }).click(function ()
-    {
-        return false;
     }).click(function(){
-            $('#config-commit-dialog').dialog("open");
-/*
-            okCancelDialog("Update", "Are you sure? If you've changed the Servers it can cause instance restarts.", function() {
-                submitConfigChanges();
-            });
-*/
-            return false;
-        });
+        checkConfigConfirmation();
+        return false;
+    });
 
     $('#calculator-button').button({
         icons:{
