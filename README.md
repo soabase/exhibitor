@@ -5,7 +5,12 @@ Exhibitor is a supervisor system for ZooKeeper.
 
 Please see the doc at https://github.com/Netflix/exhibitor/wiki
 
-## MAVEN
+## BUILDING
+
+Exhibitor is built via Gradle (http://www.gradle.org). To build from the command line:
+    ./gradlew build
+
+## ARTIFACTS
 
 Exhibitor binaries are published to Maven Central. Please see the docs for details.
 
