@@ -1,0 +1,23 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+group = 'exhibitor'
+version = 1.0
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    compile 'com.netflix.exhibitor:exhibitor-standalone:1.0.0-beta9'
+}
+
+jar {
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    manifest {
+        attributes (
+            'Main-Class': 'com.netflix.exhibitor.application.ExhibitorMain',
+            'Implementation-Version': project.version
+        )
+    }
+}
