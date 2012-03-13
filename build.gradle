@@ -1,0 +1,152 @@
+// Establish version and status
+def performingRelease = project.hasProperty('release') && Boolean.parseBoolean(project.release)
+def releaseVersion = '1.0.0-beta9'
+def versionPostfix = performingRelease?'':'-SNAPSHOT'
+version = "${releaseVersion}${versionPostfix}"
+status = performingRelease?'release':'snapshot'
+
+subprojects {
+    apply plugin: 'java'
+
+    group = 'com.netflix.exhibitor'
+    version = rootProject.version
+
+    sourceCompatibility = 1.6
+
+    // GRADLE-2087 workaround, perform after java plugin
+    status = rootProject.status
+
+    repositories {
+        mavenCentral()
+        maven {
+            url "https://repository.jboss.org/nexus/content/groups/public/"
+        }
+    }
+
+    task sourcesJar(type: Jar, dependsOn:classes) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+
+    task javadocJar(type: Jar, dependsOn:javadoc) {
+        classifier = 'javadoc'
+        from javadoc.destinationDir
+    }
+
+    artifacts {
+        archives jar
+        archives sourcesJar
+        archives javadocJar
+    }
+
+    // Maven side of things
+    apply plugin: 'maven' // Java plugin has to have been already applied for the conf2scope mappings to work
+    apply plugin: 'signing'
+
+    signing {
+        required performingRelease
+        sign configurations.archives
+    }
+
+    /**
+     * Publishing to Maven Central example provided from http://jedicoder.blogspot.com/2011/11/automated-gradle-project-deployment-to.html
+     */
+    task uploadMavenCentral(type:Upload) {
+        configuration = configurations.archives
+        dependsOn signArchives
+        doFirst {
+            repositories.mavenDeployer {
+                beforeDeployment { org.gradle.api.artifacts.maven.MavenDeployment deployment -> signing.signPom(deployment) }
+
+                // To test deployment locally, use the following instead of oss.sonatype.org
+                //repository(url: "file://localhost/${rootProject.rootDir}/repo")
+
+                repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2') {
+                    authentication(userName: rootProject.sonatypeUsername, password: rootProject.sonatypePassword)
+                }
+
+                // Prevent datastamp from being appending to artifacts during deployment
+                uniqueVersion = false
+
+                // Closure to configure all the POM with extra info, common to all projects
+                pom.project {
+                    parent {
+                        groupId 'org.sonatype.oss'
+                        artifactId 'oss-parent'
+                        version '7'
+                    }
+                    url 'https://github.com/Netflix/exhibitor'
+                    licenses {
+                        license {
+                            name 'The Apache Software License, Version 2.0'
+                            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                            distribution 'repo'
+                        }
+                    }
+                    scm {
+                        connection 'scm:git:git@github.com:Netflix/exhibitor.git'
+                        url 'scm:git:git@github.com:Netflix/exhibitor.git'
+                        developerConnection 'scm:git:git@github.com:Netflix/exhibitor.git'
+                    }
+                    issueManagement {
+                        system 'github'
+                        url 'https://github.com/Netflix/exhibitor/issues'
+                    }
+                }
+            }
+        }
+    }
+}
+
+task aggregateJavadoc(type: Javadoc) {
+    description = 'Aggregate all subproject docs into a single docs directory'
+    source subprojects.collect {project -> project.sourceSets.main.allJava }
+    classpath = files(subprojects.collect {project -> project.sourceSets.main.compileClasspath})
+    destinationDir = new File(projectDir, 'doc')
+}
+
+project(':exhibitor-core') {
+    dependencies {
+        compile('org.apache.zookeeper:zookeeper:3.3.3') {
+            exclude group: 'com.sun.jmx', module: 'jmxri'
+            exclude group: 'com.sun.jdmk', module: 'jmxtools'
+            exclude group: 'javax.jms', module: 'jms'
+
+            // JLine pulls this in as a compile dependency, they have fixed it in future versions
+            exclude group: 'junit', module: 'junit'
+        }
+        compile 'com.netflix.curator:curator-framework:1.0.3'
+        compile 'com.google.guava:guava:11.0.1'
+        compile 'javax.ws.rs:jsr311-api:1.1.1'
+        compile 'org.codehaus.jackson:jackson-mapper-asl:1.9.2'
+        compile 'org.apache.lucene:lucene-core:3.5.0'
+        compile 'com.sun.jersey:jersey-client:1.11'
+
+        compile 'com.amazonaws:aws-java-sdk:1.3.2'   // should be provided - gradle doesn't support
+        compile 'com.sun.jersey:jersey-bundle:1.11'  // should be provided - gradle doesn't support
+        compile 'com.sun.xml.bind:jaxb-impl:2.2.5'   // should be provided - gradle doesn't support
+
+        testCompile 'com.netflix.curator:curator-test:1.0.3'
+        testCompile 'org.mortbay.jetty:jetty:6.1.9'
+        testCompile 'org.testng:testng:6.1.1'
+    }
+}
+
+project(':exhibitor-standalone') {
+    dependencies {
+        compile (project(":exhibitor-core")) {
+            exclude group: 'com.sun.jersey', module: 'jersey-client'
+        }
+        compile 'com.sun.jersey:jersey-bundle:1.11'
+        compile 'com.sun.xml.bind:jaxb-impl:2.2.5'
+        compile 'org.mortbay.jetty:jetty:6.1.9'
+        compile 'com.google.guava:guava:11.0.1'
+        compile 'commons-cli:commons-cli:1.2'
+        compile 'com.amazonaws:aws-java-sdk:1.3.2'
+    }
+}
+
+// Generate wrapper, which is distributed as part of source to alleviate the need of installing gradle
+task createWrapper(type: Wrapper) {
+    gradleVersion = '1.0-milestone-8a'
+}
