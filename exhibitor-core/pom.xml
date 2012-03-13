@@ -64,6 +64,7 @@
             <groupId>com.netflix.curator</groupId>
             <artifactId>curator-test</artifactId>
             <version>1.0.3</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
