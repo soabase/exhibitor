@@ -18,7 +18,7 @@
 
 package com.netflix.exhibitor.core.config;
 
-import java.util.Collection;
+import java.util.List;
 
 public interface ConfigCollection
 {
@@ -28,7 +28,9 @@ public interface ConfigCollection
 
     public InstanceConfig       getRollingConfig();
 
+    public String               getRollingStatus();
+
     public boolean              isRolling();
     
-    public Collection<String>   getRollingHostNames();
+    public List<String>         getRollingHostNames();
 }

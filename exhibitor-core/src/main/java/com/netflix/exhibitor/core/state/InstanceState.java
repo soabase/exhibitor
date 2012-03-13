@@ -18,23 +18,23 @@
 
 package com.netflix.exhibitor.core.state;
 
-class InstanceState
+public class InstanceState
 {
     private final InstanceStateTypes    state;
     private final ServerList            serverList;
 
-    InstanceState(ServerList serverList, InstanceStateTypes state)
+    public InstanceState(ServerList serverList, InstanceStateTypes state)
     {
         this.serverList = serverList;
         this.state = state;
     }
 
-    ServerList getServerList()
+    public ServerList getServerList()
     {
         return serverList;
     }
 
-    InstanceStateTypes getState()
+    public InstanceStateTypes getState()
     {
         return state;
     }

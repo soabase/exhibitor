@@ -21,6 +21,7 @@ package com.netflix.exhibitor.core.rest;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.netflix.exhibitor.core.backup.BackupConfigSpec;
+import com.netflix.exhibitor.core.config.ConfigManager;
 import com.netflix.exhibitor.core.config.EncodedConfigParser;
 import com.netflix.exhibitor.core.config.InstanceConfig;
 import com.netflix.exhibitor.core.config.IntConfigs;
@@ -78,6 +79,8 @@ public class ConfigResource
         mainNode.put("backupActive", context.getExhibitor().getBackupManager().isActive());
 
         configNode.put("rollInProgress", context.getExhibitor().getConfigManager().isRolling());
+        configNode.put("rollStatus", context.getExhibitor().getConfigManager().getRollingStatus());
+
         configNode.put("hostname", context.getExhibitor().getThisJVMHostname());
         configNode.put("serverId", (us != null) ? us.getServerId() : -1);
         for ( StringConfigs c : StringConfigs.values() )
@@ -112,6 +115,24 @@ public class ConfigResource
         mainNode.put("config", configNode);
 
         return mapper.writer().writeValueAsString(mainNode);
+    }
+
+    @Path("rollback-rolling")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response rollbackRolling() throws Exception
+    {
+        context.getExhibitor().getConfigManager().cancelRollingConfig(ConfigManager.CancelMode.ROLLBACK);
+        return Response.ok(new Result("OK", true)).build();
+    }
+
+    @Path("force-commit-rolling")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response forceCommitRolling() throws Exception
+    {
+        context.getExhibitor().getConfigManager().cancelRollingConfig(ConfigManager.CancelMode.FORCE_COMMIT);
+        return Response.ok(new Result("OK", true)).build();
     }
 
     @Path("set-rolling")

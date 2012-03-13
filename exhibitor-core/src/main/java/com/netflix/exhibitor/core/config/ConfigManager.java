@@ -18,14 +18,19 @@
 
 package com.netflix.exhibitor.core.config;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.activity.Activity;
 import com.netflix.exhibitor.core.activity.QueueGroups;
 import com.netflix.exhibitor.core.activity.RepeatingActivity;
+import com.netflix.exhibitor.core.state.InstanceState;
+import com.netflix.exhibitor.core.state.InstanceStateTypes;
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -82,6 +87,12 @@ public class ConfigManager implements Closeable
         return config.get().getConfig().isRolling();
     }
 
+
+    public String               getRollingStatus()
+    {
+        return config.get().getConfig().getRollingStatus();
+    }
+
     /**
      * Add a listener for config changes
      *
@@ -92,12 +103,56 @@ public class ConfigManager implements Closeable
         configListeners.add(listener);
     }
 
+    public enum CancelMode
+    {
+        ROLLBACK,
+        FORCE_COMMIT
+    }
+
+    public synchronized void     cancelRollingConfig(CancelMode mode) throws Exception
+    {
+        ConfigCollection localConfig = config.get().getConfig();
+        if ( localConfig.isRolling() )
+        {
+            InstanceConfig          newConfig = (mode == CancelMode.ROLLBACK) ? localConfig.getRootConfig() : localConfig.getRollingConfig();
+            ConfigCollection        newCollection = new ConfigCollectionImpl(newConfig, null);
+            internalUpdateConfig(newCollection);
+        }
+    }
+
+    public synchronized void     checkRollingConfig(InstanceState instanceState) throws Exception
+    {
+        ConfigCollection localConfig = config.get().getConfig();
+        if ( localConfig.isRolling() )
+        {
+            RollingReleaseState     state = new RollingReleaseState(instanceState, localConfig);
+            if ( state.getCurrentRollingHostname().equals(exhibitor.getThisJVMHostname()) )
+            {
+                if ( state.serverListHasSynced() )
+                {
+                    if ( state.getTargetHostnames().contains(exhibitor.getThisJVMHostname()) )
+                    {
+                        if ( instanceState.getState() == InstanceStateTypes.SERVING )
+                        {
+                            advanceRollingConfig(localConfig, state);
+                        }
+                    }
+                    else
+                    {
+                        // we're being taken out - OK to move to the next server
+                        advanceRollingConfig(localConfig, state);
+                    }
+                }
+            }
+        }
+    }
+
     public synchronized boolean startRollingConfig(final InstanceConfig newConfig) throws Exception
     {
         // TODO - reject if in rolling config change
 
         final InstanceConfig    currentConfig = config.get().getConfig().getRootConfig();
-        ConfigCollection        newCollection = new ConfigCollectionImpl(currentConfig, newConfig);
+        ConfigCollection        newCollection = new ConfigCollectionImpl(currentConfig, newConfig, Arrays.asList(exhibitor.getThisJVMHostname()));
         return internalUpdateConfig(newCollection);
     }
 
@@ -107,6 +162,23 @@ public class ConfigManager implements Closeable
 
         ConfigCollection        newCollection = new ConfigCollectionImpl(newConfig, null);
         return internalUpdateConfig(newCollection);
+    }
+
+    private void advanceRollingConfig(ConfigCollection config, RollingReleaseState state) throws Exception
+    {
+        String nextRollingHostname = state.getNextRollingHostname();
+        if ( nextRollingHostname != null )
+        {
+            List<String>            newRollingHostNames = Lists.newArrayList(config.getRollingHostNames());
+            newRollingHostNames.add(nextRollingHostname);
+            ConfigCollection        newCollection = new ConfigCollectionImpl(config.getRootConfig(), config.getRollingConfig(), newRollingHostNames);
+            internalUpdateConfig(newCollection);
+        }
+        else
+        {
+            ConfigCollection        newCollection = new ConfigCollectionImpl(config.getRollingConfig(), null);
+            internalUpdateConfig(newCollection);
+        }
     }
 
     private boolean internalUpdateConfig(ConfigCollection newCollection) throws Exception

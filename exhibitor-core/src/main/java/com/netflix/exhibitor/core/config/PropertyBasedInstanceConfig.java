@@ -22,7 +22,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -32,14 +32,13 @@ public class PropertyBasedInstanceConfig implements ConfigCollection
 {
     private final Properties properties;
     private final Properties defaults;
-    private final Collection<String> rollingHostNames;
+    private final List<String> rollingHostNames;
     private final WrappedInstanceConfig rootConfig;
     private final WrappedInstanceConfig rollingConfig;
 
     private static final String ROOT_PROPERTY_PREFIX = "com.netflix.exhibitor.";
     private static final String ROLLING_PROPERTY_PREFIX = "com.netflix.exhibitor-rolling.";
 
-    private static final String PROPERTY_IS_ROLLING = "com.netflix.exhibitor-is-rolling.";
     private static final String PROPERTY_ROLLING_HOSTNAMES = "com.netflix.exhibitor-rolling-hostnames.";
 
     /**
@@ -94,11 +93,22 @@ public class PropertyBasedInstanceConfig implements ConfigCollection
     @Override
     public boolean isRolling()
     {
-        return "true".equalsIgnoreCase(properties.getProperty(PROPERTY_IS_ROLLING, "false"));
+        return (rollingHostNames.size() > 0);
     }
 
     @Override
-    public Collection<String> getRollingHostNames()
+    public String getRollingStatus()
+    {
+        if ( !isRolling() )
+        {
+            return "n/a";
+        }
+        String          currentRollingHostname = rollingHostNames.get(rollingHostNames.size() - 1);
+        return "Applying to \"" + currentRollingHostname + "\"";
+    }
+
+    @Override
+    public List<String> getRollingHostNames()
     {
         return rollingHostNames;
     }
@@ -116,6 +126,18 @@ public class PropertyBasedInstanceConfig implements ConfigCollection
         Properties      properties = new Properties();
         buildPropertiesFromSource(collection.getRootConfig(), properties, ROOT_PROPERTY_PREFIX);
         buildPropertiesFromSource(collection.getRollingConfig(), properties, ROLLING_PROPERTY_PREFIX);
+
+        StringBuilder   rollingNames = new StringBuilder();
+        for ( String s : collection.getRollingHostNames() )
+        {
+            if ( rollingNames.length() > 0 )
+            {
+                rollingNames.append(",");
+            }
+            rollingNames.append(s);
+        }
+        properties.setProperty(PROPERTY_ROLLING_HOSTNAMES, rollingNames.toString());
+
         return properties;
     }
 
@@ -131,23 +153,23 @@ public class PropertyBasedInstanceConfig implements ConfigCollection
         }
     }
 
-    private Collection<String> internalGetRollingHostNames()
+    private List<String> internalGetRollingHostNames()
     {
         String  hostnames = properties.getProperty(PROPERTY_ROLLING_HOSTNAMES, null);
         if ( (hostnames != null) && (hostnames.trim().length() > 0) )
         {
             Iterables.transform
-                (
-                    Arrays.asList(hostnames.split(",")),
-                    new Function<String, String>()
+            (
+                Arrays.asList(hostnames.split(",")),
+                new Function<String, String>()
+                {
+                    @Override
+                    public String apply(String str)
                     {
-                        @Override
-                        public String apply(String str)
-                        {
-                            return str.trim();
-                        }
+                        return str.trim();
                     }
-                );
+                }
+            );
             return ImmutableList.copyOf(Arrays.asList(hostnames.split(",")));
         }
         return ImmutableList.of();

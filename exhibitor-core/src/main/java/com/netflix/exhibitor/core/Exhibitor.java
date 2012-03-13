@@ -182,23 +182,23 @@ public class Exhibitor implements Closeable
         backupManager.start();
 
         configManager.addConfigListener
-            (
-                new ConfigListener()
+        (
+            new ConfigListener()
+            {
+                @Override
+                public void configUpdated()
                 {
-                    @Override
-                    public void configUpdated()
+                    try
                     {
-                        try
-                        {
-                            resetLocalConnection();
-                        }
-                        catch ( IOException e )
-                        {
-                            log.add(ActivityLog.Type.ERROR, "Resetting connection", e);
-                        }
+                        resetLocalConnection();
+                    }
+                    catch ( IOException e )
+                    {
+                        log.add(ActivityLog.Type.ERROR, "Resetting connection", e);
                     }
                 }
-            );
+            }
+        );
     }
 
     @Override

@@ -91,8 +91,10 @@ public class MonitorRunningInstance implements Closeable
     private void doWork() throws Exception
     {
         InstanceConfig  config = exhibitor.getConfigManager().getConfig();
-
         InstanceState   instanceState = new InstanceState(new ServerList(config.getString(StringConfigs.SERVERS_SPEC)), new Checker(exhibitor).calculateState());
+
+        exhibitor.getConfigManager().checkRollingConfig(instanceState);
+
         InstanceState   localCurrentInstanceState = currentInstanceState.get();
         if ( !instanceState.equals(localCurrentInstanceState) )
         {

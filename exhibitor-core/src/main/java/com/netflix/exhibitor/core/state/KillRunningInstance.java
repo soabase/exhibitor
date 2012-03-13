@@ -27,11 +27,6 @@ public class KillRunningInstance implements Activity
     private final Exhibitor exhibitor;
     private final boolean restart;
 
-    public KillRunningInstance(Exhibitor exhibitor)
-    {
-        this(exhibitor, false);
-    }
-
     public KillRunningInstance(Exhibitor exhibitor, boolean restart)
     {
         this.exhibitor = exhibitor;

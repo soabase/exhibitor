@@ -24,6 +24,8 @@ var URL_EXPLORER_NODE = "../explorer/node";
 var URL_GET_STATE = "../config/get-state";
 var URL_SET_CONFIG = "../config/set";
 var URL_SET_CONFIG_ROLLING = "../config/set-rolling";
+var URL_ROLLBACK_ROLLING = "../config/rollback-rolling";
+var URL_FORCE_COMMIT_ROLLING = "../config/force-commit-rolling";
 
 var URL_DISABLE_BACKUPS = "able-backups/false";
 var URL_ENABLE_BACKUPS = "able-backups/true";
@@ -215,6 +217,9 @@ function submitConfigChanges(rolling)
             }
         }
     });
+
+    checkLightSwitch('#config-editable', false);
+    handleEditableSwitch();
 }
 
 function getBackupExtraId(obj)
@@ -245,7 +250,7 @@ function ableConfig(enable)
         $('#' + id).prop('disabled', !enable);
     }
 
-    $("#config-button").button(enable ? "enable" : "disable");
+    $("#config-button").button((enable && !systemConfig.rollInProgress) ? "enable" : "disable");
 }
 
 function updateConfig()
@@ -273,6 +278,16 @@ function updateConfig()
     $('#config-cleanup-max-files').val(systemConfig.cleanupMaxFiles);
     $('#config-backup-ms').val(systemConfig.backupPeriodMs);
     $('#config-backup-max-store-ms').val(systemConfig.backupMaxStoreMs);
+
+    $('#rolling-config-floater-status').html(systemConfig.rollStatus);
+    if ( systemConfig.rollInProgress )
+    {
+        $('#rolling-config-floater').show();
+    }
+    else
+    {
+        $('#rolling-config-floater').hide();
+    }
 
     for ( i = 0; i < configExtraTab.length; ++i )
     {
@@ -416,6 +431,22 @@ function makeLightSwitch(selector, func, disable)
     }
 }
 
+function handleEditableSwitch(isChecked)
+{
+    doConfigUpdates = !isChecked;
+
+    if ( !isChecked ) {
+        updateConfig();
+    }
+    ableConfig(isChecked);
+}
+
+function cancelRollingConfig(forceCommit)
+{
+    $('#rolling-config-floater').hide();
+    $.get(forceCommit ? URL_FORCE_COMMIT_ROLLING : URL_ROLLBACK_ROLLING);
+}
+
 var customTabs = new Array();
 $(function ()
 {
@@ -474,14 +505,7 @@ $(function ()
         zIndex: 99999
     });
 
-    makeLightSwitch('#config-editable', function(isChecked){
-        doConfigUpdates = !isChecked;
-
-        if ( !isChecked ) {
-            updateConfig();
-        }
-        ableConfig(isChecked);
-    });
+    makeLightSwitch('#config-editable', handleEditableSwitch);
 
     $("#config-button").button({
         icons:{
@@ -554,7 +578,34 @@ $(function ()
         height: 400
     });
 
+    $('#rolling-config-cancel-dialog').dialog({
+        width: 500,
+        height: 200,
+        modal: true,
+        autoOpen: false,
+        title: "Cancel"
+    });
+    $("#rolling-config-cancel-dialog").dialog("option", "buttons", {
+            'Continue Release': function (){
+                $(this).dialog("close");
+            },
+
+            'Rollback': function (){
+                $(this).dialog("close");
+                cancelRollingConfig(false);
+            },
+
+            'Force Commit': function (){
+                $(this).dialog("close");
+                cancelRollingConfig(true);
+            }
+        }
+    );
+
     $('#rolling-config-floater-button').button();
+    $('#rolling-config-floater-button').click(function(){
+        $('#rolling-config-cancel-dialog').dialog("open");
+    });
 
     $('#config-commit-dialog').dialog({
         width: 500,
@@ -570,14 +621,14 @@ $(function ()
 
             'All At Once...': function (){
                 okCancelDialog("All At Once", "Are you sure you want to commit all at once?", function() {
-                    $(this).dialog("close");
+                    $('#config-commit-dialog').dialog("close");
                     submitConfigChanges(false);
                 });
             },
 
             'Rolling Release...': function (){
                 okCancelDialog("Rolling Release", "Are you sure you want to do a rolling release?", function() {
-                    $(this).dialog("close");
+                    $('#config-commit-dialog').dialog("close");
                     submitConfigChanges(true);
                 });
             }

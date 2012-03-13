@@ -18,8 +18,12 @@
 
 package com.netflix.exhibitor.core.state;
 
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 
 public class ServerList
@@ -63,6 +67,22 @@ public class ServerList
     public List<ServerSpec> getSpecs()
     {
         return specs;
+    }
+    
+    public Collection<String>   getHostnames()
+    {
+        return Lists.transform
+        (
+            specs,
+            new Function<ServerSpec, String>()
+            {
+                @Override
+                public String apply(ServerSpec spec)
+                {
+                    return spec.getHostname();
+                }
+            }
+        );
     }
 
     public static Predicate<ServerSpec>  isUs(final String hostname)
