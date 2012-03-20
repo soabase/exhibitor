@@ -23,6 +23,10 @@ subprojects {
         }
     }
 
+    dependencies {
+        testCompile 'org.testng:testng:6.1.1'
+    }
+
     task sourcesJar(type: Jar, dependsOn:classes) {
         classifier = 'sources'
         from sourceSets.main.allSource
@@ -118,7 +122,7 @@ project(':exhibitor-core') {
         compile 'com.netflix.curator:curator-framework:1.0.3'
         compile 'com.google.guava:guava:11.0.1'
         compile 'javax.ws.rs:jsr311-api:1.1.1'
-        compile 'org.codehaus.jackson:jackson-mapper-asl:1.9.2'
+        compile 'org.codehaus.jackson:jackson-mapper-asl:1.1.0'
         compile 'org.apache.lucene:lucene-core:3.5.0'
         compile 'com.sun.jersey:jersey-client:1.11'
 
@@ -128,7 +132,7 @@ project(':exhibitor-core') {
 
         testCompile 'com.netflix.curator:curator-test:1.0.3'
         testCompile 'org.mortbay.jetty:jetty:6.1.9'
-        testCompile 'org.testng:testng:6.1.1'
+        testCompile 'org.mockito:mockito-core:1.9.0'
     }
 }
 

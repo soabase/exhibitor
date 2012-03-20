@@ -18,6 +18,7 @@
 
 package com.netflix.exhibitor.core.config;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -36,8 +37,11 @@ public class PropertyBasedInstanceConfig implements ConfigCollection
     private final WrappedInstanceConfig rootConfig;
     private final WrappedInstanceConfig rollingConfig;
 
-    private static final String ROOT_PROPERTY_PREFIX = "com.netflix.exhibitor.";
-    private static final String ROLLING_PROPERTY_PREFIX = "com.netflix.exhibitor-rolling.";
+    @VisibleForTesting
+    static final String ROOT_PROPERTY_PREFIX = "com.netflix.exhibitor.";
+
+    @VisibleForTesting
+    static final String ROLLING_PROPERTY_PREFIX = "com.netflix.exhibitor-rolling.";
 
     private static final String PROPERTY_ROLLING_HOSTNAMES = "com.netflix.exhibitor-rolling-hostnames.";
 
@@ -113,7 +117,8 @@ public class PropertyBasedInstanceConfig implements ConfigCollection
         return rollingHostNames;
     }
 
-    private static String toName(Enum e, String prefix)
+    @VisibleForTesting
+    static String toName(Enum e, String prefix)
     {
         String  s = e.name();
         s = s.replace('_', '-');
