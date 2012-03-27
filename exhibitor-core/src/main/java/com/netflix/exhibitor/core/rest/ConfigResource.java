@@ -32,6 +32,7 @@ import com.netflix.exhibitor.core.state.ServerList;
 import com.netflix.exhibitor.core.state.ServerSpec;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.node.JsonNodeFactory;
 import org.codehaus.jackson.node.ObjectNode;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -70,9 +71,8 @@ public class ConfigResource
         ServerList serverList = new ServerList(config.getString(StringConfigs.SERVERS_SPEC));
         ServerSpec us = Iterables.find(serverList.getSpecs(), ServerList.isUs(context.getExhibitor().getThisJVMHostname()), null);
 
-        ObjectMapper                mapper = new ObjectMapper();
-        ObjectNode mainNode = mapper.getNodeFactory().objectNode();
-        ObjectNode                  configNode = mapper.getNodeFactory().objectNode();
+        ObjectNode                  mainNode = JsonNodeFactory.instance.objectNode();
+        ObjectNode                  configNode = JsonNodeFactory.instance.objectNode();
 
         mainNode.put("version", context.getExhibitor().getVersion());
         mainNode.put("running", "imok".equals(response));
@@ -93,7 +93,7 @@ public class ConfigResource
         }
 
         EncodedConfigParser     zooCfgParser = new EncodedConfigParser(config.getString(StringConfigs.ZOO_CFG_EXTRA));
-        ObjectNode              zooCfgNode = mapper.getNodeFactory().objectNode();
+        ObjectNode              zooCfgNode = JsonNodeFactory.instance.objectNode();
         for ( Map.Entry<String, String> entry : zooCfgParser.getValues().entrySet() )
         {
             zooCfgNode.put(entry.getKey(), entry.getValue());
@@ -102,19 +102,20 @@ public class ConfigResource
 
         if ( context.getExhibitor().getBackupManager().isActive() )
         {
-            ObjectNode          backupExtraNode = mapper.getNodeFactory().objectNode();
+            ObjectNode          backupExtraNode = JsonNodeFactory.instance.objectNode();
             EncodedConfigParser parser = context.getExhibitor().getBackupManager().getBackupConfigParser();
             List<BackupConfigSpec> configs = context.getExhibitor().getBackupManager().getConfigSpecs();
             for ( BackupConfigSpec c : configs )
             {
-                backupExtraNode.put(c.getKey(), parser.getValues().get(c.getKey()));
+                String value = parser.getValues().get(c.getKey());
+                backupExtraNode.put(c.getKey(), (value != null) ? value : "");
             }
             configNode.put("backupExtra", backupExtraNode);
         }
 
         mainNode.put("config", configNode);
 
-        return mapper.writer().writeValueAsString(mainNode);
+        return JsonUtil.writeValueAsString(mainNode);
     }
 
     @Path("rollback-rolling")
@@ -181,7 +182,7 @@ public class ConfigResource
     private InstanceConfig parseToConfig(String newConfigJson) throws IOException
     {
         ObjectMapper mapper = new ObjectMapper();
-        final JsonNode tree = mapper.reader().readTree(newConfigJson);
+        final JsonNode tree = mapper.readTree(mapper.getJsonFactory().createJsonParser(newConfigJson));
 
         String                backupExtraValue = "";
         if ( tree.has("backupExtra") )

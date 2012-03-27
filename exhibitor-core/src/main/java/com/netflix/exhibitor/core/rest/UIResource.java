@@ -26,8 +26,8 @@ import com.netflix.exhibitor.core.backup.BackupConfigSpec;
 import com.netflix.exhibitor.core.config.EncodedConfigParser;
 import com.netflix.exhibitor.core.entities.Result;
 import com.netflix.exhibitor.core.entities.UITabSpec;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ArrayNode;
+import org.codehaus.jackson.node.JsonNodeFactory;
 import org.codehaus.jackson.node.ObjectNode;
 import javax.activation.MimetypesFileTypeMap;
 import javax.ws.rs.GET;
@@ -155,8 +155,7 @@ public class UIResource
     @Produces(MediaType.APPLICATION_JSON)
     public String getBackupConfig() throws Exception
     {
-        ObjectMapper        mapper = new ObjectMapper();
-        ArrayNode           node = mapper.getNodeFactory().arrayNode();
+        ArrayNode           node = JsonNodeFactory.instance.arrayNode();
 
         if ( context.getExhibitor().getBackupManager().isActive() )
         {
@@ -164,18 +163,20 @@ public class UIResource
             List<BackupConfigSpec>  configs = context.getExhibitor().getBackupManager().getConfigSpecs();
             for ( BackupConfigSpec c : configs )
             {
-                ObjectNode      n = mapper.getNodeFactory().objectNode();
+                ObjectNode      n = JsonNodeFactory.instance.objectNode();
+                String          value = parser.getValues().get(c.getKey());
+
                 n.put("key", c.getKey());
                 n.put("name", c.getDisplayName());
                 n.put("help", c.getHelpText());
-                n.put("value", parser.getValues().get(c.getKey()));
+                n.put("value", (value != null) ? value : "");
                 n.put("type", c.getType().name().toLowerCase().substring(0, 1));
 
                 node.add(n);
             }
         }
 
-        return mapper.writer().writeValueAsString(node);
+        return JsonUtil.writeValueAsString(node);
     }
 
     static String getLog(UIContext context)

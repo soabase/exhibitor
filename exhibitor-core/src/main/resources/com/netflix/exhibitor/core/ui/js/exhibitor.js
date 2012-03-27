@@ -123,7 +123,6 @@ function updateState()
     {
         if ( connectedToExhibitor )
         {
-            $('#exhibitor-valence').height($(document).height());
             $('#exhibitor-valence').show();
             $('#not-connected-alert').show();
             connectedToExhibitor = false;

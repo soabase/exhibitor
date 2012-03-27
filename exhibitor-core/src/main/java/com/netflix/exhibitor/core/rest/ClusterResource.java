@@ -36,6 +36,7 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ArrayNode;
+import org.codehaus.jackson.node.JsonNodeFactory;
 import org.codehaus.jackson.node.ObjectNode;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -187,8 +188,7 @@ public class ClusterResource
     public String getLog() throws Exception
     {
         String          log = UIResource.getLog(context);
-        ObjectMapper    mapper = new ObjectMapper();
-        return mapper.writeValueAsString(log);
+        return JsonUtil.writeValueAsString(log);
     }
 
     @Path("4ltr/{word}")
@@ -209,8 +209,7 @@ public class ClusterResource
             return "* unknown *";
         }
 
-        ObjectMapper    mapper = new ObjectMapper();
-        return mapper.writeValueAsString(value);
+        return JsonUtil.writeValueAsString(value);
     }
 
     @Path("restart")
@@ -221,7 +220,7 @@ public class ClusterResource
         context.getExhibitor().getActivityQueue().add(QueueGroups.MAIN, new KillRunningInstance(context.getExhibitor(), true));
 
         Result result = new Result("OK", true);
-        return new ObjectMapper().writer().writeValueAsString(result);
+        return JsonUtil.writeValueAsString(result);
     }
 
     @Path("set/{type}/{value}")
@@ -250,7 +249,7 @@ public class ClusterResource
         {
             result = new Result("Not found", false);
         }
-        return new ObjectMapper().writer().writeValueAsString(result);
+        return JsonUtil.writeValueAsString(result);
     }
 
     @Path("state")
@@ -258,10 +257,9 @@ public class ClusterResource
     @Produces(MediaType.APPLICATION_JSON)
     public String   getStatus() throws Exception
     {
-        ObjectMapper        mapper = new ObjectMapper();
-        ObjectNode          mainNode = mapper.getNodeFactory().objectNode();
+        ObjectNode          mainNode = JsonNodeFactory.instance.objectNode();
 
-        ObjectNode          switchesNode = mapper.getNodeFactory().objectNode();
+        ObjectNode          switchesNode = JsonNodeFactory.instance.objectNode();
         for ( ControlPanelTypes type : ControlPanelTypes.values() )
         {
             switchesNode.put(UIResource.fixName(type), context.getExhibitor().getControlPanelValues().isSet(type));
@@ -272,7 +270,7 @@ public class ClusterResource
         mainNode.put("state", state.getCode());
         mainNode.put("description", state.getDescription());
 
-        return mapper.writer().writeValueAsString(mainNode);
+        return JsonUtil.writeValueAsString(mainNode);
     }
 
     @Path("list")
@@ -282,10 +280,9 @@ public class ClusterResource
     {
         InstanceConfig      config = context.getExhibitor().getConfigManager().getConfig();
 
-        ObjectMapper        mapper = new ObjectMapper();
-        ObjectNode          node = mapper.getNodeFactory().objectNode();
+        ObjectNode          node = JsonNodeFactory.instance.objectNode();
 
-        ArrayNode serversNode = mapper.getNodeFactory().arrayNode();
+        ArrayNode           serversNode = JsonNodeFactory.instance.arrayNode();
         ServerList          serverList = new ServerList(config.getString(StringConfigs.SERVERS_SPEC));
         for ( ServerSpec spec : serverList.getSpecs() )
         {
@@ -294,7 +291,7 @@ public class ClusterResource
         node.put("servers", serversNode);
         node.put("port", config.getInt(IntConfigs.CLIENT_PORT));
 
-        return mapper.writer().writeValueAsString(node);
+        return JsonUtil.writeValueAsString(node);
     }
 
     @Path("list")
@@ -363,10 +360,10 @@ public class ClusterResource
         }
 
         ObjectMapper        mapper = new ObjectMapper();
-        ObjectNode          node = mapper.getNodeFactory().objectNode();
+        ObjectNode          node = JsonNodeFactory.instance.objectNode();
         if ( responseIsJson )
         {
-            node.put("response", mapper.readTree(remoteResponse));
+            node.put("response", mapper.readTree(mapper.getJsonFactory().createJsonParser(remoteResponse)));
         }
         else
         {
@@ -375,6 +372,6 @@ public class ClusterResource
         node.put("errorMessage", errorMessage);
         node.put("success", errorMessage.length() == 0);
 
-        return mapper.writer().writeValueAsString(node);
+        return JsonUtil.writeValueAsString(node);
     }
 }

@@ -98,7 +98,8 @@ public class S3BackupProvider implements BackupProvider
     @Override
     public boolean isValidConfig(Exhibitor exhibitor, Map<String, String> configValues)
     {
-        return (configValues.get(CONFIG_BUCKET.getKey()).trim().length() > 0);
+        String bucket = configValues.get(CONFIG_BUCKET.getKey());
+        return (bucket != null) && (bucket.trim().length() > 0);
     }
 
     @Override

@@ -19,6 +19,9 @@
 package com.netflix.exhibitor.core.rest;
 
 import com.netflix.exhibitor.core.Exhibitor;
+import com.sun.jersey.core.spi.component.ComponentContext;
+import com.sun.jersey.core.spi.component.ioc.IoCComponentProvider;
+import com.sun.jersey.core.spi.component.ioc.IoCComponentProviderFactory;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
 
