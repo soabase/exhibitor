@@ -18,6 +18,7 @@
 
 package com.netflix.exhibitor.core.config;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -79,18 +80,18 @@ public class ConfigManager implements Closeable
 
     public InstanceConfig getConfig()
     {
-        return config.get().getConfig().getConfigForThisInstance(exhibitor.getThisJVMHostname());
+        return getCollection().getConfigForThisInstance(exhibitor.getThisJVMHostname());
     }
 
     public boolean              isRolling()
     {
-        return config.get().getConfig().isRolling();
+        return getCollection().isRolling();
     }
 
 
     public String               getRollingStatus()
     {
-        return config.get().getConfig().getRollingStatus();
+        return getCollection().getRollingStatus();
     }
 
     /**
@@ -111,7 +112,7 @@ public class ConfigManager implements Closeable
 
     public synchronized void     cancelRollingConfig(CancelMode mode) throws Exception
     {
-        ConfigCollection localConfig = config.get().getConfig();
+        ConfigCollection localConfig = getCollection();
         if ( localConfig.isRolling() )
         {
             InstanceConfig          newConfig = (mode == CancelMode.ROLLBACK) ? localConfig.getRootConfig() : localConfig.getRollingConfig();
@@ -122,7 +123,7 @@ public class ConfigManager implements Closeable
 
     public synchronized void     checkRollingConfig(InstanceState instanceState) throws Exception
     {
-        ConfigCollection localConfig = config.get().getConfig();
+        ConfigCollection localConfig = getCollection();
         if ( localConfig.isRolling() )
         {
             RollingReleaseState     state = new RollingReleaseState(instanceState, localConfig);
@@ -149,19 +150,33 @@ public class ConfigManager implements Closeable
 
     public synchronized boolean startRollingConfig(final InstanceConfig newConfig) throws Exception
     {
-        // TODO - reject if in rolling config change
+        ConfigCollection        localConfig = getCollection();
+        if ( localConfig.isRolling() )
+        {
+            return false;
+        }
 
-        final InstanceConfig    currentConfig = config.get().getConfig().getRootConfig();
+        final InstanceConfig    currentConfig = getCollection().getRootConfig();
         ConfigCollection        newCollection = new ConfigCollectionImpl(currentConfig, newConfig, Arrays.asList(exhibitor.getThisJVMHostname()));
         return internalUpdateConfig(newCollection);
     }
 
     public synchronized boolean updateConfig(final InstanceConfig newConfig) throws Exception
     {
-        // TODO - reject if in rolling config change
+        ConfigCollection        localConfig = getCollection();
+        if ( localConfig.isRolling() )
+        {
+            return false;
+        }
 
         ConfigCollection        newCollection = new ConfigCollectionImpl(newConfig, null);
         return internalUpdateConfig(newCollection);
+    }
+
+    @VisibleForTesting
+    ConfigCollection getCollection()
+    {
+        return config.get().getConfig();
     }
 
     private void advanceRollingConfig(ConfigCollection config, RollingReleaseState state) throws Exception

@@ -63,6 +63,21 @@ public class ServerList
 
         specs = builder.build();
     }
+    
+    public String toSpecString()
+    {
+        StringBuilder       str = new StringBuilder();
+        for ( ServerSpec spec : specs )
+        {
+            if ( str.length() > 0 )
+            {
+                str.append(",");
+            }
+            str.append(spec.getServerId()).append(":").append(spec.getHostname());
+        }
+
+        return str.toString();
+    }
 
     public List<ServerSpec> getSpecs()
     {

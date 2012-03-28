@@ -4,7 +4,12 @@ import com.google.common.io.Closeables;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.ActivityQueue;
+import com.netflix.exhibitor.core.state.InstanceState;
+import com.netflix.exhibitor.core.state.InstanceStateTypes;
+import com.netflix.exhibitor.core.state.ServerList;
+import com.netflix.exhibitor.core.state.ServerSpec;
 import org.mockito.Mockito;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicLong;
@@ -14,17 +19,19 @@ public class TestRollingConfigChange
     @Test
     public void testChange() throws Exception
     {
+        ServerList          serverList = new ServerList("1:one,2:two,3:three");
+
         ActivityLog         log = new ActivityLog(100);
         ActivityQueue       activityQueue = new ActivityQueue();
         Exhibitor           mockExhibitor = Mockito.mock(Exhibitor.class);
         Mockito.when(mockExhibitor.getLog()).thenReturn(log);
         Mockito.when(mockExhibitor.getActivityQueue()).thenReturn(activityQueue);
-        Mockito.when(mockExhibitor.getThisJVMHostname()).thenReturn("temp");
+        Mockito.when(mockExhibitor.getThisJVMHostname()).thenReturn("one");
 
+        final AtomicLong    modified = new AtomicLong(1);
         ConfigProvider      provider = new ConfigProvider()
         {
             private volatile ConfigCollection      config = new PropertyBasedInstanceConfig(new Properties(), new Properties());
-            private final AtomicLong               modified = new AtomicLong(1);
 
             @Override
             public LoadedInstanceConfig loadConfig() throws Exception
@@ -40,14 +47,33 @@ public class TestRollingConfigChange
                 return loadConfig();
             }
         };
+
+        InstanceState       state = new InstanceState(serverList, InstanceStateTypes.SERVING);
+
         ConfigManager       manager = new ConfigManager(mockExhibitor, provider, 10);
         manager.start();
         try
         {
             Properties                      properties = new Properties();
-            properties.setProperty(PropertyBasedInstanceConfig.toName(StringConfigs.SERVERS_SPEC, PropertyBasedInstanceConfig.ROOT_PROPERTY_PREFIX), "1:foo,2:bar");
+            properties.setProperty(PropertyBasedInstanceConfig.toName(StringConfigs.SERVERS_SPEC, PropertyBasedInstanceConfig.ROOT_PROPERTY_PREFIX), serverList.toSpecString());
             PropertyBasedInstanceConfig     config = new PropertyBasedInstanceConfig(properties, DefaultProperties.get(null));
-            manager.updateConfig(config.getRootConfig());
+            manager.startRollingConfig(config.getRootConfig());
+
+            for ( ServerSpec spec : serverList.getSpecs() )
+            {
+                Assert.assertTrue(manager.isRolling());
+
+                RollingReleaseState     rollingState = new RollingReleaseState(state, manager.getCollection());
+                Assert.assertEquals(rollingState.getCurrentRollingHostname(), spec.getHostname());
+
+                Mockito.when(mockExhibitor.getThisJVMHostname()).thenReturn(spec.getHostname());
+
+                long                lastModified = modified.get();
+                manager.checkRollingConfig(state);
+                Assert.assertTrue(modified.get() > lastModified);
+            }
+
+            Assert.assertFalse(manager.isRolling());
         }
         finally
         {
