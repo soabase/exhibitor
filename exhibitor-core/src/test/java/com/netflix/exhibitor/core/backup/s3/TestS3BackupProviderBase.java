@@ -22,12 +22,18 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-public class TestS3BackupProvider
+public abstract class TestS3BackupProviderBase
 {
+    protected final File        sourceFile;
+
+    protected TestS3BackupProviderBase(File sourceFile)
+    {
+        this.sourceFile = sourceFile;
+    }
+
     @Test
     public void   testUpload() throws Exception
     {
-        File                      sourceFile = Filer.getFile();
         byte[]                    uploadedBytes = getUploadedBytes(sourceFile);
 
         byte[] fileBytes = Files.toByteArray(sourceFile);
@@ -37,7 +43,6 @@ public class TestS3BackupProvider
     @Test
     public void     testDownload() throws Exception
     {
-        File                sourceFile = Filer.getFile();
         byte[]              uploadedBytes = getUploadedBytes(sourceFile);
 
         S3Object            object = new S3Object();
@@ -54,7 +59,7 @@ public class TestS3BackupProvider
             out = new FileOutputStream(tempFile);
             provider.downloadBackup(null, new BackupMetaData("test", 1), out, Maps.<String, String>newHashMap());
             
-            Assert.assertEquals(Filer.getFileBytes(), Files.toByteArray(tempFile));
+            Assert.assertEquals(Files.toByteArray(sourceFile), Files.toByteArray(tempFile));
         }
         finally
         {

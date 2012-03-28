@@ -147,7 +147,7 @@ public class S3BackupProvider implements BackupProvider
         InputStream in = null;
         try
         {
-            List<PartETag> eTags = Lists.newArrayList();
+            List<PartETag>      eTags = Lists.newArrayList();
             int                 index = 1;
 
             in = new FileInputStream(source);
@@ -313,7 +313,7 @@ public class S3BackupProvider implements BackupProvider
         request.setPartNumber(index);
         request.setPartSize(bytesRead);
         request.setMd5Digest(S3Utils.toBase64(md5));
-        request.setInputStream(new ByteArrayInputStream(buffer));
+        request.setInputStream(new ByteArrayInputStream(buffer, 0, bytesRead));
 
         UploadPartResult    response = s3Client.get().uploadPart(request);
         PartETag            partETag = response.getPartETag();
