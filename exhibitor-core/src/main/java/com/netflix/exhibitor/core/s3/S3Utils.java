@@ -18,9 +18,14 @@
 
 package com.netflix.exhibitor.core.s3;
 
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.PutObjectResult;
 import org.apache.commons.codec.binary.Base64;
-import java.nio.ByteBuffer;
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.security.MessageDigest;
+import java.util.Date;
 
 public class S3Utils
 {
@@ -30,21 +35,17 @@ public class S3Utils
         return new String(encoded);
     }
 
-    public static byte[] md5(ByteBuffer buffer)
+    public static byte[] md5(byte[] buffer, int length)
     {
         try
         {
             MessageDigest mdigest = MessageDigest.getInstance("MD5");
-            mdigest.update(buffer);
+            mdigest.update(buffer, 0, length);
             return mdigest.digest();
         }
         catch (Exception e)
         {
             throw new RuntimeException(e);
-        }
-        finally
-        {
-            buffer.rewind();
         }
     }
 
@@ -65,5 +66,24 @@ public class S3Utils
             sb.append(hex);
         }
         return sb.toString().toLowerCase();
+    }
+
+    public static ObjectMetadata simpleUploadFile(S3Client client, byte[] bytes, String bucket, String key) throws Exception
+    {
+        byte[]                          md5 = md5(bytes, bytes.length);
+
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(bytes.length);
+        metadata.setLastModified(new Date());
+        metadata.setContentMD5(S3Utils.toBase64(md5));
+        PutObjectRequest putObjectRequest = new PutObjectRequest(bucket, key, new ByteArrayInputStream(bytes), metadata);
+        PutObjectResult putObjectResult = client.putObject(putObjectRequest);
+
+        if ( !putObjectResult.getETag().equals(S3Utils.toHex(md5)) )
+        {
+            throw new Exception("Unable to match MD5 for config");
+        }
+
+        return metadata;
     }
 }

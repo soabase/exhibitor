@@ -7,9 +7,8 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.io.ByteStreams;
+import com.google.common.io.Closeables;
 import com.google.common.io.Files;
-import com.google.common.io.OutputSupplier;
 import com.netflix.exhibitor.core.backup.BackupMetaData;
 import com.netflix.exhibitor.core.s3.PropertyBasedS3Credential;
 import org.testng.Assert;
@@ -17,12 +16,11 @@ import org.testng.annotations.Test;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
+import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import java.util.zip.GZIPOutputStream;
 
 public class TestS3BackupProvider
 {
@@ -32,23 +30,8 @@ public class TestS3BackupProvider
         File                      sourceFile = Filer.getFile();
         byte[]                    uploadedBytes = getUploadedBytes(sourceFile);
 
-        ByteArrayOutputStream     zipBytes = new ByteArrayOutputStream();
-        final GZIPOutputStream    zip = new GZIPOutputStream(zipBytes);
         byte[] fileBytes = Files.toByteArray(sourceFile);
-        ByteStreams.write
-        (
-            fileBytes,
-            new OutputSupplier<OutputStream>()
-            {
-                @Override
-                public OutputStream getOutput() throws IOException
-                {
-                    return zip;
-                }
-            }
-        );
-        zip.close();
-        Assert.assertEquals(uploadedBytes, zipBytes.toByteArray());
+        Assert.assertEquals(uploadedBytes, fileBytes);
     }
 
     @Test
@@ -62,17 +45,21 @@ public class TestS3BackupProvider
         object.setKey("test");
         object.setObjectContent(new S3ObjectInputStream(new ByteArrayInputStream(uploadedBytes), null));
 
+        OutputStream        out = null;
         File                tempFile = File.createTempFile("test", ".test");
         try
         {
             MockS3Client        s3Client = new MockS3Client(object, null);
             S3BackupProvider    provider = new S3BackupProvider(new MockS3ClientFactory(s3Client), new PropertyBasedS3Credential(new Properties()));
-            provider.downloadBackup(null, new BackupMetaData("test", 1), tempFile, Maps.<String, String>newHashMap());
+            out = new FileOutputStream(tempFile);
+            provider.downloadBackup(null, new BackupMetaData("test", 1), out, Maps.<String, String>newHashMap());
             
             Assert.assertEquals(Filer.getFileBytes(), Files.toByteArray(tempFile));
         }
         finally
         {
+            Closeables.closeQuietly(out);
+            
             //noinspection ResultOfMethodCallIgnored
             tempFile.delete();
         }

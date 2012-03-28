@@ -26,6 +26,7 @@ import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.backup.BackupConfigSpec;
 import java.io.File;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -127,7 +128,7 @@ public class FileSystemBackupProvider implements BackupProvider
     }
 
     @Override
-    public void downloadBackup(Exhibitor exhibitor, BackupMetaData backup, File destination, Map<String, String> configValues) throws Exception
+    public void downloadBackup(Exhibitor exhibitor, BackupMetaData backup, OutputStream destination, Map<String, String> configValues) throws Exception
     {
         File        directory = new File(configValues.get(CONFIG_DIRECTORY.getKey()));
         File        nameDirectory = new File(directory, backup.getName());

@@ -20,6 +20,7 @@ package com.netflix.exhibitor.core.backup;
 
 import com.netflix.exhibitor.core.Exhibitor;
 import java.io.File;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -79,13 +80,14 @@ public interface BackupProvider
      * Download a backed-up object
      *
      *
+     *
      * @param exhibitor instance
      * @param backup the backup to pull down
-     * @param destination destination file
+     * @param destination destination stream
      * @param configValues values for provider-specific config
      * @throws Exception any errors
      */
-    public void     downloadBackup(Exhibitor exhibitor, BackupMetaData backup, File destination, Map<String, String> configValues) throws Exception;
+    public void     downloadBackup(Exhibitor exhibitor, BackupMetaData backup, OutputStream destination, Map<String, String> configValues) throws Exception;
 
     /**
      * Determine if the provider-specific config is in a good state. If not, backups/restores will be disallowed

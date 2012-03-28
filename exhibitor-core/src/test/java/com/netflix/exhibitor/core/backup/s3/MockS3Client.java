@@ -6,7 +6,6 @@ import com.google.common.io.ByteStreams;
 import com.netflix.exhibitor.core.s3.S3Client;
 import com.netflix.exhibitor.core.s3.S3Utils;
 import java.io.ByteArrayOutputStream;
-import java.nio.ByteBuffer;
 import java.util.List;
 
 public class MockS3Client implements S3Client
@@ -32,8 +31,9 @@ public class MockS3Client implements S3Client
     {
         ByteArrayOutputStream       out = new ByteArrayOutputStream();
         ByteStreams.copy(request.getInputStream(), out);
+        uploadedBytes.add(out.toByteArray());
 
-        byte[]              md5bytes = S3Utils.md5(ByteBuffer.wrap(out.toByteArray()));
+        byte[]              md5bytes = S3Utils.md5(out.toByteArray(), out.size());
 
         PutObjectResult     result = new PutObjectResult();
         result.setETag(S3Utils.toHex(md5bytes));
@@ -71,7 +71,7 @@ public class MockS3Client implements S3Client
 
         uploadedBytes.add(out.toByteArray());
 
-        byte[]              md5bytes = S3Utils.md5(ByteBuffer.wrap(out.toByteArray()));
+        byte[]              md5bytes = S3Utils.md5(out.toByteArray(), out.size());
 
         UploadPartResult    result = new UploadPartResult();
         result.setPartNumber(request.getPartNumber());

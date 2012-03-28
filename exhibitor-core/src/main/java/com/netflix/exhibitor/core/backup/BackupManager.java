@@ -19,6 +19,7 @@
 package com.netflix.exhibitor.core.backup;
 
 import com.google.common.base.Optional;
+import com.google.common.io.Closeables;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.activity.Activity;
 import com.netflix.exhibitor.core.activity.ActivityLog;
@@ -33,11 +34,14 @@ import com.netflix.exhibitor.core.controlpanel.ControlPanelTypes;
 import com.netflix.exhibitor.core.index.ZooKeeperLogFiles;
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * Manages backups/restores
@@ -173,7 +177,15 @@ public class BackupManager implements Closeable
      */
     public void restore(BackupMetaData backup, File destinationFile) throws Exception
     {
-        backupProvider.get().downloadBackup(exhibitor, backup, destinationFile, getBackupConfig());
+        OutputStream            out = new GZIPOutputStream(new FileOutputStream(destinationFile));
+        try
+        {
+            backupProvider.get().downloadBackup(exhibitor, backup, out, getBackupConfig());
+        }
+        finally
+        {
+            Closeables.closeQuietly(out);
+        }
     }
 
     private void doBackup() throws Exception
@@ -199,26 +211,39 @@ public class BackupManager implements Closeable
 
         for ( File f : zooKeeperLogFiles.getPaths() )
         {
-            BackupMetaData metaData = new BackupMetaData(f.getName(), f.lastModified());
-            BackupProvider.UploadResult result = provider.uploadBackup(exhibitor, metaData, f, config);
-            switch ( result )
+            TempCompressedFile      tempCompressedFile = new TempCompressedFile(f);
+            try
             {
-                case SUCCEEDED:
-                {
-                    exhibitor.getLog().add(ActivityLog.Type.INFO, "Backing up: " + f);
-                    break;
-                }
+                tempCompressedFile.compress();
 
-                case DUPLICATE:
+                BackupMetaData          metaData = new BackupMetaData(f.getName(), f.lastModified());
+                BackupProvider.UploadResult result = provider.uploadBackup(exhibitor, metaData, tempCompressedFile.getTempFile(), config);
+                switch ( result )
                 {
-                    // ignore
-                    break;
-                }
+                    case SUCCEEDED:
+                    {
+                        exhibitor.getLog().add(ActivityLog.Type.INFO, "Backing up: " + f);
+                        break;
+                    }
 
-                case REPLACED_OLD_VERSION:
+                    case DUPLICATE:
+                    {
+                        // ignore
+                        break;
+                    }
+
+                    case REPLACED_OLD_VERSION:
+                    {
+                        exhibitor.getLog().add(ActivityLog.Type.INFO, "Updated back up for: " + f);
+                        break;
+                    }
+                }
+            }
+            finally
+            {
+                if ( !tempCompressedFile.getTempFile().delete() )
                 {
-                    exhibitor.getLog().add(ActivityLog.Type.INFO, "Updated back up for: " + f);
-                    break;
+                    exhibitor.getLog().add(ActivityLog.Type.ERROR, "Could not delete temp file: " + tempCompressedFile.getTempFile());
                 }
             }
         }

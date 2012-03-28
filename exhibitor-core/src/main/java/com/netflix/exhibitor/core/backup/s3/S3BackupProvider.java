@@ -26,6 +26,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.io.Closeables;
+import com.google.common.io.Files;
 import com.netflix.curator.RetryPolicy;
 import com.netflix.curator.retry.ExponentialBackoffRetry;
 import com.netflix.exhibitor.core.Exhibitor;
@@ -36,12 +37,11 @@ import com.netflix.exhibitor.core.s3.S3Client;
 import com.netflix.exhibitor.core.s3.S3ClientFactory;
 import com.netflix.exhibitor.core.s3.S3Credential;
 import com.netflix.exhibitor.core.s3.S3Utils;
-import org.apache.zookeeper.server.ByteBufferInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileInputStream;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +55,6 @@ public class S3BackupProvider implements BackupProvider
     // TODO - add logging
 
     private final AtomicReference<S3Client> s3Client = new AtomicReference<S3Client>();
-    private final Compressor  compressor;
     private final S3ClientFactory factory;
 
     private static final BackupConfigSpec CONFIG_THROTTLE = new BackupConfigSpec("throttle", "Throttle (bytes/ms)", "Data throttling. Maximum bytes per millisecond.", Integer.toString(1024 * 1024), BackupConfigSpec.Type.INTEGER);
@@ -65,6 +64,8 @@ public class S3BackupProvider implements BackupProvider
     private static final BackupConfigSpec CONFIG_RETRY_SLEEP_MS = new BackupConfigSpec("retry-sleep-ms", "Retry Sleep (ms)", "Sleep time in milliseconds when retrying", "1000", BackupConfigSpec.Type.INTEGER);
 
     private static final List<BackupConfigSpec>     CONFIGS = Arrays.asList(CONFIG_THROTTLE, CONFIG_BUCKET, CONFIG_KEY_PREFIX, CONFIG_MAX_RETRIES, CONFIG_RETRY_SLEEP_MS);
+    
+    private static final int        MIN_S3_PART_SIZE = 5 * (1024 * 1024);
 
     @VisibleForTesting
     static final String       SEPARATOR = "|";
@@ -73,7 +74,6 @@ public class S3BackupProvider implements BackupProvider
     public S3BackupProvider(S3ClientFactory factory, S3Credential credential) throws Exception
     {
         this.factory = factory;
-        this.compressor = new GzipCompressor();
         changeCredentials(credential);
     }
 
@@ -115,37 +115,15 @@ public class S3BackupProvider implements BackupProvider
         Throttle    throttle = makeThrottle(configValues);
 
         String                          key = toKey(backup, configValues);
-        InitiateMultipartUploadRequest  initRequest = new InitiateMultipartUploadRequest(configValues.get(CONFIG_BUCKET.getKey()), key);
-        InitiateMultipartUploadResult   initResponse = s3Client.get().initiateMultipartUpload(initRequest);
 
-        CompressorIterator      compressorIterator = compressor.compress(source);
-        try
+        if ( source.length() < MIN_S3_PART_SIZE )
         {
-            List<PartETag>      eTags = Lists.newArrayList();
-            int                 index = 1;
-            for(;;)
-            {
-                ByteBuffer  chunk = compressorIterator.next();
-                if ( chunk == null )
-                {
-                    break;
-                }
-                throttle.throttle(chunk.limit());
-
-                PartETag eTag = uploadChunkWithRetry(chunk, initResponse, index++, retryPolicy);
-                eTags.add(eTag);
-            }
-
-            completeUpload(initResponse, eTags);
+            byte[]          bytes = Files.toByteArray(source);
+            S3Utils.simpleUploadFile(s3Client.get(), bytes, configValues.get(CONFIG_BUCKET.getKey()), key);
         }
-        catch ( Exception e )
+        else
         {
-            abortUpload(initResponse);
-            throw e;
-        }
-        finally
-        {
-            Closeables.closeQuietly(compressorIterator);
+            multiPartUpload(source, configValues, retryPolicy, throttle, key);
         }
 
         UploadResult        result = UploadResult.SUCCEEDED;
@@ -160,10 +138,51 @@ public class S3BackupProvider implements BackupProvider
         return result;
     }
 
+    private void multiPartUpload(File source, Map<String, String> configValues, RetryPolicy retryPolicy, Throttle throttle, String key) throws Exception
+    {
+        InitiateMultipartUploadRequest initRequest = new InitiateMultipartUploadRequest(configValues.get(CONFIG_BUCKET.getKey()), key);
+        InitiateMultipartUploadResult initResponse = s3Client.get().initiateMultipartUpload(initRequest);
+
+        byte[]      buffer = new byte[MIN_S3_PART_SIZE];
+        InputStream in = null;
+        try
+        {
+            List<PartETag> eTags = Lists.newArrayList();
+            int                 index = 1;
+
+            in = new FileInputStream(source);
+            for(;;)
+            {
+                int     bytesRead = in.read(buffer);
+                if ( bytesRead < 0 )
+                {
+                    break;
+                }
+                throttle.throttle(bytesRead);
+
+                PartETag eTag = uploadChunkWithRetry(buffer, bytesRead, initResponse, index++, retryPolicy);
+                eTags.add(eTag);
+            }
+
+            completeUpload(initResponse, eTags);
+        }
+        catch ( Exception e )
+        {
+            abortUpload(initResponse);
+            throw e;
+        }
+        finally
+        {
+            Closeables.closeQuietly(in);
+        }
+    }
+
     @Override
-    public void downloadBackup(Exhibitor exhibitor, BackupMetaData backup, File destination, Map<String, String> configValues) throws Exception
+    public void downloadBackup(Exhibitor exhibitor, BackupMetaData backup, OutputStream destination, Map<String, String> configValues) throws Exception
     {
         S3Object        object = s3Client.get().getObject(configValues.get(CONFIG_BUCKET.getKey()), toKey(backup, configValues));
+
+        byte[]          buffer = new byte[MIN_S3_PART_SIZE];
 
         long            startMs = System.currentTimeMillis();
         RetryPolicy     retryPolicy = makeRetryPolicy(configValues);
@@ -173,24 +192,20 @@ public class S3BackupProvider implements BackupProvider
         {
             Throttle            throttle = makeThrottle(configValues);
             InputStream         in = null;
-            FileOutputStream    out = null;
             try
             {
-                out = new FileOutputStream(destination);
                 in = object.getObjectContent();
 
-                FileChannel             channel = out.getChannel();
-                CompressorIterator      compressorIterator = compressor.decompress(in);
                 for(;;)
                 {
-                    ByteBuffer bytes = compressorIterator.next();
-                    if ( bytes == null )
+                    int     bytesRead = in.read(buffer);
+                    if ( bytesRead < 0 )
                     {
                         break;
                     }
 
-                    throttle.throttle(bytes.limit());
-                    channel.write(bytes);
+                    throttle.throttle(bytesRead);
+                    destination.write(buffer, 0, bytesRead);
                 }
 
                 done = true;
@@ -205,7 +220,6 @@ public class S3BackupProvider implements BackupProvider
             finally
             {
                 Closeables.closeQuietly(in);
-                Closeables.closeQuietly(out);
             }
         }
     }
@@ -267,7 +281,8 @@ public class S3BackupProvider implements BackupProvider
         return new ExponentialBackoffRetry(asInt(configValues.get(CONFIG_RETRY_SLEEP_MS.getKey())), asInt(configValues.get(CONFIG_MAX_RETRIES.getKey())));
     }
 
-    private PartETag uploadChunkWithRetry(ByteBuffer bytes, InitiateMultipartUploadResult initResponse, int index, RetryPolicy retryPolicy) throws Exception
+
+    private PartETag uploadChunkWithRetry(byte[] buffer, int bytesRead, InitiateMultipartUploadResult initResponse, int index, RetryPolicy retryPolicy) throws Exception
     {
         long            startMs = System.currentTimeMillis();
         int             retries = 0;
@@ -275,7 +290,7 @@ public class S3BackupProvider implements BackupProvider
         {
             try
             {
-                return uploadChunk(bytes, initResponse, index);
+                return uploadChunk(buffer, bytesRead, initResponse, index);
             }
             catch ( Exception e )
             {
@@ -287,18 +302,18 @@ public class S3BackupProvider implements BackupProvider
         }
     }
 
-    private PartETag uploadChunk(ByteBuffer bytes, InitiateMultipartUploadResult initResponse, int index) throws Exception
+    private PartETag uploadChunk(byte[] buffer, int bytesRead, InitiateMultipartUploadResult initResponse, int index) throws Exception
     {
-        byte[]          md5 = S3Utils.md5(bytes);
+        byte[]          md5 = S3Utils.md5(buffer, bytesRead);
         
         UploadPartRequest   request = new UploadPartRequest();
         request.setBucketName(initResponse.getBucketName());
         request.setKey(initResponse.getKey());
         request.setUploadId(initResponse.getUploadId());
         request.setPartNumber(index);
-        request.setPartSize(bytes.limit());
+        request.setPartSize(bytesRead);
         request.setMd5Digest(S3Utils.toBase64(md5));
-        request.setInputStream(new ByteBufferInputStream(bytes));
+        request.setInputStream(new ByteArrayInputStream(buffer));
 
         UploadPartResult    response = s3Client.get().uploadPart(request);
         PartETag            partETag = response.getPartETag();
