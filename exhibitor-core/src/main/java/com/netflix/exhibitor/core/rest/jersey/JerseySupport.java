@@ -24,6 +24,7 @@ import com.netflix.exhibitor.core.rest.ConfigResource;
 import com.netflix.exhibitor.core.rest.ExplorerResource;
 import com.netflix.exhibitor.core.rest.IndexResource;
 import com.netflix.exhibitor.core.rest.UIContext;
+import com.netflix.exhibitor.core.rest.UIContextResolver;
 import com.netflix.exhibitor.core.rest.UIResource;
 import com.sun.jersey.api.core.DefaultResourceConfig;
 import com.sun.jersey.api.core.ResourceConfig;
@@ -84,7 +85,7 @@ public class JerseySupport
     private static Set<Object> getSingletons(UIContext context)
     {
         final Set<Object> singletons = Sets.newHashSet();
-        singletons.add(context);
+        singletons.add(new UIContextResolver(context));
         singletons.add(new NaturalNotationContextResolver());
         return singletons;
     }

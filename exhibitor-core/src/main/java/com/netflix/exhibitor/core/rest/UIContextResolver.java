@@ -19,27 +19,28 @@
 package com.netflix.exhibitor.core.rest;
 
 import com.netflix.exhibitor.core.Exhibitor;
-import com.netflix.exhibitor.core.rest.jersey.JerseySupport;
-import com.sun.jersey.api.core.ResourceConfig;
+import javax.ws.rs.ext.ContextResolver;
+import javax.ws.rs.ext.Provider;
 
+@Provider
 /**
- * You must pass this a singleton instance of this to {@link UIContextResolver}. Or, if using Jersey,
- * use it in conjunction with {@link JerseySupport#addSingletons(ResourceConfig, UIContext)}
+ * You must inject an instance of this as a Singleton in your REST app.
  */
-public class UIContext
+public class UIContextResolver implements ContextResolver<UIContext>
 {
-    private final Exhibitor exhibitor;
+    private final UIContext context;
 
     /**
-     * @param exhibitor the Exhibitor singleton
+     * @param context the UIContext singleton
      */
-    public UIContext(Exhibitor exhibitor)
+    public UIContextResolver(UIContext context)
     {
-        this.exhibitor = exhibitor;
+        this.context = context;
     }
 
-    public Exhibitor getExhibitor()
+    @Override
+    public UIContext getContext(Class<?> type)
     {
-        return exhibitor;
+        return context;
     }
 }
