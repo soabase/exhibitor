@@ -42,7 +42,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.GZIPInputStream;
 
@@ -54,7 +53,6 @@ public class BackupManager implements Closeable
     private final Exhibitor exhibitor;
     private final Optional<BackupProvider> backupProvider;
     private final RepeatingActivity repeatingActivity;
-    private final AtomicBoolean tempDisabled = new AtomicBoolean(false);
     private final AtomicLong lastRollCheck = new AtomicLong(0);
 
     /**
@@ -78,10 +76,7 @@ public class BackupManager implements Closeable
             @Override
             public Boolean call() throws Exception
             {
-                if ( !tempDisabled.get() )
-                {
-                    doBackup();
-                }
+                doBackup();
                 return true;
             }
         };
@@ -97,16 +92,16 @@ public class BackupManager implements Closeable
         {
             repeatingActivity.start();
             exhibitor.getConfigManager().addConfigListener
-            (
-                new ConfigListener()
-                {
-                    @Override
-                    public void configUpdated()
+                (
+                    new ConfigListener()
                     {
-                        repeatingActivity.setTimePeriodMs(exhibitor.getConfigManager().getConfig().getInt(IntConfigs.BACKUP_PERIOD_MS));
+                        @Override
+                        public void configUpdated()
+                        {
+                            repeatingActivity.setTimePeriodMs(exhibitor.getConfigManager().getConfig().getInt(IntConfigs.BACKUP_PERIOD_MS));
+                        }
                     }
-                }
-            );
+                );
         }
     }
 
@@ -127,16 +122,6 @@ public class BackupManager implements Closeable
     public boolean isActive()
     {
         return backupProvider.isPresent();
-    }
-
-    /**
-     * Used to temporarily disable backups
-     *
-     * @param value on/off
-     */
-    public void     setTempDisabled(boolean value)
-    {
-        tempDisabled.set(value);    // TODO - this is too hack-y
     }
 
     /**

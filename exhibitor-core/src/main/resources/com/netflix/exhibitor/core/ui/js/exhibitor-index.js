@@ -175,13 +175,7 @@ function initRestoreUI()
         modal: true,
         autoOpen: false,
         title: 'New Index',
-        minWidth: 450,
-        open: function(){
-            $.get(URL_DISABLE_BACKUPS);
-        },
-        beforeClose: function(){
-            $.get(URL_ENABLE_BACKUPS);
-        }
+        minWidth: 450
     });
     $('#new-index-dialog').dialog("option", "buttons",
         {

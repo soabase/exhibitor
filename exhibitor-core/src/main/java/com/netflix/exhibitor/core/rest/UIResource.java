@@ -141,15 +141,6 @@ public class UIResource
         return Response.ok(tabs.get(index).getContent(info)).build();
     }
 
-    @Path("able-backups/{value}")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response tempDisableBackups(@PathParam("value") boolean value) throws Exception
-    {
-        context.getExhibitor().getBackupManager().setTempDisabled(!value);
-        return Response.ok(new Result("OK", true)).build();
-    }
-
     @Path("backup-config")
     @GET
     @Produces(MediaType.APPLICATION_JSON)

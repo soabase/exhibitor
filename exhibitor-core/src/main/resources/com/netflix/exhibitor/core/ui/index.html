@@ -23,6 +23,7 @@
         <script type="text/javascript" src="js/exhibitor-cluster.js"></script>
         <script type="text/javascript" src="js/jquery.dataTables.js"></script>
         <script type="text/javascript" src="js/Scroller.js"></script>
+        <script type="text/javascript" src="js/jquery.blockUI.js"></script>
     </head>
 
 	<body>
@@ -249,7 +250,6 @@
             <div id="new-index-backups-section" class="ui-helper-hidden">
                 <input type="radio" id="new-index-radio-backup" name="new-index-specified" value="backup"><label for="new-index-radio-backup">From Backup</label>
                 <select id="new-index-backup-names" size="1"></select><br clear="all"/>
-                <div id="backups-disabled-message">NOTE: Backups are temporarily turned off</div>
             </div>
         </div>
 
@@ -305,8 +305,6 @@
         <div id="log-dialog" class="ui-helper-hidden">
             <div id="log-text" class="text"></div>
         </div>
-
-        <div id="exhibitor-valence"></div>
 
         <div id="millisecond-calculator-dialog" class="ui-helper-hidden">
             <input type="text" id="lhs-millisecond-calculator-value" name="lhs-millisecond-calculator-value" class="mask-pint" size="10" value="1">

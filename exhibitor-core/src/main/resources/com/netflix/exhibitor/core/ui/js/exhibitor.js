@@ -27,8 +27,6 @@ var URL_SET_CONFIG_ROLLING = "../config/set-rolling";
 var URL_ROLLBACK_ROLLING = "../config/rollback-rolling";
 var URL_FORCE_COMMIT_ROLLING = "../config/force-commit-rolling";
 
-var URL_DISABLE_BACKUPS = "able-backups/false";
-var URL_ENABLE_BACKUPS = "able-backups/true";
 var URL_GET_BACKUP_CONFIG = "backup-config";
 var URL_GET_TABS = "tabs";
 var URL_RESTART = "stop";
@@ -109,7 +107,8 @@ function updateState()
             $('#backups-enabled-control').hide();
         }
 
-        $('#exhibitor-valence').hide();
+        $.unblockUI();
+
         $('#version').html(systemState.version);
         $('#not-connected-alert').hide();
         $('#instance-hostname').html(systemConfig.hostname);
@@ -123,7 +122,18 @@ function updateState()
     {
         if ( connectedToExhibitor )
         {
-            $('#exhibitor-valence').show();
+            $.blockUI({
+                css: {
+                    zIndex: 99998,
+                    cursor: 'default'
+                },
+                message: null,
+                overlayCSS: {
+                    backgroundColor: '#333',
+                    cursor: 'default'
+                }
+            });
+
             $('#not-connected-alert').show();
             connectedToExhibitor = false;
             messageDialog("Error", "The browser lost connection with the " + $('#app-name').html() + " server.");
@@ -257,6 +267,7 @@ function ableConfig(enable)
     }
 
     $("#config-button").button((enable && !systemConfig.rollInProgress) ? "enable" : "disable");
+    ableLightSwitch('#config-editable', handleEditableSwitch, !systemConfig.rollInProgress);
 }
 
 function updateConfig()
@@ -669,7 +680,6 @@ $(function ()
         }
     );
 
-    $.get(URL_ENABLE_BACKUPS);
     initRestoreUI();
     updateState();
     window.setInterval("refreshCurrentTab()", AUTO_REFRESH_PERIOD);
