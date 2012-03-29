@@ -49,6 +49,15 @@ subprojects {
         archives javadocJar
     }
 
+    jar {
+        manifest {
+            attributes(
+                "Implementation-Version": version,
+                "Implementation-Title": project.name
+            )
+        }
+    }
+
     // Maven side of things
     apply plugin: 'maven' // Java plugin has to have been already applied for the conf2scope mappings to work
     apply plugin: 'signing'
