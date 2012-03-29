@@ -19,6 +19,7 @@
 package com.netflix.exhibitor.core.backup;
 
 import com.google.common.base.Optional;
+import com.google.common.io.ByteStreams;
 import com.google.common.io.Closeables;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.activity.Activity;
@@ -34,14 +35,16 @@ import com.netflix.exhibitor.core.controlpanel.ControlPanelTypes;
 import com.netflix.exhibitor.core.index.ZooKeeperLogFiles;
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.zip.GZIPOutputStream;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Manages backups/restores
@@ -177,14 +180,28 @@ public class BackupManager implements Closeable
      */
     public void restore(BackupMetaData backup, File destinationFile) throws Exception
     {
-        OutputStream            out = new GZIPOutputStream(new FileOutputStream(destinationFile));
+        File                    tempFile = File.createTempFile("exhibitor-backup", ".tmp");
+        OutputStream            out = new FileOutputStream(tempFile);
+        InputStream in = null;
         try
         {
             backupProvider.get().downloadBackup(exhibitor, backup, out, getBackupConfig());
+            Closeables.closeQuietly(out);
+            out = null;
+
+            out = new FileOutputStream(destinationFile);
+            in = new GZIPInputStream(new FileInputStream(tempFile));
+
+            ByteStreams.copy(in, out);
         }
         finally
         {
+            Closeables.closeQuietly(in);
             Closeables.closeQuietly(out);
+            if ( !tempFile.delete() )
+            {
+                exhibitor.getLog().add(ActivityLog.Type.ERROR, "Could not delete temp file (for restore): " + tempFile);
+            }
         }
     }
 

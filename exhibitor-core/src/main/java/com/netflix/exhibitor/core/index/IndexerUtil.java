@@ -20,6 +20,7 @@ package com.netflix.exhibitor.core.index;
 
 import com.google.common.io.InputSupplier;
 import com.netflix.exhibitor.core.Exhibitor;
+import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.QueueGroups;
 import com.netflix.exhibitor.core.config.InstanceConfig;
 import com.netflix.exhibitor.core.config.StringConfigs;
@@ -89,9 +90,13 @@ public class IndexerUtil
             IndexActivity   activity = new IndexActivity(logIndexer, exhibitor.getLog(), listener);
             exhibitor.getActivityQueue().add(QueueGroups.MAIN, activity);
         }
-        else if ( listener != null )
+        else
         {
-            listener.completed();
+            exhibitor.getLog().add(ActivityLog.Type.ERROR, "Invalid log file can't be indexed: " + name);
+            if ( listener != null )
+            {
+                listener.completed();
+            }
         }
     }
     
