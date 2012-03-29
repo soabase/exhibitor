@@ -185,9 +185,9 @@ public class ConfigResource
         final JsonNode tree = mapper.readTree(mapper.getJsonFactory().createJsonParser(newConfigJson));
 
         String                backupExtraValue = "";
-        if ( tree.has("backupExtra") )
+        if ( tree.get("backupExtra") != null )
         {
-            Map<String, String> values = Maps.newHashMap();
+            Map<String, String>     values = Maps.newHashMap();
             JsonNode                backupExtra = tree.get("backupExtra");
             Iterator<String> fieldNames = backupExtra.getFieldNames();
             while ( fieldNames.hasNext() )
