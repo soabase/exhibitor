@@ -295,15 +295,22 @@ function updateConfig()
     $('#config-backup-ms').val(systemConfig.backupPeriodMs);
     $('#config-backup-max-store-ms').val(systemConfig.backupMaxStoreMs);
 
-    $('#rolling-config-progressbar').progressbar("option", "value", systemConfig.rollPercentDone);
     $('#rolling-config-floater-status').html(systemConfig.rollStatus);
     if ( systemConfig.rollInProgress )
     {
+        $('#rolling-config-progressbar').progressbar("option", "value", systemConfig.rollPercentDone);
         $('#rolling-config-floater').show();
     }
     else
     {
-        $('#rolling-config-floater').hide();
+        if ( $('#rolling-config-progressbar').progressbar("option", "value") != 100 )
+        {
+            $('#rolling-config-progressbar').progressbar("option", "value", 100);
+        }
+        else
+        {
+            $('#rolling-config-floater').hide();
+        }
     }
 
     for ( i = 0; i < configExtraTab.length; ++i )
