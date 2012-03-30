@@ -11,7 +11,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.netflix.exhibitor:exhibitor-standalone:1.0.0-beta9'
+    compile 'com.netflix.exhibitor:exhibitor-standalone:1.0.0'
 }
 
 jar {

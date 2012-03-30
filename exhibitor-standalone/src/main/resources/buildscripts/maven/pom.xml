@@ -9,7 +9,7 @@
         <dependency>
             <groupId>com.netflix.exhibitor</groupId>
             <artifactId>exhibitor-standalone</artifactId>
-            <version>1.0.0-beta7</version>
+            <version>1.0.0</version>
         </dependency>
     </dependencies>
 
