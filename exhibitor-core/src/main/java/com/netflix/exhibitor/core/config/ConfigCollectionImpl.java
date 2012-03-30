@@ -21,42 +21,30 @@ package com.netflix.exhibitor.core.config;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 
-class ConfigCollectionImpl implements ConfigCollection
+class ConfigCollectionImpl extends ConfigCollectionBase
 {
     private final InstanceConfig rootConfig;
     private final InstanceConfig rollingConfig;
-    private final String rollingStatus;
-    private ImmutableList<String> rollingHostNames;
+    private final int rollingHostNamesIndex;
+    private final ImmutableList<String> rollingHostNames;
 
     ConfigCollectionImpl(InstanceConfig rootConfig, InstanceConfig rollingConfig)
     {
-        this(rootConfig, rollingConfig, ImmutableList.<String>of());
+        this(rootConfig, rollingConfig, ImmutableList.<String>of(), 0);
     }
     
-    ConfigCollectionImpl(InstanceConfig rootConfig, InstanceConfig rollingConfig, List<String> rollingHostNames)
+    ConfigCollectionImpl(InstanceConfig rootConfig, InstanceConfig rollingConfig, List<String> rollingHostNames, int rollingHostNamesIndex)
     {
         this.rootConfig = rootConfig;
         this.rollingConfig = rollingConfig;
+        this.rollingHostNamesIndex = rollingHostNamesIndex;
         this.rollingHostNames = ImmutableList.copyOf(rollingHostNames);
-
-        String      rollingStatus = "n/a";
-        if ( rollingHostNames.size() > 0 )
-        {
-            rollingStatus = "Applying to " + rollingHostNames.get(rollingHostNames.size() - 1);
-        }
-        this.rollingStatus = rollingStatus;
     }
 
     @Override
-    public String getRollingStatus()
+    public int getRollingHostNamesIndex()
     {
-        return rollingStatus;
-    }
-
-    @Override
-    public InstanceConfig getConfigForThisInstance(String hostname)
-    {
-        return getRollingConfig();
+        return rollingHostNamesIndex;
     }
 
     @Override
@@ -69,12 +57,6 @@ class ConfigCollectionImpl implements ConfigCollection
     public InstanceConfig getRollingConfig()
     {
         return (rollingConfig != null) ? rollingConfig : rootConfig;
-    }
-
-    @Override
-    public boolean isRolling()
-    {
-        return (rollingConfig != null);
     }
 
     @Override

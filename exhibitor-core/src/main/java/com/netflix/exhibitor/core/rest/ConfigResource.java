@@ -79,7 +79,8 @@ public class ConfigResource
         mainNode.put("backupActive", context.getExhibitor().getBackupManager().isActive());
 
         configNode.put("rollInProgress", context.getExhibitor().getConfigManager().isRolling());
-        configNode.put("rollStatus", context.getExhibitor().getConfigManager().getRollingStatus());
+        configNode.put("rollStatus", context.getExhibitor().getConfigManager().getRollingConfigState().getRollingStatus());
+        configNode.put("rollPercentDone", context.getExhibitor().getConfigManager().getRollingConfigState().getRollingPercentDone());
 
         configNode.put("hostname", context.getExhibitor().getThisJVMHostname());
         configNode.put("serverId", (us != null) ? us.getServerId() : -1);

@@ -7,7 +7,6 @@ import com.netflix.exhibitor.core.activity.ActivityQueue;
 import com.netflix.exhibitor.core.state.InstanceState;
 import com.netflix.exhibitor.core.state.InstanceStateTypes;
 import com.netflix.exhibitor.core.state.ServerList;
-import com.netflix.exhibitor.core.state.ServerSpec;
 import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -59,14 +58,14 @@ public class TestRollingConfigChange
             PropertyBasedInstanceConfig     config = new PropertyBasedInstanceConfig(properties, DefaultProperties.get(null));
             manager.startRollingConfig(config.getRootConfig());
 
-            for ( ServerSpec spec : serverList.getSpecs() )
+            for ( String hostname : manager.getRollingConfigState().getRollingHostNames() )
             {
                 Assert.assertTrue(manager.isRolling());
 
                 RollingReleaseState     rollingState = new RollingReleaseState(state, manager.getCollection());
-                Assert.assertEquals(rollingState.getCurrentRollingHostname(), spec.getHostname());
+                Assert.assertEquals(rollingState.getCurrentRollingHostname(), hostname);
 
-                Mockito.when(mockExhibitor.getThisJVMHostname()).thenReturn(spec.getHostname());
+                Mockito.when(mockExhibitor.getThisJVMHostname()).thenReturn(hostname);
 
                 long                lastModified = modified.get();
                 manager.checkRollingConfig(state);

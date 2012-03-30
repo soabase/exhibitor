@@ -423,3 +423,8 @@ fieldset
     margin-left: 60px;
     width: 150px;
 }
+
+#rolling-config-progressbar
+{
+    padding: 1px 3px 1px 3px;
+}

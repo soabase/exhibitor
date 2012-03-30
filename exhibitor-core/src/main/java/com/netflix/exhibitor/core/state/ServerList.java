@@ -22,9 +22,10 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import javax.annotation.Nullable;
+import com.google.common.collect.Sets;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public class ServerList
 {
@@ -113,6 +114,12 @@ public class ServerList
     }
 
     @Override
+    public String toString()
+    {
+        return toSpecString();
+    }
+
+    @Override
     public boolean equals(Object o)
     {
         if ( this == o )
@@ -126,8 +133,10 @@ public class ServerList
 
         ServerList that = (ServerList)o;
 
+        Set<ServerSpec>     thisSpecs = Sets.newHashSet(specs);
+        Set<ServerSpec>     thatSpecs = Sets.newHashSet(that.specs);
         //noinspection RedundantIfStatement
-        if ( !specs.equals(that.specs) )
+        if ( !thisSpecs.equals(thatSpecs) ) // we don't care about ordering - just that the lists have the same elements
         {
             return false;
         }

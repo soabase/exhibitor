@@ -267,7 +267,6 @@ function ableConfig(enable)
     }
 
     $("#config-button").button((enable && !systemConfig.rollInProgress) ? "enable" : "disable");
-    ableLightSwitch('#config-editable', handleEditableSwitch, !systemConfig.rollInProgress);
 }
 
 function updateConfig()
@@ -296,6 +295,7 @@ function updateConfig()
     $('#config-backup-ms').val(systemConfig.backupPeriodMs);
     $('#config-backup-max-store-ms').val(systemConfig.backupMaxStoreMs);
 
+    $('#rolling-config-progressbar').progressbar("option", "value", systemConfig.rollPercentDone);
     $('#rolling-config-floater-status').html(systemConfig.rollStatus);
     if ( systemConfig.rollInProgress )
     {
@@ -650,6 +650,10 @@ $(function ()
     $('#rolling-config-floater-button').button();
     $('#rolling-config-floater-button').click(function(){
         $('#rolling-config-cancel-dialog').dialog("open");
+    });
+
+    $('#rolling-config-progressbar').progressbar({
+        value: 1
     });
 
     $('#config-commit-dialog').dialog({

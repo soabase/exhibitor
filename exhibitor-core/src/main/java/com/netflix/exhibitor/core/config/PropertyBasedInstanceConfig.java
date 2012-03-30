@@ -29,7 +29,7 @@ import java.util.Properties;
 /**
  * Config imp that uses a Properties file
  */
-public class PropertyBasedInstanceConfig implements ConfigCollection
+public class PropertyBasedInstanceConfig extends ConfigCollectionBase
 {
     private final Properties properties;
     private final Properties defaults;
@@ -43,7 +43,8 @@ public class PropertyBasedInstanceConfig implements ConfigCollection
     @VisibleForTesting
     static final String ROLLING_PROPERTY_PREFIX = "com.netflix.exhibitor-rolling.";
 
-    private static final String PROPERTY_ROLLING_HOSTNAMES = "com.netflix.exhibitor-rolling-hostnames.";
+    private static final String PROPERTY_ROLLING_HOSTNAMES = "com.netflix.exhibitor-rolling-hostnames";
+    private static final String PROPERTY_ROLLING_HOSTNAMES_INDEX = "com.netflix.exhibitor-rolling-hostnames-index";
 
     /**
      * Used to wrap an existing config
@@ -77,12 +78,6 @@ public class PropertyBasedInstanceConfig implements ConfigCollection
     }
 
     @Override
-    public InstanceConfig getConfigForThisInstance(String hostname)
-    {
-        return (isRolling() && rollingHostNames.contains(hostname)) ? rollingConfig : rootConfig;
-    }
-
-    @Override
     public InstanceConfig getRootConfig()
     {
         return rootConfig;
@@ -95,26 +90,15 @@ public class PropertyBasedInstanceConfig implements ConfigCollection
     }
 
     @Override
-    public boolean isRolling()
-    {
-        return (rollingHostNames.size() > 0);
-    }
-
-    @Override
-    public String getRollingStatus()
-    {
-        if ( !isRolling() )
-        {
-            return "n/a";
-        }
-        String          currentRollingHostname = rollingHostNames.get(rollingHostNames.size() - 1);
-        return "Applying to \"" + currentRollingHostname + "\"";
-    }
-
-    @Override
     public List<String> getRollingHostNames()
     {
         return rollingHostNames;
+    }
+
+    @Override
+    public int getRollingHostNamesIndex()
+    {
+        return DefaultProperties.asInt(properties.getProperty(PROPERTY_ROLLING_HOSTNAMES_INDEX, "0"));
     }
 
     @VisibleForTesting
@@ -133,7 +117,7 @@ public class PropertyBasedInstanceConfig implements ConfigCollection
         buildPropertiesFromSource(collection.getRollingConfig(), properties, ROLLING_PROPERTY_PREFIX);
 
         StringBuilder   rollingNames = new StringBuilder();
-        for ( String s : collection.getRollingHostNames() )
+        for ( String s : collection.getRollingConfigState().getRollingHostNames() )
         {
             if ( rollingNames.length() > 0 )
             {
@@ -142,6 +126,7 @@ public class PropertyBasedInstanceConfig implements ConfigCollection
             rollingNames.append(s);
         }
         properties.setProperty(PROPERTY_ROLLING_HOSTNAMES, rollingNames.toString());
+        properties.setProperty(PROPERTY_ROLLING_HOSTNAMES_INDEX, Integer.toString(collection.getRollingConfigState().getRollingHostNamesIndex()));
 
         return properties;
     }

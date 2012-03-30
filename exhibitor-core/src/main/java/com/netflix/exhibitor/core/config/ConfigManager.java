@@ -19,7 +19,6 @@
 package com.netflix.exhibitor.core.config;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.netflix.exhibitor.core.Exhibitor;
@@ -30,7 +29,6 @@ import com.netflix.exhibitor.core.state.InstanceState;
 import com.netflix.exhibitor.core.state.InstanceStateTypes;
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -88,10 +86,9 @@ public class ConfigManager implements Closeable
         return getCollection().isRolling();
     }
 
-
-    public String               getRollingStatus()
+    public RollingConfigState   getRollingConfigState()
     {
-        return getCollection().getRollingStatus();
+        return getCollection().getRollingConfigState();
     }
 
     /**
@@ -129,20 +126,9 @@ public class ConfigManager implements Closeable
             RollingReleaseState     state = new RollingReleaseState(instanceState, localConfig);
             if ( state.getCurrentRollingHostname().equals(exhibitor.getThisJVMHostname()) )
             {
-                if ( state.serverListHasSynced() )
+                if ( state.serverListHasSynced() && (instanceState.getState() == InstanceStateTypes.SERVING) )
                 {
-                    if ( state.getTargetHostnames().contains(exhibitor.getThisJVMHostname()) )
-                    {
-                        if ( instanceState.getState() == InstanceStateTypes.SERVING )
-                        {
-                            advanceRollingConfig(localConfig, state);
-                        }
-                    }
-                    else
-                    {
-                        // we're being taken out - OK to move to the next server
-                        advanceRollingConfig(localConfig, state);
-                    }
+                    advanceRollingConfig(localConfig);
                 }
             }
         }
@@ -156,8 +142,10 @@ public class ConfigManager implements Closeable
             return false;
         }
 
-        final InstanceConfig    currentConfig = getCollection().getRootConfig();
-        ConfigCollection        newCollection = new ConfigCollectionImpl(currentConfig, newConfig, Arrays.asList(exhibitor.getThisJVMHostname()));
+        InstanceConfig          currentConfig = getCollection().getRootConfig();
+        RollingHostNamesBuilder builder = new RollingHostNamesBuilder(currentConfig, newConfig, exhibitor.getLog());
+
+        ConfigCollection        newCollection = new ConfigCollectionImpl(currentConfig, newConfig, builder.getRollingHostNames(), 0);
         return internalUpdateConfig(newCollection);
     }
 
@@ -179,19 +167,19 @@ public class ConfigManager implements Closeable
         return config.get().getConfig();
     }
 
-    private void advanceRollingConfig(ConfigCollection config, RollingReleaseState state) throws Exception
+    private void advanceRollingConfig(ConfigCollection config) throws Exception
     {
-        String nextRollingHostname = state.getNextRollingHostname();
-        if ( nextRollingHostname != null )
+        int             rollingHostNamesIndex = config.getRollingConfigState().getRollingHostNamesIndex();
+        List<String>    rollingHostNames = config.getRollingConfigState().getRollingHostNames();
+        if ( (rollingHostNamesIndex + 1) >= rollingHostNames.size() )
         {
-            List<String>            newRollingHostNames = Lists.newArrayList(config.getRollingHostNames());
-            newRollingHostNames.add(nextRollingHostname);
-            ConfigCollection        newCollection = new ConfigCollectionImpl(config.getRootConfig(), config.getRollingConfig(), newRollingHostNames);
+            // we're done - switch back to single config
+            ConfigCollection        newCollection = new ConfigCollectionImpl(config.getRollingConfig(), null);
             internalUpdateConfig(newCollection);
         }
         else
         {
-            ConfigCollection        newCollection = new ConfigCollectionImpl(config.getRollingConfig(), null);
+            ConfigCollection        newCollection = new ConfigCollectionImpl(config.getRootConfig(), config.getRollingConfig(), rollingHostNames, rollingHostNamesIndex + 1);
             internalUpdateConfig(newCollection);
         }
     }
