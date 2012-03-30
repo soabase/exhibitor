@@ -156,7 +156,7 @@
 
                     <fieldset class="caution-fieldset">
                         <legend class="caution-legend">Ensemble</legend>
-                        <label for="config-servers-spec">Servers</label><textarea id="config-servers-spec" name="config-servers-spec" title="List of all servers in the ensemble (including this one) in the form: id:host,id:host,..." cols="60" rows="4"></textarea><br clear="all"/>
+                        <label for="config-servers-spec">Servers</label><textarea id="config-servers-spec" name="config-servers-spec" title="List of all servers in the ensemble (including this one) in the form: type:id:host,type:id:host,... The type should be 'S' for a standard server and 'O' for an observer." cols="60" rows="4"></textarea><br clear="all"/>
                         <label for="config-custom">Additional Config</label><textarea id="config-custom" name="config-custom" title="Any additional config/properties to be added to the zoo.cfg file in the form: name=value - one per line." cols="60" rows="4"></textarea><br clear="all"/>
                     </fieldset>
 

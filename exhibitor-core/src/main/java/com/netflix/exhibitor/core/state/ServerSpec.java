@@ -20,13 +20,15 @@ package com.netflix.exhibitor.core.state;
 
 public class ServerSpec
 {
-    private final String    hostname;
-    private final int       serverId;
+    private final String        hostname;
+    private final int           serverId;
+    private final ServerType    serverType;
 
-    public ServerSpec(String hostname, int serverId)
+    public ServerSpec(String hostname, int serverId, ServerType serverType)
     {
         this.hostname = hostname;
         this.serverId = serverId;
+        this.serverType = serverType;
     }
 
     public String getHostname()
@@ -39,6 +41,12 @@ public class ServerSpec
         return serverId;
     }
 
+    public ServerType getServerType()
+    {
+        return serverType;
+    }
+
+    @SuppressWarnings("RedundantIfStatement")
     @Override
     public boolean equals(Object o)
     {
@@ -57,8 +65,11 @@ public class ServerSpec
         {
             return false;
         }
-        //noinspection RedundantIfStatement
         if ( !hostname.equals(that.hostname) )
+        {
+            return false;
+        }
+        if ( serverType != that.serverType )
         {
             return false;
         }
@@ -71,6 +82,7 @@ public class ServerSpec
     {
         int result = hostname.hashCode();
         result = 31 * result + serverId;
+        result = 31 * result + serverType.hashCode();
         return result;
     }
 }

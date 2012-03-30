@@ -41,22 +41,20 @@ public class ServerList
             String  trimmed = item.trim();
             if ( trimmed.length() > 0 )
             {
-                String[]    hostAndId = trimmed.split(":");
-                if ( hostAndId.length == 2 )
+                String[]    parts = trimmed.split(":");
+                String      code = getPart(parts, 0);
+                String      id = getPart(parts, 1);
+                String      hostname = getPart(parts, 2);
+                if ( (code != null) && (id != null) && (hostname != null) )
                 {
-                    String      trimmedId = hostAndId[0].trim();
-                    String      trimmedHost = hostAndId[1].trim();
-                    if ( (trimmedHost.length() > 0) && (trimmedId.length() > 0) )
+                    try
                     {
-                        try
-                        {
-                            int serverId = Integer.parseInt(trimmedId);
-                            builder.add(new ServerSpec(trimmedHost, serverId));
-                        }
-                        catch ( NumberFormatException ignore )
-                        {
-                            // ignore
-                        }
+                        int serverId = Integer.parseInt(id);
+                        builder.add(new ServerSpec(hostname, serverId, ServerType.fromCode(code)));
+                    }
+                    catch ( NumberFormatException ignore )
+                    {
+                        // ignore
                     }
                 }
             }
@@ -64,7 +62,24 @@ public class ServerList
 
         specs = builder.build();
     }
-    
+
+    private String getPart(String[] parts, int logicalIndex)
+    {
+        if ( parts.length == 3 )
+        {
+            return parts[logicalIndex].trim();
+        }
+        else if ( parts.length == 2 )
+        {
+            if ( logicalIndex == 0 )
+            {
+                return ServerType.STANDARD.getCode();
+            }
+            return parts[logicalIndex - 1].trim();
+        }
+        return null;
+    }
+
     public String toSpecString()
     {
         StringBuilder       str = new StringBuilder();

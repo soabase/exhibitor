@@ -30,7 +30,7 @@ abstract class ConfigCollectionBase implements ConfigCollection, RollingConfigSt
     {
         if ( isRolling() )
         {
-            return (100 * getRollingHostNamesIndex()) / getRollingHostNames().size();
+            return Math.max(1, (100 * getRollingHostNamesIndex()) / getRollingHostNames().size());
         }
         return 0;
     }

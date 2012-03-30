@@ -173,7 +173,7 @@ public class StandardProcessOperations implements ProcessOperations
         String          portSpec = String.format(":%d:%d", config.getInt(IntConfigs.CONNECT_PORT), config.getInt(IntConfigs.ELECTION_PORT));
         for ( ServerSpec spec : serverList.getSpecs() )
         {
-            localProperties.setProperty("server." + spec.getServerId(), spec.getHostname() + portSpec);
+            localProperties.setProperty("server." + spec.getServerId(), spec.getHostname() + portSpec + spec.getServerType().getZookeeperConfigValue());
         }
 
         File            configFile = new File(details.configDirectory, "zoo.cfg");
