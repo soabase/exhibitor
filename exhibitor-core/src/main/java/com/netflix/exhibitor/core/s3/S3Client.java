@@ -32,6 +32,8 @@ public interface S3Client
 
     public ObjectListing listObjects(ListObjectsRequest request) throws Exception;
 
+    public ObjectListing listNextBatchOfObjects(ObjectListing previousObjectListing) throws Exception;
+
     public PutObjectResult putObject(PutObjectRequest request) throws Exception;
 
     public void deleteObject(String bucket, String key) throws Exception;

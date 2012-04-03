@@ -59,6 +59,14 @@ public class MockS3Client implements S3Client
     }
 
     @Override
+    public ObjectListing listNextBatchOfObjects(ObjectListing previousObjectListing) throws Exception
+    {
+        ObjectListing listing = new ObjectListing();
+        listing.setTruncated(false);
+        return listing;
+    }
+
+    @Override
     public void deleteObject(String bucket, String key) throws Exception
     {
     }

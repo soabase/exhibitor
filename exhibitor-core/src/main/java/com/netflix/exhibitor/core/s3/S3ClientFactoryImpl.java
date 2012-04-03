@@ -55,6 +55,12 @@ public class S3ClientFactoryImpl implements S3ClientFactory
             }
 
             @Override
+            public ObjectListing listNextBatchOfObjects(ObjectListing previousObjectListing) throws Exception
+            {
+                return client.listNextBatchOfObjects(previousObjectListing);
+            }
+
+            @Override
             public void deleteObject(String bucket, String key) throws Exception
             {
                 client.deleteObject(bucket, key);
