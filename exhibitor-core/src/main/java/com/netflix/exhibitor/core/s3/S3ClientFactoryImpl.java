@@ -31,7 +31,7 @@ public class S3ClientFactoryImpl implements S3ClientFactory
     {
         return new S3Client()
         {
-            private final AtomicReference<AmazonS3Client>   client = new AtomicReference<AmazonS3Client>();
+            private final AtomicReference<RefCountedClient>   client = new AtomicReference<RefCountedClient>(null);
 
             {
                 changeCredentials(credentials);
@@ -40,12 +40,11 @@ public class S3ClientFactoryImpl implements S3ClientFactory
             @Override
             public void changeCredentials(S3Credential credential) throws Exception
             {
-                BasicAWSCredentials basicAWSCredentials = (credential != null) ? new BasicAWSCredentials(credentials.getAccessKeyId(), credentials.getSecretAccessKey()) : null;
-                AmazonS3Client      newClient = (basicAWSCredentials != null) ? new AmazonS3Client(basicAWSCredentials) : null;
-                AmazonS3Client      oldClient = client.getAndSet(newClient);
-                if ( oldClient != null )
+                RefCountedClient   newRefCountedClient = (credential != null) ? new RefCountedClient(new AmazonS3Client(new BasicAWSCredentials(credentials.getAccessKeyId(), credentials.getSecretAccessKey()))) : null;
+                RefCountedClient   oldRefCountedClient = client.getAndSet(newRefCountedClient);
+                if ( oldRefCountedClient != null )
                 {
-                    oldClient.shutdown();
+                    oldRefCountedClient.markForDelete();
                 }
             }
 
@@ -65,55 +64,136 @@ public class S3ClientFactoryImpl implements S3ClientFactory
             @Override
             public InitiateMultipartUploadResult initiateMultipartUpload(InitiateMultipartUploadRequest request) throws Exception
             {
-                return client.get().initiateMultipartUpload(request);
+                RefCountedClient holder = client.get();
+                AmazonS3Client amazonS3Client = holder.useClient();
+                try
+                {
+                    return amazonS3Client.initiateMultipartUpload(request);
+                }
+                finally
+                {
+                    holder.release();
+                }
             }
 
             @Override
             public PutObjectResult putObject(PutObjectRequest request) throws Exception
             {
-                return client.get().putObject(request);
+                RefCountedClient holder = client.get();
+                AmazonS3Client amazonS3Client = holder.useClient();
+                try
+                {
+                    return amazonS3Client.putObject(request);
+                }
+                finally
+                {
+                    holder.release();
+                }
             }
 
             @Override
             public S3Object getObject(String bucket, String key) throws Exception
             {
-                return client.get().getObject(bucket, key);
+                RefCountedClient holder = client.get();
+                AmazonS3Client amazonS3Client = holder.useClient();
+                try
+                {
+                    return amazonS3Client.getObject(bucket, key);
+                }
+                finally
+                {
+                    holder.release();
+                }
             }
 
             @Override
             public ObjectListing listObjects(ListObjectsRequest request) throws Exception
             {
-                return client.get().listObjects(request);
+                RefCountedClient    holder = client.get();
+                AmazonS3Client      amazonS3Client = holder.useClient();
+                try
+                {
+                    return amazonS3Client.listObjects(request);
+                }
+                finally
+                {
+                    holder.release();
+                }
             }
 
             @Override
             public ObjectListing listNextBatchOfObjects(ObjectListing previousObjectListing) throws Exception
             {
-                return client.get().listNextBatchOfObjects(previousObjectListing);
+                RefCountedClient holder = client.get();
+                AmazonS3Client amazonS3Client = holder.useClient();
+                try
+                {
+                    return amazonS3Client.listNextBatchOfObjects(previousObjectListing);
+                }
+                finally
+                {
+                    holder.release();
+                }
             }
 
             @Override
             public void deleteObject(String bucket, String key) throws Exception
             {
-                client.get().deleteObject(bucket, key);
+                RefCountedClient holder = client.get();
+                AmazonS3Client amazonS3Client = holder.useClient();
+                try
+                {
+                    amazonS3Client.deleteObject(bucket, key);
+                }
+                finally
+                {
+                    holder.release();
+                }
             }
 
             @Override
             public UploadPartResult uploadPart(UploadPartRequest request) throws Exception
             {
-                return client.get().uploadPart(request);
+                RefCountedClient holder = client.get();
+                AmazonS3Client amazonS3Client = holder.useClient();
+                try
+                {
+                    return amazonS3Client.uploadPart(request);
+                }
+                finally
+                {
+                    holder.release();
+                }
             }
 
             @Override
             public void completeMultipartUpload(CompleteMultipartUploadRequest request) throws Exception
             {
-                client.get().completeMultipartUpload(request);
+                RefCountedClient holder = client.get();
+                AmazonS3Client amazonS3Client = holder.useClient();
+                try
+                {
+                    amazonS3Client.completeMultipartUpload(request);
+                }
+                finally
+                {
+                    holder.release();
+                }
             }
 
             @Override
             public void abortMultipartUpload(AbortMultipartUploadRequest request) throws Exception
             {
-                client.get().abortMultipartUpload(request);
+                RefCountedClient holder = client.get();
+                AmazonS3Client amazonS3Client = holder.useClient();
+                try
+                {
+                    amazonS3Client.abortMultipartUpload(request);
+                }
+                finally
+                {
+                    holder.release();
+                }
             }
         };
     }
