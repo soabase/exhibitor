@@ -145,13 +145,21 @@ public class ConfigResource
         InstanceConfig  wrapped = parseToConfig(newConfigJson);
 
         Result  result;
-        if ( context.getExhibitor().getConfigManager().startRollingConfig(wrapped) )
+        try
         {
-            result = new Result("OK", true);
+            if ( context.getExhibitor().getConfigManager().startRollingConfig(wrapped) )
+            {
+                result = new Result("OK", true);
+            }
+            else
+            {
+                result = new Result("Another process has updated the config.", false);  // TODO - appropriate message
+            }
         }
-        else
+        catch ( Exception e )
         {
-            result = new Result("Another process has updated the config.", false);  // TODO - appropriate message
+            String      message = (e.getMessage() != null) ? e.getMessage() : "Unknown";
+            result = new Result(e.getClass().getSimpleName() + ": " + message, false);
         }
 
         return Response.ok(result).build();
@@ -167,15 +175,23 @@ public class ConfigResource
         InstanceConfig wrapped = parseToConfig(newConfigJson);
         
         Result  result;
-        if ( context.getExhibitor().getConfigManager().updateConfig(wrapped) )
+        try
         {
-            result = new Result("OK", true);
+            if ( context.getExhibitor().getConfigManager().updateConfig(wrapped) )
+            {
+                result = new Result("OK", true);
+            }
+            else
+            {
+                result = new Result("Another process has updated the config.", false);
+            }
+            context.getExhibitor().resetLocalConnection();
         }
-        else
+        catch ( Exception e )
         {
-            result = new Result("Another process has updated the config.", false);
+            String      message = (e.getMessage() != null) ? e.getMessage() : "Unknown";
+            result = new Result(e.getClass().getSimpleName() + ": " + message, false);
         }
-        context.getExhibitor().resetLocalConnection();
 
         return Response.ok(result).build();
     }
