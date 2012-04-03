@@ -19,13 +19,16 @@
 package com.netflix.exhibitor.core.s3;
 
 import com.amazonaws.services.s3.model.*;
+import java.io.Closeable;
 
 /**
  * Adapts the S3 client interface so that it can be tested - all methods are direct proxies
  * to the S3 client
  */
-public interface S3Client
+public interface S3Client extends Closeable
 {
+    public void     changeCredentials(S3Credential credential) throws Exception;
+
     public InitiateMultipartUploadResult initiateMultipartUpload(InitiateMultipartUploadRequest request) throws Exception;
 
     public S3Object getObject(String bucket, String key) throws Exception;

@@ -4,8 +4,10 @@ import com.amazonaws.services.s3.model.*;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
 import com.netflix.exhibitor.core.s3.S3Client;
+import com.netflix.exhibitor.core.s3.S3Credential;
 import com.netflix.exhibitor.core.s3.S3Utils;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.List;
 
 public class MockS3Client implements S3Client
@@ -24,6 +26,18 @@ public class MockS3Client implements S3Client
     {
         this.object = object;
         this.listing = listing;
+    }
+
+    @Override
+    public void changeCredentials(S3Credential credential) throws Exception
+    {
+        // NOP
+    }
+
+    @Override
+    public void close() throws IOException
+    {
+        // NOP
     }
 
     @Override

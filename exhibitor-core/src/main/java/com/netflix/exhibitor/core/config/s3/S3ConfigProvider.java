@@ -18,7 +18,6 @@
 
 package com.netflix.exhibitor.core.config.s3;
 
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
@@ -49,8 +48,7 @@ public class S3ConfigProvider implements ConfigProvider
     {
         this.arguments = arguments;
         this.defaults = defaults;
-        BasicAWSCredentials credentials = new BasicAWSCredentials(credential.getAccessKeyId(), credential.getSecretAccessKey());
-        s3Client = factory.makeNewClient(credentials);
+        s3Client = factory.makeNewClient(credential);
     }
 
     @Override

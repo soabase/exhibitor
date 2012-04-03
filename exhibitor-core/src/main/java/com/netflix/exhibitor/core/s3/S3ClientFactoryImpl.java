@@ -18,70 +18,102 @@
 
 package com.netflix.exhibitor.core.s3;
 
-import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.*;
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class S3ClientFactoryImpl implements S3ClientFactory
 {
     @Override
-    public S3Client makeNewClient(AWSCredentials credentials) throws Exception
+    public S3Client makeNewClient(final S3Credential credentials) throws Exception
     {
-        final AmazonS3Client        client = new AmazonS3Client(credentials);
         return new S3Client()
         {
+            private final AtomicReference<AmazonS3Client>   client = new AtomicReference<AmazonS3Client>();
+
+            {
+                changeCredentials(credentials);
+            }
+
+            @Override
+            public void changeCredentials(S3Credential credential) throws Exception
+            {
+                BasicAWSCredentials basicAWSCredentials = (credential != null) ? new BasicAWSCredentials(credentials.getAccessKeyId(), credentials.getSecretAccessKey()) : null;
+                AmazonS3Client      newClient = (basicAWSCredentials != null) ? new AmazonS3Client(basicAWSCredentials) : null;
+                AmazonS3Client      oldClient = client.getAndSet(newClient);
+                if ( oldClient != null )
+                {
+                    oldClient.shutdown();
+                }
+            }
+
+            @Override
+            public void close() throws IOException
+            {
+                try
+                {
+                    changeCredentials(null);
+                }
+                catch ( Exception e )
+                {
+                    throw new IOException(e);
+                }
+            }
+
             @Override
             public InitiateMultipartUploadResult initiateMultipartUpload(InitiateMultipartUploadRequest request) throws Exception
             {
-                return client.initiateMultipartUpload(request);
+                return client.get().initiateMultipartUpload(request);
             }
 
             @Override
             public PutObjectResult putObject(PutObjectRequest request) throws Exception
             {
-                return client.putObject(request);
+                return client.get().putObject(request);
             }
 
             @Override
             public S3Object getObject(String bucket, String key) throws Exception
             {
-                return client.getObject(bucket, key);
+                return client.get().getObject(bucket, key);
             }
 
             @Override
             public ObjectListing listObjects(ListObjectsRequest request) throws Exception
             {
-                return client.listObjects(request);
+                return client.get().listObjects(request);
             }
 
             @Override
             public ObjectListing listNextBatchOfObjects(ObjectListing previousObjectListing) throws Exception
             {
-                return client.listNextBatchOfObjects(previousObjectListing);
+                return client.get().listNextBatchOfObjects(previousObjectListing);
             }
 
             @Override
             public void deleteObject(String bucket, String key) throws Exception
             {
-                client.deleteObject(bucket, key);
+                client.get().deleteObject(bucket, key);
             }
 
             @Override
             public UploadPartResult uploadPart(UploadPartRequest request) throws Exception
             {
-                return client.uploadPart(request);
+                return client.get().uploadPart(request);
             }
 
             @Override
             public void completeMultipartUpload(CompleteMultipartUploadRequest request) throws Exception
             {
-                client.completeMultipartUpload(request);
+                client.get().completeMultipartUpload(request);
             }
 
             @Override
             public void abortMultipartUpload(AbortMultipartUploadRequest request) throws Exception
             {
-                client.abortMultipartUpload(request);
+                client.get().abortMultipartUpload(request);
             }
         };
     }
