@@ -227,36 +227,35 @@ public class S3BackupProvider implements BackupProvider
     @Override
     public List<BackupMetaData> getAvailableBackups(Exhibitor exhibitor, Map<String, String> configValues) throws Exception
     {
+        String            keyPrefix = getKeyPrefix(configValues);
+
         ListObjectsRequest      request = new ListObjectsRequest();
         request.setBucketName(configValues.get(CONFIG_BUCKET.getKey()));
-        ObjectListing           listing = s3Client.get().listObjects(request);
+        request.setPrefix(keyPrefix);
 
-        final String                keyPrefix = getKeyPrefix(configValues);
-        Iterable<S3ObjectSummary>   filtered = Iterables.filter
-        (
-            listing.getObjectSummaries(),
-            new Predicate<S3ObjectSummary>()
-            {
-                @Override
-                public boolean apply(S3ObjectSummary summary)
-                {
-                    return summary.getKey().startsWith(keyPrefix);
-                }
-            }
-        );
+        List<BackupMetaData>    completeList = Lists.newArrayList();
 
-        return Lists.transform
-        (
-            Lists.newArrayList(filtered),
-            new Function<S3ObjectSummary, BackupMetaData>()
-            {
-                @Override
-                public BackupMetaData apply(S3ObjectSummary summary)
-                {
-                    return fromKey(summary.getKey());
-                }
-            }
-        );
+        ObjectListing           listing = null;
+        do
+        {
+            listing = (listing == null) ? s3Client.get().listObjects(request) : s3Client.get().listNextBatchOfObjects(listing);
+            completeList.addAll
+            (
+                Lists.transform
+                (
+                    listing.getObjectSummaries(),
+                    new Function<S3ObjectSummary, BackupMetaData>()
+                    {
+                        @Override
+                        public BackupMetaData apply(S3ObjectSummary summary)
+                        {
+                            return fromKey(summary.getKey());
+                        }
+                    }
+                )
+            );
+        } while ( listing.isTruncated() );
+        return completeList;
     }
 
     @Override
