@@ -19,13 +19,9 @@
 package com.netflix.exhibitor.core.config.s3;
 
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.s3.model.ListObjectsRequest;
-import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
 import com.netflix.exhibitor.core.config.ConfigCollection;
 import com.netflix.exhibitor.core.config.ConfigProvider;
 import com.netflix.exhibitor.core.config.LoadedInstanceConfig;
@@ -104,27 +100,21 @@ public class S3ConfigProvider implements ConfigProvider
 
     private S3Object getConfigObject() throws Exception
     {
-        ListObjectsRequest  request = new ListObjectsRequest();
-        request.setBucketName(arguments.getBucket());
-        ObjectListing       listing = s3Client.listObjects(request);
-        S3ObjectSummary     keySummary = Iterables.find
-        (
-            listing.getObjectSummaries(),
-            new Predicate<S3ObjectSummary>()
-            {
-                @Override
-                public boolean apply(S3ObjectSummary summary)
-                {
-                    return summary.getKey().equals(arguments.getKey());
-                }
-            },
-            null
-        );
-        if ( keySummary == null )
+        try
         {
-            return null;
+            S3Object object = s3Client.getObject(arguments.getBucket(), arguments.getKey());
+            if ( object.getObjectMetadata().getContentLength() > 0 )
+            {
+                return object;
+            }
         }
-
-        return s3Client.getObject(arguments.getBucket(), arguments.getKey());
+        catch ( AmazonS3Exception e )
+        {
+            if ( e.getStatusCode() != 404 )
+            {
+                throw e;
+            }
+        }
+        return null;
     }
 }
