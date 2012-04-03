@@ -70,6 +70,11 @@ public class S3BackupProvider implements BackupProvider
         s3Client = factory.makeNewClient(credential);
     }
 
+    public S3Client getS3Client()
+    {
+        return s3Client;
+    }
+
     @Override
     public List<BackupConfigSpec> getConfigs()
     {
