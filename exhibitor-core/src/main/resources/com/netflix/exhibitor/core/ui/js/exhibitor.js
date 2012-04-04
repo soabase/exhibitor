@@ -97,6 +97,7 @@ function updateState()
         }
         else if ( systemState.version != currentVersion )
         {
+            currentVersion = systemState.version;
             location.reload();
             return;
         }
