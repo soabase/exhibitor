@@ -89,14 +89,21 @@ public class Exhibitor implements Closeable
         private final int       connectionTimeOutMs;
         private final int       logWindowSizeLines;
         private final int       configCheckMs;
+        private final String    extraHeadingText;
         private final String    thisJVMHostname;
 
         public Arguments(int connectionTimeOutMs, int logWindowSizeLines, String thisJVMHostname, int configCheckMs)
+        {
+            this(connectionTimeOutMs, logWindowSizeLines, thisJVMHostname, configCheckMs, null);
+        }
+
+        public Arguments(int connectionTimeOutMs, int logWindowSizeLines, String thisJVMHostname, int configCheckMs, String extraHeadingText)
         {
             this.connectionTimeOutMs = connectionTimeOutMs;
             this.logWindowSizeLines = logWindowSizeLines;
             this.thisJVMHostname = thisJVMHostname;
             this.configCheckMs = configCheckMs;
+            this.extraHeadingText = extraHeadingText;
         }
     }
 
@@ -199,6 +206,11 @@ public class Exhibitor implements Closeable
                 }
             }
         );
+    }
+
+    public String getExtraHeadingText()
+    {
+        return arguments.extraHeadingText;
     }
 
     @Override

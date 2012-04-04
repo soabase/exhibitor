@@ -109,6 +109,13 @@ function updateState()
 
         $.unblockUI();
 
+        var     pageTitle = "Exhibitor for ZooKeeper";
+        if ( systemState.extraHeadingText )
+        {
+            pageTitle += ' - ' + systemState.extraHeadingText;
+        }
+
+        $('#page-title').html(pageTitle);
         $('#version').html(systemState.version);
         $('#not-connected-alert').hide();
         $('#instance-hostname').html(systemConfig.hostname);
@@ -586,7 +593,6 @@ $(function ()
     });
 
     $('#not-connected-message').html("Not connected to " + $('#app-name').html() + " server");
-    $('#page-title').html($('#app-name').html() + " for ZooKeeper");
 
     window.setInterval("updateState()", UPDATE_STATE_PERIOD);
     updateState();

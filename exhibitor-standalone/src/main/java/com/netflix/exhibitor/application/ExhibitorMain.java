@@ -62,6 +62,7 @@ public class ExhibitorMain implements Closeable
     private static final String HELP = "help";
     private static final String ALT_HELP = "?";
     private static final String HTTP_PORT = "port";
+    private static final String EXTRA_HEADING_TEXT = "headingtext";
 
     public static void main(String[] args) throws Exception
     {
@@ -78,6 +79,7 @@ public class ExhibitorMain implements Closeable
         options.addOption(null, HOSTNAME, true, "Hostname to use for this JVM. Default is: " + hostname);
         options.addOption(null, CONFIGCHECKMS, true, "Period (ms) to check config file. Default is: 30000");
         options.addOption(null, HTTP_PORT, true, "Port for the HTTP Server. Default is: 8080");
+        options.addOption(null, EXTRA_HEADING_TEXT, true, "Extra text to display in UI header");
         options.addOption(ALT_HELP, HELP, false, "Print this help");
 
         CommandLine         commandLine;
@@ -150,8 +152,9 @@ public class ExhibitorMain implements Closeable
         int         configCheckMs = Integer.parseInt(commandLine.getOptionValue(CONFIGCHECKMS, "30000"));
         String      useHostname = commandLine.getOptionValue(HOSTNAME, hostname);
         int         httpPort = Integer.parseInt(commandLine.getOptionValue(HTTP_PORT, "8080"));
+        String      extraHeadingText = commandLine.getOptionValue(EXTRA_HEADING_TEXT, null);
 
-        Exhibitor.Arguments     arguments = new Exhibitor.Arguments(timeoutMs, logWindowSizeLines, useHostname, configCheckMs);
+        Exhibitor.Arguments     arguments = new Exhibitor.Arguments(timeoutMs, logWindowSizeLines, useHostname, configCheckMs, extraHeadingText);
         ExhibitorMain exhibitorMain = new ExhibitorMain(backupProvider, provider, arguments, httpPort);
         exhibitorMain.start();
         exhibitorMain.join();

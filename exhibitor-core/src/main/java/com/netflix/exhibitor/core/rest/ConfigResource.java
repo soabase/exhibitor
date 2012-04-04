@@ -77,6 +77,7 @@ public class ConfigResource
         mainNode.put("version", context.getExhibitor().getVersion());
         mainNode.put("running", "imok".equals(response));
         mainNode.put("backupActive", context.getExhibitor().getBackupManager().isActive());
+        mainNode.put("extraHeadingText", context.getExhibitor().getExtraHeadingText());
 
         configNode.put("rollInProgress", context.getExhibitor().getConfigManager().isRolling());
         configNode.put("rollStatus", context.getExhibitor().getConfigManager().getRollingConfigState().getRollingStatus());
