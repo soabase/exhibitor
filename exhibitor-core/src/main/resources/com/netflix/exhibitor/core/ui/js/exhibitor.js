@@ -73,7 +73,7 @@ var hasBackupConfig = false;
 var systemState = {};
 var systemConfig = {};
 var connectedToExhibitor = true;
-var currentVersion = -1;
+var currentVersion = null;
 function updateState()
 {
     if ( !hasBackupConfig )
@@ -91,7 +91,7 @@ function updateState()
             systemConfig = systemState.config;
         }
 
-        if ( currentVersion < 0 )
+        if ( currentVersion === null )
         {
             currentVersion = systemState.version;
         }
