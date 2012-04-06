@@ -337,7 +337,7 @@ public class IndexResource
         {
             boolean         hasTerms = false;
             QueryBuilder    builder = QueryBuilder.builder();
-            if ( request.getPathPrefix().length() > 0 )
+            if ( (request.getPathPrefix() != null) && (request.getPathPrefix().length() > 0) )
             {
                 hasTerms = true;
                 builder.pathPrefix(request.getPathPrefix());

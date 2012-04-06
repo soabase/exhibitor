@@ -45,8 +45,6 @@ class NaturalNotationContextResolver implements ContextResolver<JAXBContext>
                 SearchRequest.class,
                 SearchResult.class,
                 UITabSpec.class,
-                InstanceStatus.class,
-                VersionedInstanceStatus.class,
                 NameAndModifiedDate.class
             );
         }

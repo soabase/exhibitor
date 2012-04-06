@@ -52,7 +52,7 @@ import java.net.URLEncoder;
 import java.util.concurrent.Callable;
 
 /**
- * REST calls for dealing with indexed (via Lucene) log files
+ * REST calls for dealing with the entire ensemble
  */
 @SuppressWarnings("UnusedDeclaration")
 @Path("exhibitor/v1/cluster")

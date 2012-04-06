@@ -236,7 +236,7 @@ public class BackupManager implements Closeable
 
                     case REPLACED_OLD_VERSION:
                     {
-                        exhibitor.getLog().add(ActivityLog.Type.INFO, "Updated back up for: " + f);
+                        exhibitor.getLog().add(ActivityLog.Type.DEBUG, "Updated back up for: " + f);
                         break;
                     }
                 }

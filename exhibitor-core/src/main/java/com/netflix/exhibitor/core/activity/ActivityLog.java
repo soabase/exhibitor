@@ -107,6 +107,12 @@ public class ActivityLog
                     log.error(message);
                 }
             }
+
+            @Override
+            protected boolean addToUI()
+            {
+                return true;
+            }
         },
 
         INFO()
@@ -123,11 +129,41 @@ public class ActivityLog
                     log.info(message);
                 }
             }
+
+            @Override
+            protected boolean addToUI()
+            {
+                return true;
+            }
         },
+
+        DEBUG()
+        {
+            @Override
+            protected void log(String message, Throwable exception)
+            {
+                if ( exception != null )
+                {
+                    log.debug(message, exception);
+                }
+                else
+                {
+                    log.debug(message);
+                }
+            }
+
+            @Override
+            protected boolean addToUI()
+            {
+                return Boolean.getBoolean("log-debug");
+            }
+        }
 
         ;
 
         protected abstract void  log(String message, Throwable exception);
+
+        protected abstract boolean  addToUI();
     }
 
     /**
@@ -161,11 +197,14 @@ public class ActivityLog
             queueMessage += " (" + exceptionMessage + ")";
         }
 
-        while ( queue.size() > windowSizeLines )  // NOTE: due to concurrency, this may make the queue shorter than MAX - that's OK (and in some cases longer)
+        if ( type.addToUI() )
         {
-            queue.remove();
+            while ( queue.size() > windowSizeLines )  // NOTE: due to concurrency, this may make the queue shorter than MAX - that's OK (and in some cases longer)
+            {
+                queue.remove();
+            }
+            queue.add(new Message(queueMessage, type));
         }
-        queue.add(new Message(queueMessage, type));
         type.log(message, exception);
     }
 
