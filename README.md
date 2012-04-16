@@ -14,6 +14,10 @@ Exhibitor is built via Gradle (http://www.gradle.org). To build from the command
 
 Exhibitor binaries are published to Maven Central. Please see the docs for details.
 
+## MAILING LIST
+
+There is an Exhibitor mailing list. Subscribe here: https://listserv.netflix.com/mailman/listinfo/exhibitor-users
+
 ## AUTHOR
 
 Jordan Zimmerman (jzimmerman@netflix.com)
