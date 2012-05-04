@@ -32,6 +32,12 @@ public class Result
         this("", false);
     }
 
+    public Result(Throwable e)
+    {
+        message = (e.getMessage() != null) ? e.getMessage() : "Unknown";
+        succeeded = false;
+    }
+
     public Result(String message, boolean succeeded)
     {
         this.message = message;

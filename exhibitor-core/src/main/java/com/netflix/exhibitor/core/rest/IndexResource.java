@@ -101,7 +101,14 @@ public class IndexResource
 
             if ( path != null )
             {
-                IndexerUtil.startIndexing(context.getExhibitor(), path);
+                try
+                {
+                    IndexerUtil.startIndexing(context.getExhibitor(), path);
+                }
+                catch ( Exception e )
+                {
+                    context.getExhibitor().getLog().add(ActivityLog.Type.ERROR, "Could not start indexing for: " + path, e);
+                }
             }
             else
             {

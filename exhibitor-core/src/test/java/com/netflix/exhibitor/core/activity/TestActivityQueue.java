@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.io.Closeables;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;

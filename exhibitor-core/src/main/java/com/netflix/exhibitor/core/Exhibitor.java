@@ -91,19 +91,16 @@ public class Exhibitor implements Closeable
         private final int       configCheckMs;
         private final String    extraHeadingText;
         private final String    thisJVMHostname;
+        private final boolean   allowNodeMutations;
 
-        public Arguments(int connectionTimeOutMs, int logWindowSizeLines, String thisJVMHostname, int configCheckMs)
-        {
-            this(connectionTimeOutMs, logWindowSizeLines, thisJVMHostname, configCheckMs, null);
-        }
-
-        public Arguments(int connectionTimeOutMs, int logWindowSizeLines, String thisJVMHostname, int configCheckMs, String extraHeadingText)
+        public Arguments(int connectionTimeOutMs, int logWindowSizeLines, String thisJVMHostname, int configCheckMs, String extraHeadingText, boolean allowNodeMutations)
         {
             this.connectionTimeOutMs = connectionTimeOutMs;
             this.logWindowSizeLines = logWindowSizeLines;
             this.thisJVMHostname = thisJVMHostname;
             this.configCheckMs = configCheckMs;
             this.extraHeadingText = extraHeadingText;
+            this.allowNodeMutations = allowNodeMutations;
         }
     }
 
@@ -264,6 +261,11 @@ public class Exhibitor implements Closeable
     public String getThisJVMHostname()
     {
         return arguments.thisJVMHostname;
+    }
+
+    public boolean nodeMutationsAllowed()
+    {
+        return arguments.allowNodeMutations;
     }
 
     /**

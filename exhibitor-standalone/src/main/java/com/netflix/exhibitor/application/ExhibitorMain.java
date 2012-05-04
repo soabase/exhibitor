@@ -63,6 +63,7 @@ public class ExhibitorMain implements Closeable
     private static final String ALT_HELP = "?";
     private static final String HTTP_PORT = "port";
     private static final String EXTRA_HEADING_TEXT = "headingtext";
+    private static final String NODE_MUTATIONS = "nodemodification";
 
     public static void main(String[] args) throws Exception
     {
@@ -80,6 +81,7 @@ public class ExhibitorMain implements Closeable
         options.addOption(null, CONFIGCHECKMS, true, "Period (ms) to check config file. Default is: 30000");
         options.addOption(null, HTTP_PORT, true, "Port for the HTTP Server. Default is: 8080");
         options.addOption(null, EXTRA_HEADING_TEXT, true, "Extra text to display in UI header");
+        options.addOption(null, NODE_MUTATIONS, true, "If true, the Explorer UI will allow nodes to be modified (use with caution).");
         options.addOption(ALT_HELP, HELP, false, "Print this help");
 
         CommandLine         commandLine;
@@ -153,8 +155,9 @@ public class ExhibitorMain implements Closeable
         String      useHostname = commandLine.getOptionValue(HOSTNAME, hostname);
         int         httpPort = Integer.parseInt(commandLine.getOptionValue(HTTP_PORT, "8080"));
         String      extraHeadingText = commandLine.getOptionValue(EXTRA_HEADING_TEXT, null);
+        boolean     allowNodeMutations = "true".equalsIgnoreCase(commandLine.getOptionValue(NODE_MUTATIONS));
 
-        Exhibitor.Arguments     arguments = new Exhibitor.Arguments(timeoutMs, logWindowSizeLines, useHostname, configCheckMs, extraHeadingText);
+        Exhibitor.Arguments     arguments = new Exhibitor.Arguments(timeoutMs, logWindowSizeLines, useHostname, configCheckMs, extraHeadingText, allowNodeMutations);
         ExhibitorMain exhibitorMain = new ExhibitorMain(backupProvider, provider, arguments, httpPort);
         exhibitorMain.start();
         exhibitorMain.join();

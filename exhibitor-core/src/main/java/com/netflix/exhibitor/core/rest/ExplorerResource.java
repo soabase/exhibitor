@@ -20,16 +20,22 @@ package com.netflix.exhibitor.core.rest;
 
 import com.netflix.curator.utils.ZKPaths;
 import com.netflix.exhibitor.core.activity.ActivityLog;
+import com.netflix.exhibitor.core.entities.Result;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.data.Stat;
 import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.JsonNodeFactory;
 import org.codehaus.jackson.node.ObjectNode;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ContextResolver;
 import java.lang.reflect.Field;
 import java.util.Collections;
@@ -58,6 +64,88 @@ public class ExplorerResource
             bytesStr.append(Integer.toHexString(b & 0xff)).append(" ");
         }
         return bytesStr.toString();
+    }
+
+    @DELETE
+    @Path("znode/{path:.*}")
+    @Produces("application/json")
+    public Response deleteNode(@PathParam("path") String path)
+    {
+        Response    response;
+        do
+        {
+            if ( !context.getExhibitor().nodeMutationsAllowed() )
+            {
+                response = Response.status(Response.Status.FORBIDDEN).build();
+                break;
+            }
+
+            try
+            {
+                recursivelyDelete("/" + path);
+            }
+            catch ( Exception e )
+            {
+                response = Response.ok(new Result(e)).build();
+                break;
+            }
+
+            response = Response.ok(new Result("OK", true)).build();
+        } while ( false );
+
+        return response;
+    }
+
+    private void recursivelyDelete(String path) throws Exception
+    {
+        List<String>        children = context.getExhibitor().getLocalConnection().getChildren().forPath(path);
+        for ( String name : children )
+        {
+            recursivelyDelete(ZKPaths.makePath(path, name));
+        }
+
+        context.getExhibitor().getLocalConnection().delete().forPath(path);
+    }
+
+    @PUT
+    @Path("znode/{path:.*}")
+    @Produces("application/json")
+    @Consumes("application/json")
+    public Response createNode(@PathParam("path") String path, String data)
+    {
+        Response    response;
+        do
+        {
+            if ( !context.getExhibitor().nodeMutationsAllowed() )
+            {
+                response = Response.status(Response.Status.FORBIDDEN).build();
+                break;
+            }
+
+            path = "/" + path;
+            try
+            {
+                try
+                {
+                    context.getExhibitor().getLocalConnection().setData().forPath(path, data.getBytes("UTF-8"));
+                    context.getExhibitor().getLog().add(ActivityLog.Type.INFO, String.format("createNode() updated node [%s] to data [%s]", path, data));
+                }
+                catch ( KeeperException.NoNodeException dummy )
+                {
+                    context.getExhibitor().getLocalConnection().create().creatingParentsIfNeeded().forPath(path, data.getBytes("UTF-8"));
+                    context.getExhibitor().getLog().add(ActivityLog.Type.INFO, String.format("createNode() created node [%s] with data [%s]", path, data));
+                }
+            }
+            catch ( Exception e )
+            {
+                response = Response.ok(new Result(e)).build();
+                break;
+            }
+
+            response = Response.ok(new Result("OK", true)).build();
+        } while ( false );
+
+        return response;
     }
 
     @GET

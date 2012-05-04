@@ -18,9 +18,10 @@
 		<script type="text/javascript" src="lightSwitch/jquery.lightswitch.js"></script>
         <script type="text/javascript" src="colortip-1.0/colortip-1.0-jquery.js"></script>
         <script type="text/javascript" src="js/jquery.appear-1.1.1.js"></script>
-        <script type="text/javascript" src="js/exhibitor.js"></script>
         <script type="text/javascript" src="js/exhibitor-index.js"></script>
         <script type="text/javascript" src="js/exhibitor-cluster.js"></script>
+        <script type="text/javascript" src="js/exhibitor-explorer.js"></script>
+        <script type="text/javascript" src="js/exhibitor.js"></script>
         <script type="text/javascript" src="js/jquery.dataTables.js"></script>
         <script type="text/javascript" src="js/Scroller.js"></script>
         <script type="text/javascript" src="js/jquery.blockUI.js"></script>
@@ -109,6 +110,12 @@
                             <td nowrap><strong>Data as String</strong></td> <td><span id="data-str"></span></td>
                         </tr>
                     </table>
+                </div>
+
+                <div id="explorer-mutation-buttons" class="ui-helper-hidden">
+                    <button id="explorer-mutation-button-create">Create Node...</button>
+                    <button id="explorer-mutation-button-set-data">Set Node Data...</button>
+                    <button id="explorer-mutation-button-delete">Delete Node...</button>
                 </div>
             </div>
 
@@ -221,6 +228,13 @@
             <span class="ui-icon ui-icon-alert" style="float: left; margin:0 7px 50px 0;"></span>
             <span id="message-dialog-text"></span>
             </p>
+        </div>
+
+        <div id="get-node-data-dialog" class="ui-helper-hidden">
+            <div id="node-name-container">
+                <label for="node-name">Name </label><input type="text" id="node-name" name="node-name" size="10"><br clear="all"/>
+            </div>
+            <label for="node-data">Data </label><input type="text" id="node-data" name="node-data" size="30"><br clear="all"/>
         </div>
 
         <div id="index-query-dialog" class="ui-helper-hidden">

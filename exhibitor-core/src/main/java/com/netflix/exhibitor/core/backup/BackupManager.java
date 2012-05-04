@@ -268,6 +268,8 @@ public class BackupManager implements Closeable
             return;
         }
 
+        exhibitor.getLog().add(ActivityLog.Type.INFO, "Checking for elapsed backups");
+
         List<BackupMetaData>        availableBackups = backupProvider.get().getAvailableBackups(exhibitor, config);
         for ( BackupMetaData backup : availableBackups )
         {

@@ -78,6 +78,7 @@ public class ConfigResource
         mainNode.put("running", "imok".equals(response));
         mainNode.put("backupActive", context.getExhibitor().getBackupManager().isActive());
         mainNode.put("extraHeadingText", context.getExhibitor().getExtraHeadingText());
+        mainNode.put("nodeMutationsAllowed", context.getExhibitor().nodeMutationsAllowed());
 
         configNode.put("rollInProgress", context.getExhibitor().getConfigManager().isRolling());
         configNode.put("rollStatus", context.getExhibitor().getConfigManager().getRollingConfigState().getRollingStatus());
@@ -159,8 +160,7 @@ public class ConfigResource
         }
         catch ( Exception e )
         {
-            String      message = (e.getMessage() != null) ? e.getMessage() : "Unknown";
-            result = new Result(e.getClass().getSimpleName() + ": " + message, false);
+            result = new Result(e);
         }
 
         return Response.ok(result).build();
@@ -190,8 +190,7 @@ public class ConfigResource
         }
         catch ( Exception e )
         {
-            String      message = (e.getMessage() != null) ? e.getMessage() : "Unknown";
-            result = new Result(e.getClass().getSimpleName() + ": " + message, false);
+            result = new Result(e);
         }
 
         return Response.ok(result).build();

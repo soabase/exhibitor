@@ -428,3 +428,14 @@ fieldset
 {
     padding: 1px 3px 1px 3px;
 }
+
+#get-node-data-dialog label
+{
+    float: left;
+    width: 70px;
+}
+
+#node-name-container
+{
+    margin-bottom: 3px;
+}

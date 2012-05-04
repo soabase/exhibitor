@@ -20,6 +20,7 @@ var URL_CLUSTER_GET_STATE_BASE = "../cluster/state/";
 
 var URL_EXPLORER_NODE_DATA = "../explorer/node-data";
 var URL_EXPLORER_NODE = "../explorer/node";
+var URL_EXPLORER_ZNODE_BASE = "../explorer/znode";
 
 var URL_GET_STATE = "../config/get-state";
 var URL_SET_CONFIG = "../config/set";
@@ -117,6 +118,15 @@ function updateState()
         {
             $('#config-backups-fieldset').hide();
             $('#backups-enabled-control').hide();
+        }
+
+        if ( systemState.nodeMutationsAllowed )
+        {
+            $('#explorer-mutation-buttons').show();
+        }
+        else
+        {
+            $('#explorer-mutation-buttons').hide();
         }
 
         $.unblockUI();
@@ -338,61 +348,6 @@ function updateConfig()
         id = getBackupExtraId(c);
         $('#' + id).val(systemConfig.backupExtra[c.key]);
     }
-
-}
-
-function initExplorer()
-{
-    $("#tree").dynatree({
-        onActivate:function (node)
-        {
-            $.ajax
-                (
-                    {
-                        url: URL_EXPLORER_NODE_DATA,
-                        data: {"key":node.data.key},
-                        cache: false,
-                        dataType: 'json',
-                        success:function (data){
-                            $("#path").text(node.data.key);
-                            $("#stat").text(data.stat);
-                            $("#data-bytes").text(data.bytes);
-                            $("#data-str").text(data.str);
-                        }
-                    }
-                );
-        },
-
-        selectMode:1,
-
-        children:[
-            {title:"/", isFolder:true, isLazy:true, key:"/", expand:false, noLink:true}
-        ],
-
-        onLazyRead:function (node)
-        {
-            node.appendAjax
-                (
-                    {
-                        url: URL_EXPLORER_NODE,
-                        data:{"key":node.data.key},
-                        cache:false
-                    }
-                );
-        },
-
-        onClick:function (node, event)
-        {
-            if ( node.getEventTargetType(event) == "expander" )
-            {
-                node.reloadChildren(function (node, isOk){
-                });
-            }
-            return true;
-        },
-
-        persist:false
-    });
 }
 
 function refreshCurrentTab()
