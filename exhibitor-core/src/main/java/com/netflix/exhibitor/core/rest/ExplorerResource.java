@@ -128,7 +128,7 @@ public class ExplorerResource
             @HeaderParam("netflix-user-name") String trackingUserName,
             @HeaderParam("netflix-ticket-number") String trackingTicketNumber,
             @HeaderParam("netflix-reason") String trackingReason,
-            String data
+            String binaryDataStr
         )
     {
         Response    response;
@@ -145,15 +145,23 @@ public class ExplorerResource
 
             try
             {
+                byte[]      data = new byte[binaryDataStr.length() / 2];
+                for ( int i = 0; i < data.length; ++i )
+                {
+                    String  hex = binaryDataStr.substring(i * 2, (i * 2) + 2);
+                    int     val = Integer.parseInt(hex, 16);
+                    data[i] = (byte)(val & 0xff);
+                }
+
                 try
                 {
-                    context.getExhibitor().getLocalConnection().setData().forPath(path, data.getBytes("UTF-8"));
-                    context.getExhibitor().getLog().add(ActivityLog.Type.INFO, String.format("createNode() updated node [%s] to data [%s]", path, data));
+                    context.getExhibitor().getLocalConnection().setData().forPath(path, data);
+                    context.getExhibitor().getLog().add(ActivityLog.Type.INFO, String.format("createNode() updated node [%s] to data [%s]", path, binaryDataStr));
                 }
                 catch ( KeeperException.NoNodeException dummy )
                 {
-                    context.getExhibitor().getLocalConnection().create().creatingParentsIfNeeded().forPath(path, data.getBytes("UTF-8"));
-                    context.getExhibitor().getLog().add(ActivityLog.Type.INFO, String.format("createNode() created node [%s] with data [%s]", path, data));
+                    context.getExhibitor().getLocalConnection().create().creatingParentsIfNeeded().forPath(path, data);
+                    context.getExhibitor().getLog().add(ActivityLog.Type.INFO, String.format("createNode() created node [%s] with data [%s]", path, binaryDataStr));
                 }
             }
             catch ( Exception e )

@@ -21,6 +21,7 @@
         <script type="text/javascript" src="js/exhibitor-index.js"></script>
         <script type="text/javascript" src="js/exhibitor-cluster.js"></script>
         <script type="text/javascript" src="js/exhibitor-explorer.js"></script>
+        <script type="text/javascript" src="js/exhibitor-modify.js"></script>
         <script type="text/javascript" src="js/exhibitor.js"></script>
         <script type="text/javascript" src="js/jquery.dataTables.js"></script>
         <script type="text/javascript" src="js/Scroller.js"></script>
@@ -113,9 +114,7 @@
                 </div>
 
                 <div id="explorer-mutation-buttons" class="ui-helper-hidden">
-                    <button id="explorer-mutation-button-create">Create Node...</button>
-                    <button id="explorer-mutation-button-set-data">Set Node Data...</button>
-                    <button id="explorer-mutation-button-delete">Delete Node...</button>
+                    <button id="explorer-mutation-button-modify">Modify...</button>
                 </div>
             </div>
 
@@ -228,22 +227,6 @@
             <span class="ui-icon ui-icon-alert" style="float: left; margin:0 7px 50px 0;"></span>
             <span id="message-dialog-text"></span>
             </p>
-        </div>
-
-        <div id="get-node-data-dialog" class="ui-helper-hidden">
-            <div id="node-name-container">
-                <label for="node-name">Name </label><input type="text" id="node-name" name="node-name" size="10"><br clear="all"/>
-            </div>
-            <div id="node-data-container">
-                <label for="node-data">Data </label><input type="text" id="node-data" name="node-data" size="30"><br clear="all"/>
-            </div>
-
-            <fieldset>
-                <legend>Tracking</legend>
-                <label for="node-data-user">Username</label><input type="text" id="node-data-user" name="node-data-user" size="10" title="Your username"><br clear="all"/>
-                <label for="node-data-ticket">Ticket</label><input type="text" id="node-data-ticket" name="node-data-ticket" size="10" title="Ticket/tag number for this operation"><br clear="all"/>
-                <label for="node-data-reason">Reason</label><input type="text" id="node-data-reason" name="node-data-reason" size="25" title="Reason for the change"><br clear="all"/>
-            </fieldset>
         </div>
 
         <div id="index-query-dialog" class="ui-helper-hidden">
@@ -364,6 +347,43 @@
             <div id="rolling-config-cancel-dialog-icon" class="ui-icon ui-icon-alert"></div>
             Are you sure you want to cancel the rolling configuration release? If so, choose to either
             rollback to the previous configuration or force commit to the updated configuration.
+        </div>
+
+        <div id="get-node-data-dialog" class="ui-helper-hidden">
+            <div>
+                <label for="node-action">Type </label><select name="node-action" id="node-action">
+                <option value="update">Create/Update</option>
+                <option value="delete">Delete</option>
+            </select><br clear="all"/>
+            </div>
+            <div>
+                <label for="node-name">Path </label><input type="text" id="node-name" name="node-name" size="40"><br clear="all"/>
+            </div>
+            <div id="node-data-container">
+                <label for="">Data </label><input type="text" id="node-data" name="node-data" size="40"><select name="node-data-type" id="node-data-type">
+                <option value="string">String</option>
+                <option value="binary">Binary</option>
+            </select><br clear="all"/>
+            </div>
+
+            <fieldset>
+                <legend>Tracking</legend>
+                <label for="node-data-user">Username</label><input type="text" id="node-data-user" name="node-data-user" size="20" title="Your username"><br clear="all"/>
+                <label for="node-data-ticket">Ticket/Code</label><input type="text" id="node-data-ticket" name="node-data-ticket" size="20" title="Ticket/tag number for this operation"><br clear="all"/>
+                <label for="node-data-reason">Reason</label><input type="text" id="node-data-reason" name="node-data-reason" size="40" title="Reason for the change"><br clear="all"/>
+            </fieldset>
+        </div>
+
+        <div id="validate-modify-node-dialog" class="ui-helper-hidden">
+            <p>
+                <span class="ui-icon ui-icon-alert" style="float: left; margin:0 7px 150px 0;"></span>
+                <span>
+                    Are you certain you want to make this modification? It cannot be undone and might
+                    irreparably harm the ZooKeeper data.
+                </span>
+            </p>
+            <div id="validate-modify-node-action"></div>
+            <div id="validate-modify-node-description"></div>
         </div>
     </body>
 </html>

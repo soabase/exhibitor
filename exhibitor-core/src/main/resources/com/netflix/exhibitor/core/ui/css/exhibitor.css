@@ -10,6 +10,7 @@ body
 label
 {
     font-weight: bold;
+    vertical-align: baseline;
 }
 
 .ui-button-text
@@ -446,7 +447,18 @@ fieldset
     width: 70px;
 }
 
-#node-name-container
+#get-node-data-dialog div
 {
     margin-bottom: 3px;
+}
+
+#validate-modify-node-action
+{
+    font-weight: bold;
+}
+
+#validate-modify-node-description
+{
+    font-family: monospace;
+    font-size: 80%;
 }

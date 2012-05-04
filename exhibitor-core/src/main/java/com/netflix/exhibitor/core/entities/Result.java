@@ -19,6 +19,7 @@
 package com.netflix.exhibitor.core.entities;
 
 import javax.xml.bind.annotation.XmlRootElement;
+import java.io.StringWriter;
 
 @XmlRootElement
 @SuppressWarnings("UnusedDeclaration")
