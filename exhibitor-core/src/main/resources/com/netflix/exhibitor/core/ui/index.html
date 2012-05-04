@@ -288,21 +288,6 @@
             <button id="index-query-clear-restore-button">Restore...</button>
         </div>
 
-        <div id="index-query-restore-dialog" class="ui-helper-hidden">
-            <div>Are you sure that you want to perform this restore? It cannot be undone.</div><br/><br/>
-            <div id="index-query-restore-form">
-                <span class="label">Action</span><span id="index-query-restore-action" class="value"></span><br clear="all"/>
-                <span class="label">Path</span><span id="index-query-restore-path" class="value"></span><br clear="all"/>
-                <span class="label">Date</span><span id="index-query-restore-date" class="value"></span><br clear="all"/>
-            </div><br/>
-            <div>
-                Note:
-                <li>Ephemeral nodes will be restored as <strong>persistent</strong> nodes</li>
-                <li>Create will revert to Set Data if the node alread exists</li>
-                <li>Set Data will re-create the node if necessary</li>
-            </div>
-        </div>
-
         <div id="word-4ltr-dialog" class="ui-helper-hidden">
             <label for="word-4ltr">4LTR </label><input type="text" id="word-4ltr" name="word-4ltr" size="6">
             <button id="word-4ltr-button">Submit</button><br clear="all"/>
@@ -360,7 +345,7 @@
                 <label for="node-name">Path </label><input type="text" id="node-name" name="node-name" size="40"><br clear="all"/>
             </div>
             <div id="node-data-container">
-                <label for="">Data </label><input type="text" id="node-data" name="node-data" size="40"><select name="node-data-type" id="node-data-type">
+                <label for="node-data">Data </label><textarea id="node-data" name="node-data" cols="45" rows="3"></textarea><select name="node-data-type" id="node-data-type">
                 <option value="string">String</option>
                 <option value="binary">Binary</option>
             </select><br clear="all"/>

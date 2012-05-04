@@ -105,7 +105,7 @@ function initRestoreUI()
         },
         disabled: true
     }).click(function(){
-            openRestoreDialog();
+            openModifyDialog((selectedIndexData.type == 2) ? "delete" : "update", selectedIndexData.path, selectedIndexData.dataBytes, "binary");
             return false;
         });
 
@@ -135,27 +135,6 @@ function initRestoreUI()
                 var searchRequest = buildSearchRequestFromFilter(indexName, indexHandle);
                 $(this).dialog("close");
                 filterIndex(indexName, searchRequest, true);
-            }
-        }
-    );
-
-    $('#index-query-restore-dialog').dialog({
-        modal: true,
-        autoOpen: false,
-        title: 'Restore',
-        minWidth: 600
-    });
-    $('#index-query-restore-dialog').dialog("option", "buttons",
-        {
-            "Cancel":function ()
-            {
-                $(this).dialog("close");
-            },
-
-            "OK":function ()
-            {
-                $(this).dialog("close");
-                submitRestore();
             }
         }
     );
@@ -238,15 +217,6 @@ function submitRestore()
     });
 }
 
-function openRestoreDialog()
-{
-    $('#index-query-restore-action').html(ACTION_NAMES[selectedIndexData.type]);
-    $('#index-query-restore-path').html(selectedIndexData.path);
-    $('#index-query-restore-date').html(selectedIndexData.date);
-
-    $('#index-query-restore-dialog').dialog("open");
-}
-
 var currentRestoreItemsContent = null;
 var currentRestoreItemsDataTable = null;
 function updateRestoreItems(selectedRadio)
@@ -311,14 +281,9 @@ function applySelectedValue(data)
 {
     selectedIndexData = data;
 
-    var localBytes = data.dataBytes;
-    if ( localBytes.length === 0 )
-    {
-        localBytes = "[]";
-    }
     $('#index-query-results-selected-path').html(data.path);
     $('#index-query-results-selected-date').html(data.date);
-    $('#index-query-results-selected-data-bytes').html(localBytes);
+    $('#index-query-results-selected-data-bytes').html(data.dataBytes);
     $('#index-query-results-selected-data-string').html(data.dataAsString);
 }
 

@@ -236,16 +236,6 @@ label
     font-weight: bold;
 }
 
-#index-query-restore-form
-{
-    white-space: nowrap;
-}
-
-#index-query-restore-dialog .value
-{
-    font-family: monospace;
-}
-
 #tabs-config-controls div
 {
     float: left;
@@ -461,4 +451,9 @@ fieldset
 {
     font-family: monospace;
     font-size: 80%;
+}
+
+#node-data-container select
+{
+    float: right;
 }

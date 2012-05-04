@@ -123,10 +123,12 @@ function updateState()
         if ( systemState.nodeMutationsAllowed )
         {
             $('#explorer-mutation-buttons').show();
+            $('#index-query-clear-restore-button').show();
         }
         else
         {
             $('#explorer-mutation-buttons').hide();
+            $('#index-query-clear-restore-button').hide();
         }
 
         $.unblockUI();

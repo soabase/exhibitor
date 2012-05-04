@@ -68,11 +68,15 @@ function continueModifyDialog()
     $('#validate-modify-node-dialog').dialog("open");
 }
 
-function openModifyDialog(action, path, data)
+function openModifyDialog(action, path, data, dataType)
 {
     $('#node-action').val(action);
     $('#node-name').val(path);
     $('#node-data').val(data);
+    if ( dataType )
+    {
+        $('#node-data-type').val(dataType);
+    }
     hideShowDataContainer();
 
     $("#get-node-data-dialog").dialog("option", "buttons", {
@@ -103,10 +107,20 @@ function toBinary(str)
 
 function fromBinary(str)
 {
-    var converted = "";
-    for ( var i = 0; (i + 1) < str.length; i += 2 )
+    var trimmed = "";
+    for ( var i = 0; i < str.length; ++i )
     {
-        var code = parseInt(str.substring(i, i + 2), 16);
+        var c = str.charAt(i);
+        if ( c != ' ' )
+        {
+            trimmed += c;
+        }
+    }
+
+    var converted = "";
+    for ( i = 0; (i + 1) < trimmed.length; i += 2 )
+    {
+        var code = parseInt(trimmed.substring(i, i + 2), 16);
         converted += String.fromCharCode(code);
     }
     return converted;
@@ -144,7 +158,7 @@ function initModifyUi()
     $('#node-data').keyfilter(function(c){
         if ( $('#node-data-type').val() === 'binary' )
         {
-            return ("0123456789abcdefABCDEF".indexOf(c) >= 0);
+            return ("0123456789abcdefABCDEF ".indexOf(c) >= 0);
         }
         return true;
     });
