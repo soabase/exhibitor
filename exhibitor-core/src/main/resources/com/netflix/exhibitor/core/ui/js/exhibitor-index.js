@@ -209,14 +209,6 @@ function initRestoreUI()
     });
 }
 
-function submitRestore()
-{
-    var indexName = $('#index-query-dialog').attr("indexName");
-    $.getJSON(URL_RESTORE_INDEX_BASE + indexName + "/" + selectedIndexData.docId, function(data){
-        messageDialog('Restore', 'Restore request sent. Check the log for details.');
-    });
-}
-
 var currentRestoreItemsContent = null;
 var currentRestoreItemsDataTable = null;
 function updateRestoreItems(selectedRadio)

@@ -5,7 +5,6 @@ var UPDATE_STATE_PERIOD = 10000;
 var URL_GET_BACKUPS = "../index/get-backups";
 var URL_NEW_INDEX = "../index/new-index";
 var URL_DELETE_INDEX_BASE = "../index/";
-var URL_RESTORE_INDEX_BASE = "../index/restore/";
 var URL_INDEX_DATA_BASE = "../index/dataTable/";
 var URL_GET_INDEX_BASE = "../index/get/";
 var URL_GET_INDEXES = "../index/indexed-logs";

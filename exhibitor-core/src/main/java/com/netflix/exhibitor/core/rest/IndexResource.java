@@ -185,31 +185,6 @@ public class IndexResource
         return Response.ok(result).build();
     }
 
-
-    @Path("restore/{index-name}/{doc-id}")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response recover(@PathParam("index-name") String indexName, @PathParam("doc-id")  int docId) throws Exception
-    {
-        LogSearch logSearch = getLogSearch(indexName);
-        if ( logSearch == null )
-        {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-
-        SearchItem      item = logSearch.toResult(docId);
-        if ( item == null )
-        {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-
-        byte[]          bytes = logSearch.toData(docId);
-        EntryTypes      type = EntryTypes.getFromId(item.getType());
-        context.getExhibitor().getActivityQueue().add(QueueGroups.IO, new RestoreActivity(context.getExhibitor(), type, item.getPath(), bytes));
-
-        return Response.ok(new Result("OK", true)).build();
-    }
-
     @Path("dataTable/{index-name}/{search-handle}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
