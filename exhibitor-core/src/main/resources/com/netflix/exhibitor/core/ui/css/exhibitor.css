@@ -429,7 +429,18 @@ fieldset
     padding: 1px 3px 1px 3px;
 }
 
-#get-node-data-dialog label
+#get-node-data-dialog fieldset
+{
+    margin-top: 8px;
+}
+
+#get-node-data-dialog fieldset label
+{
+    float: left;
+    width: 90px;
+}
+
+#get-node-data-dialog div label
 {
     float: left;
     width: 70px;

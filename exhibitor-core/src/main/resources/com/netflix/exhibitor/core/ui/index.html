@@ -234,7 +234,16 @@
             <div id="node-name-container">
                 <label for="node-name">Name </label><input type="text" id="node-name" name="node-name" size="10"><br clear="all"/>
             </div>
-            <label for="node-data">Data </label><input type="text" id="node-data" name="node-data" size="30"><br clear="all"/>
+            <div id="node-data-container">
+                <label for="node-data">Data </label><input type="text" id="node-data" name="node-data" size="30"><br clear="all"/>
+            </div>
+
+            <fieldset>
+                <legend>Tracking</legend>
+                <label for="node-data-user">Username</label><input type="text" id="node-data-user" name="node-data-user" size="10" title="Your username"><br clear="all"/>
+                <label for="node-data-ticket">Ticket</label><input type="text" id="node-data-ticket" name="node-data-ticket" size="10" title="Ticket/tag number for this operation"><br clear="all"/>
+                <label for="node-data-reason">Reason</label><input type="text" id="node-data-reason" name="node-data-reason" size="25" title="Reason for the change"><br clear="all"/>
+            </fieldset>
         </div>
 
         <div id="index-query-dialog" class="ui-helper-hidden">

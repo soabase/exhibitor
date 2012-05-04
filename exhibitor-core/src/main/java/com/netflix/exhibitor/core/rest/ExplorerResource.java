@@ -29,6 +29,7 @@ import org.codehaus.jackson.node.ObjectNode;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -69,11 +70,20 @@ public class ExplorerResource
     @DELETE
     @Path("znode/{path:.*}")
     @Produces("application/json")
-    public Response deleteNode(@PathParam("path") String path)
+    public Response deleteNode
+        (
+            @PathParam("path") String path,
+            @HeaderParam("netflix-user-name") String trackingUserName,
+            @HeaderParam("netflix-ticket-number") String trackingTicketNumber,
+            @HeaderParam("netflix-reason") String trackingReason
+        )
     {
         Response    response;
         do
         {
+            path = "/" + path;
+            context.getExhibitor().getLog().add(ActivityLog.Type.INFO, String.format("Delete node request received. Path [%s], Username [%s], Ticket Number [%s], Reason [%s]", path, trackingUserName, trackingTicketNumber, trackingReason));
+
             if ( !context.getExhibitor().nodeMutationsAllowed() )
             {
                 response = Response.status(Response.Status.FORBIDDEN).build();
@@ -82,7 +92,7 @@ public class ExplorerResource
 
             try
             {
-                recursivelyDelete("/" + path);
+                recursivelyDelete(path);
             }
             catch ( Exception e )
             {
@@ -105,24 +115,34 @@ public class ExplorerResource
         }
 
         context.getExhibitor().getLocalConnection().delete().forPath(path);
+        context.getExhibitor().getLog().add(ActivityLog.Type.INFO, String.format("deleteNode() deleted node [%s]", path));
     }
 
     @PUT
     @Path("znode/{path:.*}")
     @Produces("application/json")
     @Consumes("application/json")
-    public Response createNode(@PathParam("path") String path, String data)
+    public Response createNode
+        (
+            @PathParam("path") String path,
+            @HeaderParam("netflix-user-name") String trackingUserName,
+            @HeaderParam("netflix-ticket-number") String trackingTicketNumber,
+            @HeaderParam("netflix-reason") String trackingReason,
+            String data
+        )
     {
         Response    response;
         do
         {
+            path = "/" + path;
+            context.getExhibitor().getLog().add(ActivityLog.Type.INFO, String.format("Create/update node request received. Path [%s], Username [%s], Ticket Number [%s], Reason [%s]", path, trackingUserName, trackingTicketNumber, trackingReason));
+
             if ( !context.getExhibitor().nodeMutationsAllowed() )
             {
                 response = Response.status(Response.Status.FORBIDDEN).build();
                 break;
             }
 
-            path = "/" + path;
             try
             {
                 try

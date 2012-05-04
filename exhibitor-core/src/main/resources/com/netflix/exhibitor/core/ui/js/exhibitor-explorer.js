@@ -1,82 +1,99 @@
 var explorerSelectedPath = null;
 
-function continueModifyFromExplorer(action, n)
+function continueModifyFromExplorer(action)
 {
-    if ( n == 0 )
+    var nodeName = $('#node-name').val().trim();
+    if ( (action === "create") && (nodeName.length == 0) )
     {
-        okCancelDialog("Are You Sure?", "Are you sure you want to do this. It cannot be undone and could irreparably harm the ZooKeeper data.", function(){
-            continueModifyFromExplorer(action, 1)
-        });
+        messageDialog("Error", "The node name is required.");
+        return;
     }
-    else
-    {
-        okCancelDialog("Are You Really Sure?", 'Please confirm one more time that you want to make this modification to "' + explorerSelectedPath + '"', function(){
-            var method = (action === "delete") ? "DELETE" : "PUT";
-            var data = $('#node-data').val().trim();
-            var localPath = explorerSelectedPath;
-            if ( action === "create" )
-            {
-                localPath += "/" + $('#node-name').val().trim();
-            }
 
-            $.ajax({
-                type: method,
-                url: URL_EXPLORER_ZNODE_BASE + localPath,
-                data: data,
-                contentType: 'application/json',
-                success:function(data)
-                {
-                    if ( data.succeeded )
-                    {
-                        $("#tree").dynatree("getTree").reload();
-                        messageDialog("Success", "The change has been made.");
-                    }
-                    else
-                    {
-                        messageDialog("Error", data.message);
-                    }
-                }
-            });
-        });
+    var userName = $('#node-data-user').val().trim();
+    var ticketNumber = $('#node-data-ticket').val().trim();
+    var reason = $('#node-data-reason').val().trim();
+    if ( (userName.length == 0) || (ticketNumber.length == 0) || (reason.length == 0) )
+    {
+        messageDialog("Error", "The tracking fields are required.");
+        return;
     }
+
+    okCancelDialog("Are You Sure?", "Are you sure you want to do this. It cannot be undone and could irreparably harm the ZooKeeper data.", function(){
+        var method = (action === "delete") ? "DELETE" : "PUT";
+        var data = $('#node-data').val().trim();
+        var localPath = explorerSelectedPath;
+        if ( action === "create" )
+        {
+            if ( localPath != "/" )
+            {
+                localPath += "/";
+            }
+            localPath += nodeName;
+        }
+
+        $.ajax({
+            type: method,
+            url: URL_EXPLORER_ZNODE_BASE + localPath,
+            data: data,
+            contentType: 'application/json',
+            headers: {
+                'netflix-user-name': userName,
+                'netflix-ticket-number': ticketNumber,
+                'netflix-reason': reason
+            },
+            success:function(data)
+            {
+                if ( data.succeeded )
+                {
+                    $("#tree").dynatree("getTree").reload();
+                    messageDialog("Success", "The change has been made.");
+                }
+                else
+                {
+                    messageDialog("Error", data.message);
+                }
+            }
+        });
+    });
 }
 
 function modifyFromExplorer(action)
 {
-    if ( action != "delete" )
+    if ( (action != "create") && (explorerSelectedPath === "/") )
     {
-        if ( action === "create" )
-        {
-            $('#node-name-container').show();
-        }
-        else
-        {
-            $('#node-name-container').hide();
-        }
+        messageDialog("Error", "You cannot modify the root node.");
+        return;
+    }
 
-        $("#get-node-data-dialog").dialog("option", "buttons", {
-                'Cancel': function (){
-                    $(this).dialog("close");
-                },
+    if ( action === "create" )
+    {
+        $('#node-name-container').show();
+        $('#node-data-container').show();
+    }
+    else if ( action === "update" )
+    {
+        $('#node-name-container').hide();
+        $('#node-data-container').show();
+    }
+    else    // delete
+    {
+        $('#node-name-container').hide();
+        $('#node-data-container').hide();
+    }
 
-                'OK': function (){
-                    $(this).dialog("close");
+    $("#get-node-data-dialog").dialog("option", "buttons", {
+            'Cancel': function (){
+                $(this).dialog("close");
+            },
 
-                    if ( (action === "create") && ($('#node-name').val().trim().length == 0) )
-                    {
-                        return;
-                    }
+            'Next...': function (){
+                $(this).dialog("close");
 
-                    continueModifyFromExplorer(action, 0);
-                }
+                continueModifyFromExplorer(action);
             }
-        );
-        $("#get-node-data-dialog").dialog("open");
-    }
-    else
-    {
-        continueModifyFromExplorer(action, 0);
-    }
+        }
+    );
+    $("#get-node-data-dialog").dialog("open");
 }
 
 function initExplorer()
