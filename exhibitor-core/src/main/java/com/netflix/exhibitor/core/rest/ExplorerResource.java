@@ -145,6 +145,7 @@ public class ExplorerResource
 
             try
             {
+                binaryDataStr = binaryDataStr.replace(" ", "");
                 byte[]      data = new byte[binaryDataStr.length() / 2];
                 for ( int i = 0; i < data.length; ++i )
                 {

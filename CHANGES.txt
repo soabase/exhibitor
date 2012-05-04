@@ -1,3 +1,11 @@
+1.0.7 - May 4, 2012
+===================
+* Added support for modifying ZK data. Note: this must be turned on by setting "allowNodeMutations"
+to true in Exhibitor.Arguments. The standalone version has the CLI option "--nodemodification true"
+to set this.
+
+* A little less logging of backup changes.
+
 1.0.6 - April 6, 2012
 =====================
 * Prep for initial public release
