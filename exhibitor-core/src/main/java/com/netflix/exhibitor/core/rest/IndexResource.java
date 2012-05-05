@@ -172,6 +172,10 @@ public class IndexResource
         }
 
         byte[]          bytes = logSearch.toData(docId);
+        if ( bytes == null )
+        {
+            bytes = new byte[0];
+        }
         SearchResult    result = new SearchResult
         (
             docId,
