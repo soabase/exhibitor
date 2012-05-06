@@ -1,3 +1,9 @@
+1.0.8 - xxxxxxxxxxx
+===================
+* Restore of DELETEs wasn't working due to an internal exception.
+
+* More UI work on modify dialog
+
 1.0.7 - May 4, 2012
 ===================
 * Added support for modifying ZK data. Note: this must be turned on by setting "allowNodeMutations"

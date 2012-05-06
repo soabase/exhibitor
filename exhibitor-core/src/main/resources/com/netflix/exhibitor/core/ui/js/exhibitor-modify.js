@@ -100,7 +100,7 @@ function toBinary(str)
     for ( var i = 0; i < str.length; ++i )
     {
         var code = str.charCodeAt(i);
-        converted += code.toString(16);
+        converted += code.toString(16) + " ";
     }
     return converted;
 }

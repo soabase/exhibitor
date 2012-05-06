@@ -1,4 +1,5 @@
 var explorerSelectedPath = null;
+var explorerSelectedBytes = null;
 
 function initExplorer()
 {
@@ -14,6 +15,7 @@ function initExplorer()
                         dataType: 'json',
                         success:function (data){
                             explorerSelectedPath = node.data.key;
+                            explorerSelectedBytes = data.bytes;
 
                             $("#path").text(node.data.key);
                             $("#stat").text(data.stat);
@@ -60,7 +62,19 @@ function initExplorer()
             primary:"ui-icon-pencil"
         }
     }).click(function(){
-        openModifyDialog("update", explorerSelectedPath, "");
+        var localData = explorerSelectedBytes;
+        var localDataType;
+        if ( !localData || !localData.length )
+        {
+            localData = "";
+            localDataType = "string";
+        }
+        else
+        {
+            localDataType = "binary";
+        }
+
+        openModifyDialog("update", explorerSelectedPath, localData, localDataType);
         return false;
     });
 }
