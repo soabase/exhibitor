@@ -4,6 +4,8 @@
 
 * More UI work on modify dialog
 
+* Minor bug fixes
+
 1.0.7 - May 4, 2012
 ===================
 * Added support for modifying ZK data. Note: this must be turned on by setting "allowNodeMutations"
