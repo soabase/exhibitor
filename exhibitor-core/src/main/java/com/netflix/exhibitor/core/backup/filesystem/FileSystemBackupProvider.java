@@ -49,7 +49,8 @@ public class FileSystemBackupProvider implements BackupProvider
     @Override
     public boolean isValidConfig(Exhibitor exhibitor, Map<String, String> configValues)
     {
-        return (configValues.get(CONFIG_DIRECTORY.getKey()).trim().length() > 0);
+        String value = configValues.get(CONFIG_DIRECTORY.getKey());
+        return (value != null) && (value.trim().length() > 0);
     }
 
     @Override
