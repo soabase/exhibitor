@@ -146,13 +146,17 @@ public class IndexCache implements Closeable
         return (oldHolder != null) ? oldHolder : newHolder;
     }
 
-    private void delete(File indexDirectory)
+    public void delete(File indexDirectory)
     {
-        for ( File f : indexDirectory.listFiles() )
+        File[] files = indexDirectory.listFiles();
+        if ( files != null )
         {
-            if ( !f.delete() )
+            for ( File f : files )
             {
-                log.add(ActivityLog.Type.ERROR, "Could not delete: " + f);
+                if ( !f.delete() )
+                {
+                    log.add(ActivityLog.Type.ERROR, "Could not delete: " + f);
+                }
             }
         }
         if ( !indexDirectory.delete() )

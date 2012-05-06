@@ -21,6 +21,8 @@ package com.netflix.exhibitor.core.index;
 import com.google.common.io.Closeables;
 import com.google.common.io.CountingInputStream;
 import com.google.common.io.InputSupplier;
+import com.netflix.exhibitor.core.Exhibitor;
+import com.netflix.exhibitor.core.activity.ActivityLog;
 import org.apache.jute.Record;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
@@ -53,9 +55,11 @@ public class LogIndexer implements Closeable
     private final ZooKeeperLogParser logParser;
     private final long sourceLength;
     private final String sourceName;
+    private final Exhibitor exhibitor;
 
-    public LogIndexer(InputSupplier<InputStream> source, String sourceName, long sourceLength, File indexDirectory) throws Exception
+    public LogIndexer(Exhibitor exhibitor, InputSupplier<InputStream> source, String sourceName, long sourceLength, File indexDirectory) throws Exception
     {
+        this.exhibitor = exhibitor;
         if ( !indexDirectory.exists() && !indexDirectory.mkdirs() )
         {
             throw new IOException("Could not make: " + indexDirectory);
@@ -124,6 +128,12 @@ public class LogIndexer implements Closeable
         {
             Closeables.closeQuietly(writer);
             Closeables.closeQuietly(directory);
+        }
+
+        if ( count.get() == 0 )
+        {
+            exhibitor.getLog().add(ActivityLog.Type.INFO, sourceName + " has no entries and has not been indexed");
+            exhibitor.getIndexCache().delete(indexDirectory);
         }
     }
 

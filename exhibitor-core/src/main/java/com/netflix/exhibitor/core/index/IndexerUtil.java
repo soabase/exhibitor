@@ -75,7 +75,7 @@ public class IndexerUtil
         LogIndexer      logIndexer;
         try
         {
-            logIndexer = new LogIndexer(source, name, length, indexDirectory);
+            logIndexer = new LogIndexer(exhibitor, source, name, length, indexDirectory);
         }
         catch ( Exception e )
         {
