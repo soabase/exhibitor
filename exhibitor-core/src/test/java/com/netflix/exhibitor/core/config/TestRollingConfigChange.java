@@ -6,6 +6,7 @@ import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.ActivityQueue;
 import com.netflix.exhibitor.core.state.InstanceState;
 import com.netflix.exhibitor.core.state.InstanceStateTypes;
+import com.netflix.exhibitor.core.state.RestartSignificantConfig;
 import com.netflix.exhibitor.core.state.ServerList;
 import org.mockito.Mockito;
 import org.testng.Assert;
@@ -47,7 +48,7 @@ public class TestRollingConfigChange
             }
         };
 
-        InstanceState       state = new InstanceState(serverList, InstanceStateTypes.SERVING);
+        InstanceState       state = new InstanceState(serverList, InstanceStateTypes.SERVING, new RestartSignificantConfig(null));
 
         ConfigManager       manager = new ConfigManager(mockExhibitor, provider, 10);
         manager.start();

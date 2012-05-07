@@ -20,13 +20,15 @@ package com.netflix.exhibitor.core.state;
 
 public class InstanceState
 {
-    private final InstanceStateTypes    state;
-    private final ServerList            serverList;
+    private final InstanceStateTypes        state;
+    private final ServerList                serverList;
+    private final RestartSignificantConfig  currentConfig;
 
-    public InstanceState(ServerList serverList, InstanceStateTypes state)
+    public InstanceState(ServerList serverList, InstanceStateTypes state, RestartSignificantConfig currentConfig)
     {
         this.serverList = serverList;
         this.state = state;
+        this.currentConfig = currentConfig;
     }
 
     public ServerList getServerList()
@@ -37,6 +39,11 @@ public class InstanceState
     public InstanceStateTypes getState()
     {
         return state;
+    }
+
+    public RestartSignificantConfig getCurrentConfig()
+    {
+        return currentConfig;
     }
 
     @SuppressWarnings("RedundantIfStatement")
@@ -54,6 +61,10 @@ public class InstanceState
 
         InstanceState that = (InstanceState)o;
 
+        if ( !currentConfig.equals(that.currentConfig) )
+        {
+            return false;
+        }
         if ( !serverList.equals(that.serverList) )
         {
             return false;
@@ -71,6 +82,7 @@ public class InstanceState
     {
         int result = state.hashCode();
         result = 31 * result + serverList.hashCode();
+        result = 31 * result + currentConfig.hashCode();
         return result;
     }
 }

@@ -35,6 +35,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.Properties;
 
@@ -131,8 +132,15 @@ public class StandardProcessOperations implements ProcessOperations
     public void startInstance() throws Exception
     {
         Details         details = new Details(exhibitor);
+        String          javaEnvironmentScript = exhibitor.getConfigManager().getConfig().getString(StringConfigs.JAVA_ENVIRONMENT);
 
         prepConfigFile(details);
+        if ( (javaEnvironmentScript != null) && (javaEnvironmentScript.trim().length() > 0) )
+        {
+            File     envFile = new File(details.configDirectory, "java.env");
+            Files.write(javaEnvironmentScript, envFile, Charset.defaultCharset());
+        }
+
         File            binDirectory = new File(details.zooKeeperDirectory, "bin");
         File            startScript = new File(binDirectory, "zkServer.sh");
         ProcessBuilder  builder = new ProcessBuilder(startScript.getPath(), "start").directory(binDirectory.getParentFile());

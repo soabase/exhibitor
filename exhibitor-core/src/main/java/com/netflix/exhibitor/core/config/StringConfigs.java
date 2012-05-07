@@ -26,30 +26,92 @@ public enum StringConfigs
     /**
      * Path to stored indexed log files
      */
-    LOG_INDEX_DIRECTORY,
+    LOG_INDEX_DIRECTORY()
+    {
+        @Override
+        public boolean isRestartSignificant()
+        {
+            return false;
+        }
+    },
 
     /**
      * The base director of the zookeeper installation
      */
-    ZOOKEEPER_INSTALL_DIRECTORY,
+    ZOOKEEPER_INSTALL_DIRECTORY
+    {
+        @Override
+        public boolean isRestartSignificant()
+        {
+            return true;
+        }
+    },
 
     /**
      * Where to store ZooKeeper data
      */
-    ZOOKEEPER_DATA_DIRECTORY,
+    ZOOKEEPER_DATA_DIRECTORY
+    {
+        @Override
+        public boolean isRestartSignificant()
+        {
+            return true;
+        }
+    },
 
     /**
      * List of servers in the cluster of the form [id]:[hostname],[id]:[hostname],...
      */
-    SERVERS_SPEC,
+    SERVERS_SPEC
+    {
+        @Override
+        public boolean isRestartSignificant()
+        {
+            return false;   // handled by the servers list
+        }
+    },
 
     /**
      * Used to store the provider-specific backup config
      */
-    BACKUP_EXTRA,
+    BACKUP_EXTRA
+    {
+        @Override
+        public boolean isRestartSignificant()
+        {
+            return false;
+        }
+    },
 
     /**
      * Additional properties to add to zoo.cfg
      */
     ZOO_CFG_EXTRA
+    {
+        @Override
+        public boolean isRestartSignificant()
+        {
+            return true;
+        }
+    },
+
+    /**
+     * Contents for the java.env file
+     */
+    JAVA_ENVIRONMENT
+    {
+        @Override
+        public boolean isRestartSignificant()
+        {
+            return true;
+        }
+    },
+    ;
+
+    /**
+     * Return true if a change to this config requires that the ZK instance be restarted
+     *
+     * @return true/false
+     */
+    public abstract boolean     isRestartSignificant();
 }

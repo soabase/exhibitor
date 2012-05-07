@@ -91,7 +91,7 @@ public class MonitorRunningInstance implements Closeable
     private void doWork() throws Exception
     {
         InstanceConfig  config = exhibitor.getConfigManager().getConfig();
-        InstanceState   instanceState = new InstanceState(new ServerList(config.getString(StringConfigs.SERVERS_SPEC)), new Checker(exhibitor).calculateState());
+        InstanceState   instanceState = new InstanceState(new ServerList(config.getString(StringConfigs.SERVERS_SPEC)), new Checker(exhibitor).calculateState(), new RestartSignificantConfig(config));
 
         exhibitor.getConfigManager().checkRollingConfig(instanceState);
 
@@ -99,6 +99,7 @@ public class MonitorRunningInstance implements Closeable
         if ( !instanceState.equals(localCurrentInstanceState) )
         {
             boolean         serverListChange = (localCurrentInstanceState != null) && !localCurrentInstanceState.getServerList().equals(instanceState.getServerList());
+            boolean         configChange = (localCurrentInstanceState != null) && !localCurrentInstanceState.getCurrentConfig().equals(instanceState.getCurrentConfig());
             currentInstanceState.set(instanceState);
 
             exhibitor.getLog().add(ActivityLog.Type.INFO, "State: " + instanceState.getState().getDescription());
@@ -106,6 +107,11 @@ public class MonitorRunningInstance implements Closeable
             if ( serverListChange )
             {
                 exhibitor.getLog().add(ActivityLog.Type.INFO, "Server list has changed");
+                restartZooKeeper();
+            }
+            else if ( configChange )
+            {
+                exhibitor.getLog().add(ActivityLog.Type.INFO, "ZooKeeper related configuration has changed");
                 restartZooKeeper();
             }
             else

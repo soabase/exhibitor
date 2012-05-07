@@ -68,8 +68,8 @@ public class ConfigResource
         InstanceConfig              config = context.getExhibitor().getConfigManager().getConfig();
 
         String                      response = new FourLetterWord(FourLetterWord.Word.RUOK, config, context.getExhibitor().getConnectionTimeOutMs()).getResponse();
-        ServerList serverList = new ServerList(config.getString(StringConfigs.SERVERS_SPEC));
-        ServerSpec us = Iterables.find(serverList.getSpecs(), ServerList.isUs(context.getExhibitor().getThisJVMHostname()), null);
+        ServerList                  serverList = new ServerList(config.getString(StringConfigs.SERVERS_SPEC));
+        ServerSpec                  us = Iterables.find(serverList.getSpecs(), ServerList.isUs(context.getExhibitor().getThisJVMHostname()), null);
 
         ObjectNode                  mainNode = JsonNodeFactory.instance.objectNode();
         ObjectNode                  configNode = JsonNodeFactory.instance.objectNode();
