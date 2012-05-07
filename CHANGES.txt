@@ -1,4 +1,4 @@
-1.0.8 - xxxxxxxxxxx
+1.0.8 - May 7, 2012
 ===================
 * Restore of DELETEs wasn't working due to an internal exception.
 
