@@ -257,7 +257,17 @@
             <input type="radio" id="new-index-radio-path" name="new-index-specified" value="path"><label for="new-index-radio-path">Log File Path</label><input type="text" id="new-index-path" name="index-query-path" size="30">
             <div id="new-index-backups-section" class="ui-helper-hidden">
                 <input type="radio" id="new-index-radio-backup" name="new-index-specified" value="backup"><label for="new-index-radio-backup">From Backup</label>
-                <select id="new-index-backup-names" size="1"></select><br clear="all"/>
+                - <label for="new-index-backup-names-filter">Filter</label><select id="new-index-backup-names-filter" name="new-index-backup-names-filter" size="1">
+                    <option value="-1">All</option>
+                    <option value="3600000">Last Hour</option>
+                    <option value="7200000">Last Two Hours</option>
+                    <option value="14400000">Last Four Hours</option>
+                    <option value="28800000">Last Eight Hours</option>
+                    <option value="86400000">Last Day</option>
+                    <option value="259200000">Last 3 Days</option>
+                    <option value="604800000">Last Week</option>
+                </select><br clear="all"/>
+                <select id="new-index-backup-names" size="10"></select><br clear="all"/>
             </div>
         </div>
 

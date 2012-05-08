@@ -167,6 +167,17 @@ label
     margin: 3px;
 }
 
+#new-index-backup-names
+{
+    margin-left: 25px;
+    width: 350px;
+}
+
+#new-index-backups-section
+{
+    margin-top: 10px;
+}
+
 #index-query-results
 {
     height: 400px;

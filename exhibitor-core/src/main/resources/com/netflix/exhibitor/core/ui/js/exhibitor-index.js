@@ -5,29 +5,55 @@ var ACTION_NAMES = [
     "Set Data"
 ];
 
+var restoreDialogNames = null;
+function updateBackups()
+{
+    var filterValue = parseInt($('#new-index-backup-names-filter').val());
+
+    var options = "";
+    var now = new Date();
+    var actualCount = 0;
+    for ( var i = 0; i < restoreDialogNames.length; ++i )
+    {
+        var d = new Date(restoreDialogNames[i].modifiedDate);
+        if ( (filterValue < 0) || ((now.getTime() - d.getTime()) <= filterValue) )
+        {
+            options += '<option id="existing-backup-' + i + '">' + restoreDialogNames[i].name + ' - ' + d.toGMTString() + '</option>';
+            ++actualCount;
+        }
+    }
+    $('#new-index-backup-names').html(options);
+    for ( i = 0; i < restoreDialogNames.length; ++i )
+    {
+        var val = JSON.stringify(restoreDialogNames[i]);
+        $("#existing-backup-" + i).val(val);
+    }
+
+    if ( actualCount > 0 )
+    {
+        $('#new-index-radio-backup').attr('disabled', false);
+    }
+    else
+    {
+        if ( $('#new-index-radio-backup').attr('checked') )
+        {
+            $('#new-index-radio-default').attr('checked', true);
+        }
+        $('#new-index-radio-backup').attr('disabled', true);
+    }
+}
+
 function loadBackups()
 {
     $.getJSON(URL_GET_BACKUPS, function(data){
-        var names = $.makeArray(data);
-        if ( names.length == 0 )
+        restoreDialogNames = $.makeArray(data);
+        if ( restoreDialogNames.length == 0 )
         {
             $('#new-index-backups-section').hide();
         }
         else
         {
-            var options = "";
-            for ( var i = 0; i < names.length; ++i )
-            {
-                var d = new Date(names[i].modifiedDate);
-                options += '<option id="existing-backup-' + i + '">' + names[i].name + ' - ' + d.toGMTString() + '</option>';
-            }
-            $('#new-index-backup-names').html(options);
-            for ( i = 0; i < names.length; ++i )
-            {
-                var val = JSON.stringify(names[i]);
-                $("#existing-backup-" + i).val(val);
-            }
-
+            updateBackups();
             $('#new-index-backups-section').show();
         }
         $('#new-index-loading-dialog').dialog("close");
@@ -197,8 +223,17 @@ function initRestoreUI()
     $('#new-index-path').focus(function(){
         $('#new-index-radio-path').prop("checked", true);
     });
+    $('#new-index-radio-backup').click(function(){
+        if ( !$('#new-index-backup-names').val() )
+        {
+            $('#new-index-backup-names').prop("selectedIndex", 0);
+        }
+    });
     $('#new-index-backup-names').focus(function(){
         $('#new-index-radio-backup').prop("checked", true);
+    });
+    $('#new-index-backup-names-filter').change(function(){
+        updateBackups();
     });
 
     $('#index-query-results-dialog').dialog({
