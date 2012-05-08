@@ -1,4 +1,4 @@
-1.0.9 - xxxxxxxxxxx
+1.0.9 - May 8, 2012
 ===================
 * Major oversight. Restart significant config changes weren't causing a restart.
 
