@@ -5,6 +5,8 @@
 * The getSystemState API now sets the ETag response header and respects the “If-None-Match”
 request header.
 
+* Made restoring from a backup a bit easier by enhancing the backup selection UI.
+
 1.0.8 - May 7, 2012
 ===================
 * Restore of DELETEs wasn't working due to an internal exception.
