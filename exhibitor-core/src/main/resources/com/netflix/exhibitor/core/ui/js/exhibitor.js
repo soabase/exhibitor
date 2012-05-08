@@ -71,6 +71,7 @@ function okCancelDialog(title, message, okFunction)
 
 var hasBackupConfig = false;
 var systemState = {};
+var systemStateETag = "";
 var systemConfig = {};
 var connectedToExhibitor = true;
 var currentVersion = null;
@@ -85,88 +86,104 @@ function updateState()
         return;
     }
 
-    $.getJSON(URL_GET_STATE, function (data){
-        systemState = data;
-        if ( doConfigUpdates ) {
-            systemConfig = systemState.config;
-        }
+    $.ajax({
+        url: URL_GET_STATE,
+        type: 'GET',
+        ifModified: true,
+        headers: {
+            'If-None-Match': systemStateETag
+        },
+        success: function (data, dummy, jqXHR){
+            if ( jqXHR.status == 304 )
+            {
+                return; // not modified
+            }
 
-        if ( currentVersion === null )
-        {
-            currentVersion = systemState.version;
-        }
-        else if ( systemState.version != currentVersion )
-        {
-            currentVersion = systemState.version;
-            location.reload();
-            return;
-        }
+            systemState = data;
+            systemStateETag = jqXHR.getResponseHeader("ETag");
 
-        if ( !connectedToExhibitor )
-        {
-            connectedToExhibitor = true;
-            messageDialog("", "Connection with the " + $('#app-name').html() + " server re-established.");
-        }
+            if ( doConfigUpdates ) {
+                systemConfig = systemState.config;
+            }
 
-        if ( systemState.backupActive )
-        {
-            $('#config-backups-fieldset').show();
-            $('#backups-enabled-control').show();
-        }
-        else
-        {
-            $('#config-backups-fieldset').hide();
-            $('#backups-enabled-control').hide();
-        }
+            if ( currentVersion === null )
+            {
+                currentVersion = systemState.version;
+            }
+            else if ( systemState.version != currentVersion )
+            {
+                currentVersion = systemState.version;
+                location.reload();
+                return;
+            }
 
-        if ( systemState.nodeMutationsAllowed )
-        {
-            $('#explorer-mutation-buttons').show();
-            $('#index-query-clear-restore-button').show();
-        }
-        else
-        {
-            $('#explorer-mutation-buttons').hide();
-            $('#index-query-clear-restore-button').hide();
-        }
+            if ( !connectedToExhibitor )
+            {
+                connectedToExhibitor = true;
+                messageDialog("", "Connection with the " + $('#app-name').html() + " server re-established.");
+            }
 
-        $.unblockUI();
+            if ( systemState.backupActive )
+            {
+                $('#config-backups-fieldset').show();
+                $('#backups-enabled-control').show();
+            }
+            else
+            {
+                $('#config-backups-fieldset').hide();
+                $('#backups-enabled-control').hide();
+            }
 
-        var     pageTitle = "Exhibitor for ZooKeeper";
-        if ( systemState.extraHeadingText )
-        {
-            pageTitle += ' - ' + systemState.extraHeadingText;
-        }
+            if ( systemState.nodeMutationsAllowed )
+            {
+                $('#explorer-mutation-buttons').show();
+                $('#index-query-clear-restore-button').show();
+            }
+            else
+            {
+                $('#explorer-mutation-buttons').hide();
+                $('#index-query-clear-restore-button').hide();
+            }
 
-        $('#page-title').html(pageTitle);
-        $('#version').html(systemState.version);
-        $('#not-connected-alert').hide();
-        $('#instance-hostname').html(systemConfig.hostname);
-        $('#instance-id').html((
-            systemConfig.serverId > 0
-            ) ? systemConfig.serverId : "n/a");
+            $.unblockUI();
 
-        updateConfig();
-        buildServerItems();
-    }).error(function ()
-    {
-        if ( connectedToExhibitor )
-        {
-            $.blockUI({
-                css: {
-                    zIndex: 99998,
-                    cursor: 'default'
-                },
-                message: null,
-                overlayCSS: {
-                    backgroundColor: '#333',
-                    cursor: 'default'
-                }
-            });
+            var     pageTitle = "Exhibitor for ZooKeeper";
+            if ( systemState.extraHeadingText )
+            {
+                pageTitle += ' - ' + systemState.extraHeadingText;
+            }
 
-            $('#not-connected-alert').show();
-            connectedToExhibitor = false;
-            messageDialog("Error", "The browser lost connection with the " + $('#app-name').html() + " server.");
+            $('#page-title').html(pageTitle);
+            $('#version').html(systemState.version);
+            $('#not-connected-alert').hide();
+            $('#instance-hostname').html(systemConfig.hostname);
+            $('#instance-id').html((
+                systemConfig.serverId > 0
+                ) ? systemConfig.serverId : "n/a");
+
+            updateConfig();
+            buildServerItems();
+        },
+
+        error: function(jqXHR, status){
+            if ( connectedToExhibitor )
+            {
+                $.blockUI({
+                    css: {
+                        zIndex: 99998,
+                        cursor: 'default'
+                    },
+                    message: null,
+                    overlayCSS: {
+                        backgroundColor: '#333',
+                        cursor: 'default'
+                    }
+                });
+
+                $('#not-connected-alert').show();
+                connectedToExhibitor = false;
+                messageDialog("Error", "The browser lost connection with the " + $('#app-name').html() + " server.");
+            }
         }
     });
 }

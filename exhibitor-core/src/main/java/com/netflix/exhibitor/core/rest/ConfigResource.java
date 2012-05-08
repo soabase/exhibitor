@@ -20,6 +20,7 @@ package com.netflix.exhibitor.core.rest;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
+import com.google.common.hash.Hashing;
 import com.netflix.exhibitor.core.backup.BackupConfigSpec;
 import com.netflix.exhibitor.core.config.ConfigManager;
 import com.netflix.exhibitor.core.config.EncodedConfigParser;
@@ -39,7 +40,9 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ContextResolver;
 import java.io.IOException;
@@ -63,7 +66,7 @@ public class ConfigResource
     @Path("get-state")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public String getSystemState() throws Exception
+    public Response getSystemState(@Context Request request) throws Exception
     {
         InstanceConfig              config = context.getExhibitor().getConfigManager().getConfig();
 
@@ -118,7 +121,16 @@ public class ConfigResource
 
         mainNode.put("config", configNode);
 
-        return JsonUtil.writeValueAsString(mainNode);
+        String      json = JsonUtil.writeValueAsString(mainNode);
+        EntityTag   tag = new EntityTag(Hashing.sha1().hashString(json).toString());
+
+        Response.ResponseBuilder    builder = request.evaluatePreconditions(tag);
+        if ( builder == null )
+        {
+            builder = Response.ok(json).tag(tag);
+        }
+
+        return builder.build();
     }
 
     @Path("rollback-rolling")
