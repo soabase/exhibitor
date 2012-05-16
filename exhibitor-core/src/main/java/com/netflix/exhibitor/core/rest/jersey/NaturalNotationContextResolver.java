@@ -45,7 +45,11 @@ class NaturalNotationContextResolver implements ContextResolver<JAXBContext>
                 SearchRequest.class,
                 SearchResult.class,
                 UITabSpec.class,
-                NameAndModifiedDate.class
+                NameAndModifiedDate.class,
+                PathAnalysis.class,
+                PathAnalysisNode.class,
+                PathAnalysisRequest.class,
+                IdList.class
             );
         }
         catch ( JAXBException e )

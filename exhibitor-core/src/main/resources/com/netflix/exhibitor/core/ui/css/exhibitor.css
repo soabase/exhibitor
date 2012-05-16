@@ -468,3 +468,41 @@ fieldset
 {
     float: right;
 }
+
+#analyze-paths-container label
+{
+    float: left;
+    width: 80px;
+}
+
+#analyze-paths-container fieldset
+{
+    margin-bottom: 6px;
+}
+
+#analyze-help
+{
+    font-size: .75em;
+    border: solid 1px #a9a9a9;
+    color: #333333;
+    margin-top: 8px;
+    padding: 3px;
+}
+
+#analyze-results-label
+{
+    font-weight: bold;
+    margin-bottom: 3px;
+}
+
+#analyze-results
+{
+    font-family: monospace;
+    font-size: 80%;
+    padding: 3px;
+    width: 100%;
+    height: 80%;
+    overflow: scroll;
+    white-space: nowrap;
+    border: 1px solid black;
+}

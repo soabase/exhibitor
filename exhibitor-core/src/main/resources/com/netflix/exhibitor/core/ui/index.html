@@ -113,8 +113,9 @@
                     </table>
                 </div>
 
-                <div id="explorer-mutation-buttons" class="ui-helper-hidden">
-                    <button id="explorer-mutation-button-modify">Modify...</button>
+                <div id="explorer-buttons" class="ui-helper-hidden">
+                    <button id="explorer-button-modify">Modify...</button>
+                    <button id="explorer-button-analyze">Analyze...</button>
                 </div>
             </div>
 
@@ -368,6 +369,28 @@
                 <label for="node-data-ticket">Ticket/Code</label><input type="text" id="node-data-ticket" name="node-data-ticket" size="20" title="Ticket/tag number for this operation"><br clear="all"/>
                 <label for="node-data-reason">Reason</label><input type="text" id="node-data-reason" name="node-data-reason" size="40" title="Reason for the change"><br clear="all"/>
             </fieldset>
+        </div>
+
+        <div id="analyze-dialog" class="ui-helper-hidden">
+            <div id="analyze-paths-container">
+                <fieldset id="analyze-paths-$INDEX$">
+                    <legend>Path $NUMBER$</legend>
+                    <label for="analyze-node-name-$INDEX$">Path</label><input type="text" id="analyze-node-name-$INDEX$" name="analyze-node-name-$INDEX$" size="40" title="Parent path of the lock or one of the lock ZNodes"><br clear="all"/>
+                    <label for="analyze-max-$INDEX$">Max Locks </label><input type="text" id="analyze-max-$INDEX$" name="analyze-max-$INDEX$" size="5" value="1" class="mask-pint" title="Maximum locks for this path. i.e. a mutex has a max of 1, a semaphore has a max of 1 to n."><br clear="all"/>
+                </fieldset>
+            </div>
+            <button id="analyze-plus">Add a new path entry</button>
+            <button id="analyze-minus">Remove a path entry</button>
+
+            <div id="analyze-help">
+                Enter one or more paths that represent a lock recipe. For each path, enter the maximum number of entries that represent ownership of the lock. i.e. mutexes have a max
+                of 1; semaphores have a max of 1 to n.
+            </div>
+        </div>
+
+        <div id="analyze-results-dialog" class="ui-helper-hidden">
+            <div id="analyze-results-label">Results:</div>
+            <div id="analyze-results"></div>
         </div>
 
         <div id="validate-modify-node-dialog" class="ui-helper-hidden">

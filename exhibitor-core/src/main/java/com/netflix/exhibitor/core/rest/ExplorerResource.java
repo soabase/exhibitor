@@ -18,29 +18,33 @@
 
 package com.netflix.exhibitor.core.rest;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.netflix.curator.utils.ZKPaths;
 import com.netflix.exhibitor.core.activity.ActivityLog;
+import com.netflix.exhibitor.core.analyze.Analysis;
+import com.netflix.exhibitor.core.analyze.PathAnalyzer;
+import com.netflix.exhibitor.core.analyze.PathAndMax;
+import com.netflix.exhibitor.core.analyze.PathComplete;
+import com.netflix.exhibitor.core.entities.IdList;
+import com.netflix.exhibitor.core.entities.PathAnalysis;
+import com.netflix.exhibitor.core.entities.PathAnalysisNode;
+import com.netflix.exhibitor.core.entities.PathAnalysisRequest;
 import com.netflix.exhibitor.core.entities.Result;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.data.Stat;
 import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.JsonNodeFactory;
 import org.codehaus.jackson.node.ObjectNode;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ContextResolver;
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * REST calls for the Explorer Tab (which uses the Dynatree JQuery plugin
@@ -241,6 +245,66 @@ public class ExplorerResource
         }
 
         return children.toString();
+    }
+
+    @POST
+    @Path("analyze")
+    @Produces("application/json")
+    public Response     analyze(List<PathAnalysisRequest> paths) throws Exception
+    {
+        context.getExhibitor().getLog().add(ActivityLog.Type.INFO, "Starting analysis");
+
+        List<PathAndMax>    pathAndMaxes = Lists.transform
+        (
+            paths,
+            new Function<PathAnalysisRequest, PathAndMax>()
+            {
+                @Override
+                public PathAndMax apply(PathAnalysisRequest request)
+                {
+                    return new PathAndMax(request.getPath(), request.getMax());
+                }
+            }
+        );
+        PathAnalyzer        analyzer = new PathAnalyzer(context.getExhibitor(), pathAndMaxes);
+        Analysis            analysis = analyzer.analyze();
+
+        Iterable<PathAnalysisNode>  transformed = Iterables.transform
+        (
+            analysis.getCompleteData(),
+            new Function<PathComplete, PathAnalysisNode>()
+            {
+                @Override
+                public PathAnalysisNode apply(PathComplete pathComplete)
+                {
+                    return new PathAnalysisNode(pathComplete.getPath(), pathComplete.getMax(), pathComplete.getChildIds());
+                }
+            }
+        );
+        Iterable<IdList>   transformedPossibleCycles = Iterables.transform
+        (
+            analysis.getPossibleCycles(),
+            new Function<Set<String>, IdList>()
+            {
+                @Override
+                public IdList apply(Set<String> s)
+                {
+                    return new IdList(Lists.newArrayList(s));
+                }
+            }
+        );
+        String              error = analysis.getError();
+        PathAnalysis        response;
+        try
+        {
+            response = new PathAnalysis((error != null) ? error : "", Lists.newArrayList(transformed), Lists.newArrayList(transformedPossibleCycles));
+        }
+        catch ( Exception e )
+        {
+            context.getExhibitor().getLog().add(ActivityLog.Type.ERROR, "Error performing analysis", e);
+            throw e;
+        }
+        return Response.ok(response).build();
     }
 
     private String  reflectToString(Object obj) throws Exception

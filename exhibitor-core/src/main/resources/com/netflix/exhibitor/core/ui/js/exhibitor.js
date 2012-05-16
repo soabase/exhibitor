@@ -20,6 +20,7 @@ var URL_CLUSTER_GET_STATE_BASE = "../cluster/state/";
 var URL_EXPLORER_NODE_DATA = "../explorer/node-data";
 var URL_EXPLORER_NODE = "../explorer/node";
 var URL_EXPLORER_ZNODE_BASE = "../explorer/znode";
+var URL_EXPLORER_ANALYZE = "../explorer/analyze";
 
 var URL_GET_STATE = "../config/get-state";
 var URL_SET_CONFIG = "../config/set";
@@ -136,12 +137,12 @@ function updateState()
 
             if ( systemState.nodeMutationsAllowed )
             {
-                $('#explorer-mutation-buttons').show();
+                $('#explorer-buttons').show();
                 $('#index-query-clear-restore-button').show();
             }
             else
             {
-                $('#explorer-mutation-buttons').hide();
+                $('#explorer-buttons').hide();
                 $('#index-query-clear-restore-button').hide();
             }
 
