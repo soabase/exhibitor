@@ -47,6 +47,7 @@ function showAnalysisResults(data)
     else
     {
         for ( i = 0; i < data.possibleCycles.length; ++i )
+
         {
             var thisIds = data.possibleCycles[i].ids;
             for ( j = 0; j < thisIds.length; ++j )

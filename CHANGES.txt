@@ -1,3 +1,8 @@
+1.0.10 - May 17, 2012
+=====================
+* Added a new Analyze feature to detect deadlocks and show lock ownership (assuming Curator
+recipe usage)
+
 1.0.9 - May 8, 2012
 ===================
 * Major oversight. Restart significant config changes weren't causing a restart.
