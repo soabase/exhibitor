@@ -20,8 +20,9 @@ function makeServersList()
         var parts = specs[i].split(":");
 
         var thisSpec = {};
-        thisSpec.serverId = parseInt(parts[0]);
-        thisSpec.hostname = parts[1];
+        var index = (parts.length > 2) ? 1 : 0;
+        thisSpec.serverId = parseInt(parts[index++]);
+        thisSpec.hostname = parts[index];
         if ( thisSpec.hostname === systemConfig.hostname )
         {
             foundUs = true;
