@@ -62,7 +62,7 @@ public class StandardProcessOperations implements ProcessOperations
         (
             "java",
             "-cp",
-            String.format("%s:%s:%s", details.zooKeeperJarPath.getPath(), details.log4jJarPath.getPath(), details.configDirectory.getPath()),
+            String.format("%s:%s:%s", details.zooKeeperJarPath, details.logPaths, details.configDirectory.getPath()),
             "org.apache.zookeeper.server.PurgeTxnLog",
             details.dataDirectory.getPath(),
             details.dataDirectory.getPath(),

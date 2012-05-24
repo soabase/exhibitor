@@ -18,6 +18,9 @@
 
 package com.netflix.exhibitor.core.processes;
 
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Iterables;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.config.EncodedConfigParser;
 import com.netflix.exhibitor.core.config.InstanceConfig;
@@ -25,15 +28,17 @@ import com.netflix.exhibitor.core.config.StringConfigs;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 class Details
 {
     final File zooKeeperDirectory;
     final File dataDirectory;
     final File configDirectory;
-    final File log4jJarPath;
-    final File zooKeeperJarPath;
+    final String logPaths;
+    final String zooKeeperJarPath;
     final Properties properties;
 
     Details(Exhibitor exhibitor) throws IOException
@@ -44,8 +49,8 @@ class Details
         this.dataDirectory = new File(config.getString(StringConfigs.ZOOKEEPER_DATA_DIRECTORY));
 
         configDirectory = new File(zooKeeperDirectory, "conf");
-        log4jJarPath = findJar(new File(zooKeeperDirectory, "lib"), "log4j");
-        zooKeeperJarPath = findJar(this.zooKeeperDirectory, "zookeeper");
+        logPaths = findJar(new File(zooKeeperDirectory, "lib"), "(.*log4j.*)|(.*slf4j.*)");
+        zooKeeperJarPath = findJar(this.zooKeeperDirectory, "zookeeper.*");
 
         properties = new Properties();
         if ( isValid() )
@@ -69,29 +74,43 @@ class Details
         return directory.getPath().length() > 0;
     }
 
-    private File findJar(File dir, final String name) throws IOException
+    private String findJar(File dir, String regex) throws IOException
     {
         if ( !isValid() )
         {
-            return new File("");
+            return "";
         }
 
-        File[]          snapshots = dir.listFiles
-        (
-            new FileFilter()
-            {
-                @Override
-                public boolean accept(File f)
+        final Pattern pattern = Pattern.compile(regex);
+        File[]          files = dir.listFiles
+            (
+                new FileFilter()
                 {
-                    return f.getName().startsWith(name) && f.getName().endsWith(".jar");
+                    @Override
+                    public boolean accept(File f)
+                    {
+                        return pattern.matcher(f.getName()).matches() && f.getName().endsWith(".jar");
+                    }
                 }
-            }
-        );
+            );
 
-        if ( snapshots.length == 0 )
+        if ( (files == null) || (files.length == 0) )
         {
-            throw new IOException("Could not find " + name + " jar");
+            throw new IOException("Could not find " + regex + " jar");
         }
-        return snapshots[0];
+
+        Iterable<String> transformed = Iterables.transform
+            (
+                Arrays.asList(files),
+                new Function<File, String>()
+                {
+                    @Override
+                    public String apply(File f)
+                    {
+                        return f.getPath();
+                    }
+                }
+            );
+        return Joiner.on(':').join(transformed);
     }
 }
