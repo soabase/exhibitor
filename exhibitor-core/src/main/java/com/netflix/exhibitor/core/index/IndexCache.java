@@ -135,7 +135,7 @@ public class IndexCache implements Closeable
         synchronized(holder)
         {
             Preconditions.checkArgument(holder.useCount > 0, "non positive use count in release: " + holder.useCount);
-            --holder.lastUse;
+            --holder.useCount;
         }
     }
 
