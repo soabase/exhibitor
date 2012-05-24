@@ -164,27 +164,35 @@ public class IndexResource
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        DateFormat      dateFormatter = new SimpleDateFormat(DATE_FORMAT_STR);
-        SearchItem      item = logSearch.toResult(docId);
-        if ( item == null )
+        SearchResult    result;
+        try
         {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
+            DateFormat      dateFormatter = new SimpleDateFormat(DATE_FORMAT_STR);
+            SearchItem      item = logSearch.toResult(docId);
+            if ( item == null )
+            {
+                return Response.status(Response.Status.NOT_FOUND).build();
+            }
 
-        byte[]          bytes = logSearch.toData(docId);
-        if ( bytes == null )
-        {
-            bytes = new byte[0];
+            byte[]          bytes = logSearch.toData(docId);
+            if ( bytes == null )
+            {
+                bytes = new byte[0];
+            }
+            result = new SearchResult
+            (
+                docId,
+                item.getType(),
+                item.getPath(),
+                dateFormatter.format(item.getDate()),
+                new String(bytes, "UTF-8"),
+                ExplorerResource.bytesToString(bytes)
+            );
         }
-        SearchResult    result = new SearchResult
-        (
-            docId,
-            item.getType(),
-            item.getPath(),
-            dateFormatter.format(item.getDate()),
-            new String(bytes, "UTF-8"),
-            ExplorerResource.bytesToString(bytes)
-        );
+        finally
+        {
+            context.getExhibitor().getIndexCache().releaseLogSearch(logSearch.getFile());
+        }
 
         return Response.ok(result).build();
     }
