@@ -1,3 +1,13 @@
+1.0.11 - xxxxxxxxxxxx
+=====================
+* Issue 14: typo - wrong counter being decremented in IndexCache.releaseLogSearch()
+
+* Issue 14: IndexResource.getResult wasn't release the search object
+
+* Issue 14: cleanup task wasn't using correct JARs for 3.4.x
+
+* Various minor bug fixes
+
 1.0.10 - May 17, 2012
 =====================
 * Added a new Analyze feature to detect deadlocks and show lock ownership (assuming Curator
