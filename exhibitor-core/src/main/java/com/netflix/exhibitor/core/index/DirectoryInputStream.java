@@ -40,7 +40,8 @@ public class DirectoryInputStream extends InputStream
     public DirectoryInputStream(File directory)
     {
         this.directory = directory;
-        files = Lists.newArrayList(Arrays.asList(directory.listFiles()));
+        File[] dirFiles = directory.listFiles();
+        files = (dirFiles != null) ? Lists.newArrayList(Arrays.asList(dirFiles)) : Lists.<File>newArrayList();
         
         int     length = 0;
         for ( File f : files )
