@@ -1,8 +1,8 @@
-1.0.11 - xxxxxxxxxxxx
+1.0.11 - May 25, 2012
 =====================
 * Issue 14: typo - wrong counter being decremented in IndexCache.releaseLogSearch()
 
-* Issue 14: IndexResource.getResult wasn't release the search object
+* Issue 14: IndexResource.getResult wasn't releasing the search object
 
 * Issue 14: cleanup task wasn't using correct JARs for 3.4.x
 
