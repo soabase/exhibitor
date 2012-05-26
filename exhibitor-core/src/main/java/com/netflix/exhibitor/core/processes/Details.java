@@ -29,6 +29,9 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
@@ -45,7 +48,7 @@ class Details
     {
         InstanceConfig config = exhibitor.getConfigManager().getConfig();
 
-        this.zooKeeperDirectory = new File(config.getString(StringConfigs.ZOOKEEPER_INSTALL_DIRECTORY));
+        this.zooKeeperDirectory = getZooKeeperDirectory(config);
         this.dataDirectory = new File(config.getString(StringConfigs.ZOOKEEPER_DATA_DIRECTORY));
 
         configDirectory = new File(zooKeeperDirectory, "conf");
@@ -67,6 +70,42 @@ class Details
             && isValidPath(dataDirectory)
             && isValidPath(configDirectory)
             ;
+    }
+
+    private File getZooKeeperDirectory(InstanceConfig config)
+    {
+        String  configValue = config.getString(StringConfigs.ZOOKEEPER_INSTALL_DIRECTORY);
+        if ( (configValue.length() > 1) && configValue.endsWith("*") )
+        {
+            File      basePath = new File(configValue.substring(0, configValue.length() - 1));
+            File[]    possibles = basePath.listFiles();
+            if ( (possibles != null) && (possibles.length > 0) )
+            {
+                final NaturalOrderComparator    naturalOrderComparator = new NaturalOrderComparator();
+                List<File>                      possiblesList = Arrays.asList(possibles);
+                Collections.sort
+                (
+                    possiblesList,
+                    new Comparator<File>()
+                    {
+                        @Override
+                        public int compare(File f1, File f2)
+                        {
+                            int         f1Dir = f1.isDirectory() ? 0 : 1;
+                            int         f2Dir = f2.isDirectory() ? 0 : 1;
+                            int         diff = f1Dir - f2Dir;
+                            if ( diff == 0 )
+                            {
+                                diff = -1 * naturalOrderComparator.compare(f1.getName(), f2.getName()); // reverse order
+                            }
+                            return diff;
+                        }
+                    }
+                );
+                return possiblesList.get(0);    // should be latest version
+            }
+        }
+        return new File(configValue);
     }
 
     private boolean isValidPath(File directory)

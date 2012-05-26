@@ -34,8 +34,16 @@ var URL_RESTART = "stop";
 
 var doConfigUpdates = true;
 
-function messageDialog(title, message)
+function messageDialog(title, message, noIcon)
 {
+    if ( noIcon )
+    {
+        $('#message-dialog-icon').hide();
+    }
+    else
+    {
+        $('#message-dialog-icon').show();
+    }
     $('#message-dialog-text').html(message);
     $("#message-dialog").dialog("option", "title", title);
     $("#message-dialog").dialog("option", "buttons",
@@ -559,6 +567,7 @@ $(function ()
 
     $("#message-dialog").dialog({
         modal: true,
+        width: 400,
         autoOpen: false,
         zIndex: 99999
     });
@@ -654,6 +663,19 @@ $(function ()
     $('#rolling-config-floater-button').button();
     $('#rolling-config-floater-button').click(function(){
         $('#rolling-config-cancel-dialog').dialog("open");
+    });
+
+    $('#config-zookeeper-install-dir-help-button').button();
+    $('#config-zookeeper-install-dir-help-button').click(function(){
+        messageDialog(
+            "ZooKeeper Install Dir",
+            "<p>To support upgrading the ZooKeeper version, you can specify only a parent directory for ZooKeeper Install Dir. </p>" +
+            "<p>" +
+            "Add '*' to the end of the value and Exhibitor will search for the latest version of ZooKeeper in that directory. " +
+            "It does this by choosing the directory with the highest version number in the name. i.e. 'zookeeper-3.4.3' will be chosen over 'zookeeper.3.3.5'. " +
+            "</p>",
+            true
+        );
     });
 
     $('#rolling-config-progressbar').progressbar({

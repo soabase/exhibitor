@@ -1,3 +1,9 @@
+1.0.12 - xxxxxxxxxxxx
+=====================
+* Exhibitor now supports upgrading the ZooKeeper install version by optionally having
+the ZooKeeper Install Dir specify a directory and searching that directory for the ZooKeeper
+install with the highest version number.
+
 1.0.11 - May 25, 2012
 =====================
 * Issue 14: typo - wrong counter being decremented in IndexCache.releaseLogSearch()

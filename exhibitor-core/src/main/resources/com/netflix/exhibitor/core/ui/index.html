@@ -157,7 +157,8 @@
                 <div id="config-group">
                     <fieldset class="caution-fieldset">
                         <legend class="caution-legend">Paths</legend>
-                        <label for="config-zookeeper-install-dir">ZooKeeper Install Dir</label><input type="text" id="config-zookeeper-install-dir" name="config-zookeeper-install-dir" size="60" title="The directory where the ZooKeeper server is installed"><br clear="all"/>
+                        <label for="config-zookeeper-install-dir">ZooKeeper Install Dir</label><input type="text" id="config-zookeeper-install-dir" name="config-zookeeper-install-dir" size="60" title="The directory where the ZooKeeper server is installed">
+                            <button id="config-zookeeper-install-dir-help-button">Read Me</button><br clear="all"/>
                         <label for="config-zookeeper-data-dir">ZooKeeper Data Dir</label><input type="text" id="config-zookeeper-data-dir" name="config-zookeeper-data-dir" size="60" title="The directory where the ZooKeeper data is stored"><br clear="all"/>
                     </fieldset>
 
@@ -226,7 +227,7 @@
 
         <div id="message-dialog" class="ui-helper-hidden">
             <p>
-            <span class="ui-icon ui-icon-alert" style="float: left; margin:0 7px 50px 0;"></span>
+            <span id="message-dialog-icon" class="ui-icon ui-icon-alert" style="float: left; margin:0 7px 50px 0;"></span>
             <span id="message-dialog-text"></span>
             </p>
         </div>
