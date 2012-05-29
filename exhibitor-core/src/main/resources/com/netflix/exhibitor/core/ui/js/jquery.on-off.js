@@ -1,5 +1,33 @@
 /**
  * Cobbled together from lots of different switch style plugins. None of them worked how I liked.
+ *
+ * Constructors:
+ *      $(selector).onOff()
+ *
+ *      $(selector).onOff({
+ *          options
+ *      })
+ *
+ *      Options:
+ *          labelClass - class to use for the "ON" and "OFF" labels
+ *          width - image width
+ *          height - image height
+ *          onText - text for the "ON" label
+ *          offText - text for the "OFF" label
+ *          backgroundImage - URL for the background image (which looks like an active switch)
+ *          foregroundImage - URL for the foreground image (a thin frame)
+ *          verticalAlign - the vertical-align css value for the image
+ *          cursor - the css cursor for mouse overs
+ *          callback - function to call on clicks - function(isChecked)
+ *
+ * Methods:
+ *      $(selector).onOff("setChecked", newCheckState)  - set the check on/off
+ *      $(selector).onOff("setCallback", func)  - change the onclick callback
+ *      $(selector).onOff("setEnabled", newEnabled)  - enable/disable the switch
+ *
+ * Misc:
+ *      To check if the switch is checked: $(selector).prop("checked")
+ *      To check if the switch is disabled: $(selector).prop("disabled")
  */
 
 (function($){
