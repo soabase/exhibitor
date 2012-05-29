@@ -506,3 +506,11 @@ fieldset
     white-space: nowrap;
     border: 1px solid black;
 }
+
+.on-off-label
+{
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: .75em;
+    color: #555;
+}

@@ -414,18 +414,15 @@ function updateCalculatorValue(lhs)
 
 function checkLightSwitch(selector, check)
 {
-    $(selector).prop("checked", check);
-    $(selector).trigger("change");
+    $(selector).onOff("setChecked", check);
 }
 
 function ableLightSwitch(selector, func, enable)
 {
-    var newDisable = (enable != undefined) && !enable;
-    var currentDisable = ($(selector).attr("disabled") != undefined);
-    if ( newDisable != currentDisable )
+    $(selector).onOff("setEnabled", enable || (enable == undefined));
+    if ( func )
     {
-        $(selector).next('span').remove();
-        makeLightSwitch(selector, func, newDisable);
+        $(selector).onOff("setCallback", func);
     }
 }
 
@@ -436,26 +433,17 @@ function makeLightSwitch(selector, func, disable)
         disable = false;
     }
 
+    $(selector).onOff({
+        labelClass: 'on-off-label',
+        callback: func
+    });
     if ( disable )
     {
-        $(selector).attr("disabled", "disabled");
+        ableLightSwitch(selector, func, false);
     }
     else
     {
-        $(selector).removeAttr("disabled");
-    }
-
-    $(selector).lightSwitch({
-        switchImgCover: 'lightSwitch/switchplate.png',
-        switchImg : 'lightSwitch/switch.png',
-        disabledImg : 'lightSwitch/disabled.png'
-    });
-    if ( !disable )
-    {
-        $(selector).next('span.switch').click(function(){
-            var isChecked = $(selector).is(':checked');
-            func(isChecked);
-        });
+        $(selector).onOff('setCallback', func);
     }
 }
 
