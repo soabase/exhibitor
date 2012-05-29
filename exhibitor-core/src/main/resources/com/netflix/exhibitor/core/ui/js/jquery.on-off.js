@@ -28,6 +28,10 @@
  * Misc:
  *      To check if the switch is checked: $(selector).prop("checked")
  *      To check if the switch is disabled: $(selector).prop("disabled")
+ *
+ * Notice:
+ *      The default images are modified versions of the images provided by
+ *      LightSwitch http://www.catchmyfame.com/2010/05/07/new-jquery-lightswitch-plugin/
  */
 
 (function($){
