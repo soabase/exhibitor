@@ -105,6 +105,7 @@ function updateState()
         success: function (data, dummy, jqXHR){
             if ( jqXHR.status == 304 )
             {
+                buildServerItems();
                 return; // not modified
             }
 
