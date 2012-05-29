@@ -224,7 +224,7 @@ function addBackupExtraConfig(data)
 
     updateState();
 
-    var isChecked = $('#config-editable').is(':checked');
+    var isChecked = $('#config-editable').prop('checked');
     ableConfig(isChecked);
 }
 
@@ -270,6 +270,11 @@ function buildNewConfig()
     return newConfig;
 }
 
+function turnOffEditableSwitch()
+{
+    checkLightSwitch('#config-editable', false);
+    handleEditableSwitch();
+}
 function submitConfigChanges(rolling)
 {
     var newConfig = buildNewConfig();
@@ -290,9 +295,7 @@ function submitConfigChanges(rolling)
             }
         }
     });
-
-    checkLightSwitch('#config-editable', false);
-    handleEditableSwitch();
+    turnOffEditableSwitch();
 }
 
 function getBackupExtraId(obj)
@@ -560,8 +563,6 @@ $(function ()
         zIndex: 99999
     });
 
-    makeLightSwitch('#config-editable', handleEditableSwitch);
-
     $("#config-button").button({
         icons:{
             primary:"ui-icon-disk"
@@ -697,6 +698,9 @@ $(function ()
             }
         }
     );
+
+    makeLightSwitch('#config-editable', handleEditableSwitch);
+    turnOffEditableSwitch();
 
     initRestoreUI();
     updateState();

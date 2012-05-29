@@ -4,6 +4,8 @@
 the ZooKeeper Install Dir specify a directory and searching that directory for the ZooKeeper
 install with the highest version number.
 
+* UI work - prep for i18n.
+
 1.0.11 - May 25, 2012
 =====================
 * Issue 14: typo - wrong counter being decremented in IndexCache.releaseLogSearch()
