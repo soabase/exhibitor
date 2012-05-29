@@ -1,10 +1,14 @@
-1.0.12 - May 29, 2012 (internal only)
-=====================================
+1.0.13 - May 29, 2012
+=====================
+* HTTP eTag support broke server UI updates.
+
 * Exhibitor now supports upgrading the ZooKeeper install version by optionally having
 the ZooKeeper Install Dir specify a directory and searching that directory for the ZooKeeper
 install with the highest version number.
 
 * UI work - prep for i18n.
+
+// 1.0.12 (internal only)
 
 1.0.11 - May 25, 2012
 =====================
