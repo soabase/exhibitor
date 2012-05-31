@@ -97,7 +97,6 @@ function updateState()
     $.ajax({
         url: URL_GET_STATE,
         type: 'GET',
-        ifModified: true,
         success: function (data, dummy, jqXHR){
             systemState = data;
 

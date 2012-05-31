@@ -222,7 +222,7 @@ public class ExplorerResource
         try
         {
             List<String> childrenNames = context.getExhibitor().getLocalConnection().getChildren().forPath(key);
-            Collections.sort(childrenNames);
+            SmartSort.sortChildren(childrenNames);
             for ( String name : childrenNames )
             {
                 ObjectNode  node = children.addObject();
