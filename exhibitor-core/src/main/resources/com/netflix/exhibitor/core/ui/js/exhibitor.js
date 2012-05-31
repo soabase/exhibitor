@@ -80,7 +80,6 @@ function okCancelDialog(title, message, okFunction)
 
 var hasBackupConfig = false;
 var systemState = {};
-var systemStateETag = "";
 var systemConfig = {};
 var connectedToExhibitor = true;
 var currentVersion = null;
@@ -99,18 +98,8 @@ function updateState()
         url: URL_GET_STATE,
         type: 'GET',
         ifModified: true,
-        headers: {
-            'If-None-Match': systemStateETag
-        },
         success: function (data, dummy, jqXHR){
-            if ( jqXHR.status == 304 )
-            {
-                buildServerItems();
-                return; // not modified
-            }
-
             systemState = data;
-            systemStateETag = jqXHR.getResponseHeader("ETag");
 
             if ( doConfigUpdates ) {
                 systemConfig = systemState.config;

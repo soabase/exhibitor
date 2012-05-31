@@ -1,3 +1,7 @@
+1.0.14 - xxxxxxxxxxxx
+=====================
+* Removed eTag support - there are too many edge cases and it doesn't really save very much.
+
 1.0.13 - May 29, 2012
 =====================
 * HTTP eTag support broke server UI updates.

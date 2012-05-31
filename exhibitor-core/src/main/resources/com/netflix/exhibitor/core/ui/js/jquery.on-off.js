@@ -29,6 +29,15 @@
  *      To check if the switch is checked: $(selector).prop("checked")
  *      To check if the switch is disabled: $(selector).prop("disabled")
  *
+ * Example label css:
+ *      .on-off-label
+ *      {
+ *          font-weight: bold;
+ *          text-transform: uppercase;
+ *          font-size: .75em;
+ *          color: #555;
+ *      }
+ *
  * Notice:
  *      The default images are modified versions of the images provided by
  *      LightSwitch http://www.catchmyfame.com/2010/05/07/new-jquery-lightswitch-plugin/
