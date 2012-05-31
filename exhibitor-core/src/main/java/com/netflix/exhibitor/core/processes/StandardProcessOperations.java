@@ -133,12 +133,19 @@ public class StandardProcessOperations implements ProcessOperations
     {
         Details         details = new Details(exhibitor);
         String          javaEnvironmentScript = exhibitor.getConfigManager().getConfig().getString(StringConfigs.JAVA_ENVIRONMENT);
+        String          log4jProperties = exhibitor.getConfigManager().getConfig().getString(StringConfigs.JAVA_ENVIRONMENT);
 
         prepConfigFile(details);
         if ( (javaEnvironmentScript != null) && (javaEnvironmentScript.trim().length() > 0) )
         {
             File     envFile = new File(details.configDirectory, "java.env");
             Files.write(javaEnvironmentScript, envFile, Charset.defaultCharset());
+        }
+
+        if ( (log4jProperties != null) && (log4jProperties.trim().length() > 0) )
+        {
+            File     log4jFile = new File(details.configDirectory, "log4jFile.properties");
+            Files.write(log4jProperties, log4jFile, Charset.defaultCharset());
         }
 
         File            binDirectory = new File(details.zooKeeperDirectory, "bin");

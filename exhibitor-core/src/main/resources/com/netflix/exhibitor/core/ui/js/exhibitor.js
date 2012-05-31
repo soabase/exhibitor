@@ -226,6 +226,7 @@ function buildNewConfig()
     newConfig.logIndexDirectory = $('#config-log-index-dir').val();
     newConfig.serversSpec = $('#config-servers-spec').val();
     newConfig.javaEnvironment = $('#config-java-env').val();
+    newConfig.log4jProperties = $('#config-java-log4j').val();
     newConfig.clientPort = $('#config-client-port').val();
     newConfig.connectPort = $('#config-connect-port').val();
     newConfig.electionPort = $('#config-election-port').val();
@@ -300,6 +301,7 @@ function ableConfig(enable)
     $('#config-log-index-dir').prop('disabled', !enable);
     $('#config-servers-spec').prop('disabled', !enable);
     $('#config-java-env').prop('disabled', !enable);
+    $('#config-java-log4j').prop('disabled', !enable);
     $('#config-custom').prop('disabled', !enable);
     $('#config-client-port').prop('disabled', !enable);
     $('#config-connect-port').prop('disabled', !enable);
@@ -337,6 +339,7 @@ function updateConfig()
     $('#config-log-index-dir').val(systemConfig.logIndexDirectory);
     $('#config-servers-spec').val(systemConfig.serversSpec);
     $('#config-java-env').val(systemConfig.javaEnvironment);
+    $('#config-java-log4j').val(systemConfig.log4jProperties);
     $('#config-custom').val(configExtra);
     $('#config-client-port').val(systemConfig.clientPort);
     $('#config-connect-port').val(systemConfig.connectPort);
@@ -467,6 +470,7 @@ function checkConfigConfirmation()
         || (newConfig.connectPort != systemConfig.connectPort)
         || (newConfig.electionPort != systemConfig.electionPort)
         || (newConfig.javaEnvironment != systemConfig.javaEnvironment)
+        || (newConfig.log4jProperties != systemConfig.log4jProperties)
     ;
 
     if ( !hasEnsembleLevelChange )

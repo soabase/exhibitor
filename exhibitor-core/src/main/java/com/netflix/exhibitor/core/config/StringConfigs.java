@@ -106,6 +106,15 @@ public enum StringConfigs
             return true;
         }
     },
+
+    LOG4J_PROPERTIES
+    {
+        @Override
+        public boolean isRestartSignificant()
+        {
+            return true;
+        }
+    }
     ;
 
     /**
