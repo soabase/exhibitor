@@ -1,0 +1,90 @@
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <title>Loading...</title>
+
+    <link rel="stylesheet" type="text/css" href="css/blitzer/jquery-ui-1.8.16.custom.css" />
+    <link rel="stylesheet" type="text/css" href="css/exhibitor.css">
+
+    <style type="text/css">
+        body
+        {
+            background-color: #fff;
+        }
+
+        #progressbar
+        {
+            padding: 1px 3px 1px 3px;
+        }
+    </style>
+
+    <script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
+    <script type="text/javascript" src="js/jquery.cookie.js"></script>
+    <script type="text/javascript" src="js/jquery-ui-1.8.16.custom.min.js"></script>
+    <script type="text/javascript" src="js/jquery.tools.min.js"></script>
+</head>
+
+<script type="text/javascript">
+    var URL_EXPLORER_ANALYZE = "../explorer/analyze";
+    var URL_EXPLORER_USAGE_LISTING = "../explorer/usage-listing";
+
+    $(function (){
+        var queryTab = getQuery();
+        if ( queryTab["method"] && queryTab["json"] )
+        {
+            var     url = null;
+            if ( queryTab["method"] === "analyze" )
+            {
+                url = URL_EXPLORER_ANALYZE;
+            }
+            else if ( queryTab["method"] === "usage-listing" )
+            {
+                url = URL_EXPLORER_USAGE_LISTING;
+            }
+            else
+            {
+                window.alert("Invalid method");
+            }
+
+            if ( url != null )
+            {
+                $('#progressbar').hide();
+                $('#progress-text').text("Request sent. Close this window after the file downloads.");
+
+                parent.location.href = url + "?request=" + queryTab["json"];
+            }
+        }
+        else
+        {
+            window.alert("Invalid query");
+        }
+
+        $('#progressbar').progressbar({
+            value: 100
+        });
+        $('#progress').show();
+    });
+
+    function getQuery()
+    {
+        var vars = [], hash;
+        var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+        for(var i = 0; i < hashes.length; i++)
+        {
+            hash = hashes[i].split('=');
+            vars.push(hash[0]);
+            vars[hash[0]] = hash[1];
+        }
+        return vars;
+    }
+</script>
+
+<body>
+<div id="progress" class="ui-helper-hidden">
+    <p>
+        <strong id="progress-text">Loading...</strong><br/><br/>
+    </p>
+    <div id="progressbar"></div>
+</div>
+</body>
+</html>

@@ -33,58 +33,6 @@ function addToAnalyzePathsContainer()
     ++analyzePathsContainerQty;
 }
 
-function showAnalysisResults(data)
-{
-    var details = "";
-    var i;
-    var j;
-
-    details += "<i>Possible Deadlocks:</i><br><br>";
-    if ( !data.possibleCycles || (data.possibleCycles.length == 0) )
-    {
-        details += "None<br>";
-    }
-    else
-    {
-        for ( i = 0; i < data.possibleCycles.length; ++i )
-
-        {
-            var thisIds = data.possibleCycles[i].ids;
-            for ( j = 0; j < thisIds.length; ++j )
-            {
-                if ( j > 0 )
-                {
-                    details += ", ";
-                }
-                details += thisIds[j];
-            }
-            details += "<br>";
-        }
-    }
-    details += "<br><hr><br>";
-
-    details += "<i>Locks/Owners:</i><br><br>";
-    for ( i = 0; i < data.nodes.length; ++i )
-    {
-        var thisNode = data.nodes[i];
-
-        details += "Lock Path: " + thisNode.path + "<br>";
-        details += "Owner(s): ";
-        for ( j = 0; (j < thisNode.max) && (j < thisNode.childIds.length); ++j )
-        {
-            if ( j > 0 )
-            {
-                details += ", ";
-            }
-            details += thisNode.childIds[j];
-        }
-        details += "<br><br>";
-    }
-
-    $('#analyze-results').html(details);
-    $('#analyze-results-dialog').dialog("open");
-}
-
 function buildRequestData()
 {
     var requestTab = new Array();
@@ -97,28 +45,38 @@ function buildRequestData()
     }
     return requestTab;
 }
+function performUsageListing()
+{
+    var request = {};
+    request.maxChildrenForTraversal = parseInt($('#usage-listing-max').val());
+    request.startPath = $('#usage-listing-path').val();
+    var json = JSON.stringify(request);
+    window.open("loading.html?method=usage-listing&json=" + encodeURIComponent(json), "_blank", "status=0,toolbar=0,location=0,menubar=0,directories=0,width=500,height=300");
+}
+
 function performAnalyze()
 {
     var requestTab = buildRequestData();
     var json = JSON.stringify(requestTab);
-    $.ajax({
-        url: URL_EXPLORER_ANALYZE,
-        type: 'POST',
-        data: json,
-        cache: false,
-        contentType: 'application/json',
-        dataType: 'json',
-        success:function (data){
-            if ( data.error.length > 0 )
-            {
-                messageDialog("Error", data.error);
-            }
-            else
-            {
-                showAnalysisResults(data);
+    window.open("loading.html?method=analyze&json=" + encodeURIComponent(json), "_blank", "status=0,toolbar=0,location=0,menubar=0,directories=0,width=500,height=300");
+}
+
+function openUsageListingDialog(path)
+{
+    $('#usage-listing-path').val(path);
+
+    $("#get-usage-listing-dialog").dialog("option", "buttons", {
+            "Cancel": function(){
+                $(this).dialog("close");
+            },
+
+            "OK": function(){
+                $(this).dialog("close");
+                performUsageListing();
             }
         }
-    });
+    );
+    $("#get-usage-listing-dialog").dialog("open");
 }
 
 function openAnalyzeDialog(path)
@@ -232,25 +190,21 @@ function initExplorer()
         return false;
     });
 
+    $("#explorer-button-usage-listing").button({
+        icons:{
+            primary:"ui-icon-gear"
+        }
+    }).click(function(){
+        openUsageListingDialog(explorerSelectedPath);
+        return false;
+    });
+
     $("#analyze-dialog").dialog({
         modal: true,
         autoOpen: false,
         width: 500,
         resizable: false,
         title: 'Analyze'
-    });
-
-    $("#analyze-results-dialog").dialog({
-        modal: true,
-        autoOpen: false,
-        width: 500,
-        resizable: true,
-        title: 'Analysis',
-        buttons: {
-            "OK": function(){
-                $(this).dialog("close");
-            }
-        }
     });
 
     $("#analyze-plus").button({
@@ -271,6 +225,14 @@ function initExplorer()
     }).click(function(){
         removeFromAnalyzePathsContainer();
         return false;
+    });
+
+    $('#get-usage-listing-dialog').dialog({
+        modal: true,
+        autoOpen: false,
+        width: 500,
+        resizable: false,
+        title: 'Usage Listing'
     });
 }
 

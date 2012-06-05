@@ -116,6 +116,7 @@
                 <div id="explorer-buttons" class="ui-helper-hidden">
                     <button id="explorer-button-modify">Modify...</button>
                     <button id="explorer-button-analyze">Analyze...</button>
+                    <button id="explorer-button-usage-listing">Usage Listing...</button>
                 </div>
             </div>
 
@@ -390,11 +391,6 @@
             </div>
         </div>
 
-        <div id="analyze-results-dialog" class="ui-helper-hidden">
-            <div id="analyze-results-label">Results:</div>
-            <div id="analyze-results"></div>
-        </div>
-
         <div id="validate-modify-node-dialog" class="ui-helper-hidden">
             <p>
                 <span class="ui-icon ui-icon-alert" style="float: left; margin:0 7px 150px 0;"></span>
@@ -405,6 +401,18 @@
             </p>
             <div id="validate-modify-node-action"></div>
             <div id="validate-modify-node-description"></div>
+        </div>
+
+        <div id="get-usage-listing-dialog" class="ui-helper-hidden">
+            <div>
+                <label for="usage-listing-path">Starting Path </label><input type="text" id="usage-listing-path" name="usage-listing-path" size="40" title="The starting path for the listing"><br clear="all"/>
+                <label for="usage-listing-max">Max Traversal </label><input type="text" id="usage-listing-max" name="usage-listing-max" size="10" value="1000" class="mask-pint" title="Paths with this many child or greater will not be traversed"><br clear="all"/>
+            </div>
+
+            <div id="usage-listing-help">
+                Enter a starting path for the listing and the maximum size path for traversal (i.e. paths with Max Traversal children will not be recursively listed). A detailed listing
+                will be generated showing all the paths, their creation time, their immediate children count and their deep children count.
+            </div>
         </div>
     </body>
 </html>

@@ -21,30 +21,40 @@ package com.netflix.exhibitor.core.rest;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.io.Closeables;
 import com.netflix.curator.utils.ZKPaths;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.analyze.Analysis;
 import com.netflix.exhibitor.core.analyze.PathAnalyzer;
 import com.netflix.exhibitor.core.analyze.PathAndMax;
 import com.netflix.exhibitor.core.analyze.PathComplete;
+import com.netflix.exhibitor.core.analyze.UsageListing;
 import com.netflix.exhibitor.core.entities.IdList;
 import com.netflix.exhibitor.core.entities.PathAnalysis;
 import com.netflix.exhibitor.core.entities.PathAnalysisNode;
 import com.netflix.exhibitor.core.entities.PathAnalysisRequest;
 import com.netflix.exhibitor.core.entities.Result;
+import com.netflix.exhibitor.core.entities.UsageListingRequest;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.data.Stat;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.JsonNodeFactory;
 import org.codehaus.jackson.node.ObjectNode;
+import org.codehaus.jackson.type.TypeReference;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ContextResolver;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.io.PrintStream;
 import java.lang.reflect.Field;
-import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * REST calls for the Explorer Tab (which uses the Dynatree JQuery plugin
@@ -52,7 +62,8 @@ import java.util.Set;
 @Path("exhibitor/v1/explorer")
 public class ExplorerResource
 {
-    private final UIContext context;
+    private final UIContext         context;
+    private final ExecutorService   executorService = Executors.newCachedThreadPool();
 
     private static final String         ERROR_KEY = "*";
 
@@ -247,8 +258,81 @@ public class ExplorerResource
         return children.toString();
     }
 
+    @GET
+    @Path("usage-listing")
+    @Produces("text/plain")
+    public Response     getUsageListing(@QueryParam("request") String json) throws Exception
+    {
+        ObjectMapper        mapper = new ObjectMapper();
+        UsageListingRequest usageListingRequest = mapper.getJsonFactory().createJsonParser(json).readValueAs(UsageListingRequest.class);
+        return usageListing(usageListingRequest);
+    }
+
+    @POST
+    @Path("usage-listing")
+    @Consumes("application/json")
+    @Produces("text/plain")
+    public Response     usageListing(UsageListingRequest usageListingRequest) throws Exception
+    {
+        context.getExhibitor().getLog().add(ActivityLog.Type.INFO, "Starting usage listing");
+
+        final UsageListing        usageListing = new UsageListing(context.getExhibitor(), usageListingRequest.getStartPath(), usageListingRequest.getMaxChildrenForTraversal());
+        usageListing.generate();
+
+        final PipedInputStream      in = new PipedInputStream();
+        final PipedOutputStream     pipedOutputStream = new PipedOutputStream(in);
+        executorService.submit
+        (
+            new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    PrintStream     out = null;
+                    try
+                    {
+                        out = new PrintStream(pipedOutputStream);
+                        out.println("Path\tCreateDate\tChildQty\tDeepChildQty");
+
+                        Iterator<String> iterator = usageListing.getPaths();
+                        while ( iterator.hasNext() )
+                        {
+                            String                  path = iterator.next();
+                            UsageListing.NodeEntry  details = usageListing.getNodeDetails(path);
+                            out.println(path + "\t" + details.getCreationDate() + "\t" + details.getDirectChildQty() + "\t" + details.getDeepChildQty());
+                        }
+                    }
+                    catch ( Exception e )
+                    {
+                        context.getExhibitor().getLog().add(ActivityLog.Type.ERROR, "Generating usage listing", e);
+                    }
+                    finally
+                    {
+                        Closeables.closeQuietly(out);
+                    }
+                }
+            }
+        );
+
+        return Response.ok(in)
+            .header("content-disposition", "attachment; filename=listing_tab_delimited.txt")
+            .build();
+    }
+
+    @GET
+    @Path("analyze")
+    @Produces("application/json")
+    public Response     getAnalyze(@QueryParam("request") String json) throws Exception
+    {
+        ObjectMapper                                mapper = new ObjectMapper();
+        TypeReference<List<PathAnalysisRequest>>    ref = new TypeReference<List<PathAnalysisRequest>>(){};
+        List<PathAnalysisRequest>                   paths = mapper.getJsonFactory().createJsonParser(json).readValueAs(ref);
+        return analyze(paths);
+    }
+
     @POST
     @Path("analyze")
+    @Consumes("application/json")
     @Produces("application/json")
     public Response     analyze(List<PathAnalysisRequest> paths) throws Exception
     {
@@ -304,7 +388,9 @@ public class ExplorerResource
             context.getExhibitor().getLog().add(ActivityLog.Type.ERROR, "Error performing analysis", e);
             throw e;
         }
-        return Response.ok(response).build();
+        return Response.ok(response)
+            .header("content-disposition", "attachment; filename=analysis.txt")
+            .build();
     }
 
     private String  reflectToString(Object obj) throws Exception

@@ -480,7 +480,7 @@ fieldset
     margin-bottom: 6px;
 }
 
-#analyze-help
+#analyze-help, #usage-listing-help
 {
     font-size: .75em;
     border: solid 1px #a9a9a9;
@@ -514,3 +514,10 @@ fieldset
     font-size: .75em;
     color: #555;
 }
+
+#get-usage-listing-dialog label
+{
+    float: left;
+    width: 125px;
+}
+
