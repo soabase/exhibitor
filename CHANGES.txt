@@ -1,9 +1,11 @@
-1.0.14 - xxxxxxxxxxxx
+1.0.14 - June 7, 2012
 =====================
 * Removed eTag support - there are too many edge cases and it doesn't really save very much.
 
 * Added Usage Listing feature to the Explorer tab. This produces a listing report starting
 at a given path and producing: Path CreateDate ChildQty DeepChildQty.
+
+* DefaultProperties now have more useful methods.
 
 1.0.13 - May 29, 2012
 =====================

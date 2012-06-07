@@ -43,19 +43,48 @@ public class DefaultProperties
         return 0;
     }
 
-    public static Properties get(final BackupProvider provider)
+    /**
+     * Return the default properties given an optional backup provider
+     *
+     * @param provider provider or null
+     * @return default properties
+     */
+    public static Properties get(BackupProvider provider)
+    {
+        return getFromInstanceConfig(newDefaultInstanceConfig(provider));
+    }
+
+    /**
+     * Return the default properties given an instance config
+     *
+     * @param defaultInstanceConfig the default properties as an object
+     * @return default properties
+     */
+    public static Properties getFromInstanceConfig(InstanceConfig defaultInstanceConfig)
+    {
+        PropertyBasedInstanceConfig     config = new PropertyBasedInstanceConfig(new ConfigCollectionImpl(defaultInstanceConfig, null));
+        return config.getProperties();
+    }
+
+    /**
+     * Return the standard default properties as an instance config
+     *
+     * @param provider backup provider or null
+     * @return default properties instance
+     */
+    public static InstanceConfig newDefaultInstanceConfig(BackupProvider provider)
     {
         Map<String, String>             backupDefaultValues = Maps.newHashMap();
         if ( provider != null )
         {
             for ( BackupConfigSpec spec : provider.getConfigs() )
             {
-               backupDefaultValues.put(spec.getKey(), spec.getDefaultValue());
+                backupDefaultValues.put(spec.getKey(), spec.getDefaultValue());
             }
         }
         final String                    backupExtraValue = new EncodedConfigParser(backupDefaultValues).toEncoded();
 
-        InstanceConfig                  source = new InstanceConfig()
+        return new InstanceConfig()
         {
             @Override
             public String getString(StringConfigs config)
@@ -123,8 +152,6 @@ public class DefaultProperties
                 return 0;
             }
         };
-        PropertyBasedInstanceConfig     config = new PropertyBasedInstanceConfig(new ConfigCollectionImpl(source, null));
-        return config.getProperties();
     }
 
     private DefaultProperties()
