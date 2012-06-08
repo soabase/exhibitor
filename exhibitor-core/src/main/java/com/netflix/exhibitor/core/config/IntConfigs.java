@@ -118,6 +118,21 @@ public enum IntConfigs
             return false;
         }
     },
+
+    AUTO_MANAGE_INSTANCES()
+    {
+        @Override
+        public boolean isRestartSignificant()
+        {
+            return false;
+        }
+
+        @Override
+        public boolean isPartOfControlPanel()
+        {
+            return true;
+        }
+    }
     ;
 
     /**
@@ -126,4 +141,14 @@ public enum IntConfigs
      * @return true/false
      */
     public abstract boolean     isRestartSignificant();
+
+    /**
+     * Return true if this is on the control panel tab instead of the Config tab
+     *
+     * @return true/false
+     */
+    public boolean isPartOfControlPanel()
+    {
+        return false;
+    }
 }

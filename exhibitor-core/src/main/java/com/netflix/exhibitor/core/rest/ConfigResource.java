@@ -27,6 +27,7 @@ import com.netflix.exhibitor.core.config.EncodedConfigParser;
 import com.netflix.exhibitor.core.config.InstanceConfig;
 import com.netflix.exhibitor.core.config.IntConfigs;
 import com.netflix.exhibitor.core.config.StringConfigs;
+import com.netflix.exhibitor.core.entities.FieldValue;
 import com.netflix.exhibitor.core.entities.Result;
 import com.netflix.exhibitor.core.state.FourLetterWord;
 import com.netflix.exhibitor.core.state.ServerList;
@@ -76,6 +77,7 @@ public class ConfigResource
 
         ObjectNode                  mainNode = JsonNodeFactory.instance.objectNode();
         ObjectNode                  configNode = JsonNodeFactory.instance.objectNode();
+        ObjectNode                  controlPanelNode = JsonNodeFactory.instance.objectNode();
 
         mainNode.put("version", context.getExhibitor().getVersion());
         mainNode.put("running", "imok".equals(response));
@@ -95,7 +97,17 @@ public class ConfigResource
         }
         for ( IntConfigs c : IntConfigs.values() )
         {
-            configNode.put(fixName(c), config.getInt(c));
+            String fixedName = fixName(c);
+            int value = config.getInt(c);
+
+            if ( c.isPartOfControlPanel() )
+            {
+                controlPanelNode.put(fixedName, value);
+            }
+            else
+            {
+                configNode.put(fixedName, value);
+            }
         }
 
         EncodedConfigParser     zooCfgParser = new EncodedConfigParser(config.getString(StringConfigs.ZOO_CFG_EXTRA));
@@ -119,6 +131,7 @@ public class ConfigResource
             configNode.put("backupExtra", backupExtraNode);
         }
 
+        configNode.put("controlPanel", controlPanelNode);
         mainNode.put("config", configNode);
 
         String      json = JsonUtil.writeValueAsString(mainNode);
@@ -178,15 +191,81 @@ public class ConfigResource
         return Response.ok(result).build();
     }
 
+    @Path("set-control-panel")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response setControlPanelConfig(List<FieldValue> fieldValues) throws Exception
+    {
+        String      error = null;
+
+        if ( context.getExhibitor().getConfigManager().isRolling() )
+        {
+            error = "Cannot be changed while there is a rolling config in progress";
+        }
+        else
+        {
+            final Map<IntConfigs, Integer>    updatedValues = Maps.newHashMap();
+            for ( FieldValue fieldValue : fieldValues )
+            {
+                boolean         found = false;
+                for ( IntConfigs config : IntConfigs.values() )
+                {
+                    if ( config.isPartOfControlPanel() && fixName(config).equals(fieldValue.getField()) )
+                    {
+                        found = true;
+                        try
+                        {
+                            int         value = fieldValue.getValue().equals("true") ? 1 : (fieldValue.getValue().equals("false") ? 0 : Integer.parseInt(fieldValue.getValue()));
+                            updatedValues.put(config, value);
+                        }
+                        catch ( NumberFormatException e )
+                        {
+                            error = "Bad value: " + fieldValue.getValue();
+                            break;
+                        }
+                    }
+                }
+
+                if ( !found )
+                {
+                    error = "Unknown config field: " + fieldValue.getField();
+                    break;
+                }
+            }
+
+            if ( error == null )
+            {
+                final InstanceConfig    currentConfig = context.getExhibitor().getConfigManager().getConfig();
+                InstanceConfig          newConfig = new InstanceConfig()
+                {
+                    @Override
+                    public String getString(StringConfigs config)
+                    {
+                        return currentConfig.getString(config);
+                    }
+
+                    @Override
+                    public int getInt(IntConfigs config)
+                    {
+                        Integer     newValue = updatedValues.get(config);
+                        return (newValue != null) ? newValue : currentConfig.getInt(config);
+                    }
+                };
+                context.getExhibitor().getConfigManager().updateConfig(newConfig);
+            }
+        }
+
+        Result      result = new Result(error, error == null);
+        return Response.ok(result).build();
+    }
+
     @Path("set")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public Response setConfig(String newConfigJson) throws Exception
     {
-        // TODO - should flush caches as needed
-
         InstanceConfig wrapped = parseToConfig(newConfigJson);
-        
+
         Result  result;
         try
         {

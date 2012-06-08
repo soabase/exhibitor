@@ -24,6 +24,7 @@ var URL_EXPLORER_ANALYZE = "../explorer/analyze";
 
 var URL_GET_STATE = "../config/get-state";
 var URL_SET_CONFIG = "../config/set";
+var URL_SET_CONTROL_PANEL_CONFIG = "../config/set-control-panel";
 var URL_SET_CONFIG_ROLLING = "../config/set-rolling";
 var URL_ROLLBACK_ROLLING = "../config/rollback-rolling";
 var URL_FORCE_COMMIT_ROLLING = "../config/force-commit-rolling";
@@ -265,6 +266,31 @@ function turnOffEditableSwitch()
     checkLightSwitch('#config-editable', false);
     handleEditableSwitch();
 }
+
+function changeControlPanelConfig(field, selector)
+{
+    var tab = new Array();
+    var update = {};
+    update.field = field;
+    update.value = $(selector).attr('checked') != undefined;
+    tab.push(update);
+
+    var payload = JSON.stringify(tab);
+    $.ajax({
+        type: 'POST',
+        url: URL_SET_CONTROL_PANEL_CONFIG,
+        data: payload,
+        contentType: 'application/json',
+        success:function(data)
+        {
+            if ( !data.succeeded )
+            {
+                messageDialog("Error", data.message);
+            }
+        }
+    });
+}
+
 function submitConfigChanges(rolling)
 {
     var newConfig = buildNewConfig();
@@ -295,6 +321,8 @@ function getBackupExtraId(obj)
 
 function ableConfig(enable)
 {
+    ableLightSwitch('#cp-auto-init-instances', null, !enable);  // control panel stuff is opposite
+
     $('#config-zookeeper-install-dir').prop('disabled', !enable);
     $('#config-zookeeper-data-dir').prop('disabled', !enable);
     $('#config-log-index-dir').prop('disabled', !enable);
@@ -323,6 +351,10 @@ function ableConfig(enable)
 
 function updateConfig()
 {
+    if ( systemConfig.controlPanel ) {
+        checkLightSwitch('#cp-auto-init-instances', systemConfig.controlPanel.autoManageInstances);
+    }
+
     if ( !doConfigUpdates ) {
         return;
     }
@@ -693,6 +725,9 @@ $(function ()
     );
 
     makeLightSwitch('#config-editable', handleEditableSwitch);
+    makeLightSwitch('#cp-auto-init-instances', function(){
+        changeControlPanelConfig('autoManageInstances', '#cp-auto-init-instances');
+    });
     turnOffEditableSwitch();
 
     initRestoreUI();
