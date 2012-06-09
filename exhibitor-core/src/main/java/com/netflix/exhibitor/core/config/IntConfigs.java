@@ -119,6 +119,9 @@ public enum IntConfigs
         }
     },
 
+    /**
+     * true/false (0 or 1) - determine if automatic instance management is on/off - default is false
+     */
     AUTO_MANAGE_INSTANCES()
     {
         @Override
@@ -131,6 +134,19 @@ public enum IntConfigs
         public boolean isPartOfControlPanel()
         {
             return true;
+        }
+    },
+
+    /**
+     * Period in ms to consider an instance dead and, thus, a candidate for automatic
+     * instance removal - default is 3 hours
+     */
+    DEAD_INSTANCE_PERIOD_MS()
+    {
+        @Override
+        public boolean isRestartSignificant()
+        {
+            return false;
         }
     }
     ;

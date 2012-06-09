@@ -26,6 +26,8 @@ import com.netflix.curator.framework.CuratorFrameworkFactory;
 import com.netflix.curator.retry.ExponentialBackoffRetry;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.ActivityQueue;
+import com.netflix.exhibitor.core.activity.QueueGroups;
+import com.netflix.exhibitor.core.activity.RepeatingActivity;
 import com.netflix.exhibitor.core.backup.BackupManager;
 import com.netflix.exhibitor.core.backup.BackupProvider;
 import com.netflix.exhibitor.core.config.ConfigListener;
@@ -38,6 +40,7 @@ import com.netflix.exhibitor.core.processes.ProcessMonitor;
 import com.netflix.exhibitor.core.processes.ProcessOperations;
 import com.netflix.exhibitor.core.processes.StandardProcessOperations;
 import com.netflix.exhibitor.core.rest.UITab;
+import com.netflix.exhibitor.core.state.AutoInstanceManagement;
 import com.netflix.exhibitor.core.state.CleanupManager;
 import com.netflix.exhibitor.core.state.ManifestVersion;
 import com.netflix.exhibitor.core.state.MonitorRunningInstance;
@@ -73,7 +76,10 @@ public class Exhibitor implements Closeable
     private final ConfigManager             configManager;
     private final Arguments                 arguments;
     private final ProcessMonitor            processMonitor;
+    private final RepeatingActivity         autoInstanceManagement;
     private final ManifestVersion           manifestVersion = new ManifestVersion();
+
+    private static final int        AUTO_INSTANCE_MANAGEMENT_PERIOD_MS = 60000;
 
     private CuratorFramework    localConnection;    // protected by synchronization
 
@@ -143,6 +149,7 @@ public class Exhibitor implements Closeable
         cleanupManager = new CleanupManager(this);
         indexCache = new IndexCache(log);
         processMonitor = new ProcessMonitor(this);
+        autoInstanceManagement = new RepeatingActivity(log, activityQueue, QueueGroups.MAIN, new AutoInstanceManagement(this), AUTO_INSTANCE_MANAGEMENT_PERIOD_MS);
 
         controlPanelValues = new ControlPanelValues();
 
@@ -184,6 +191,7 @@ public class Exhibitor implements Closeable
         monitorRunningInstance.start();
         cleanupManager.start();
         backupManager.start();
+        autoInstanceManagement.start();
 
         configManager.addConfigListener
         (
@@ -215,6 +223,7 @@ public class Exhibitor implements Closeable
     {
         Preconditions.checkState(state.compareAndSet(State.STARTED, State.STOPPED));
 
+        Closeables.closeQuietly(autoInstanceManagement);
         Closeables.closeQuietly(processMonitor);
         Closeables.closeQuietly(indexCache);
         Closeables.closeQuietly(backupManager);

@@ -184,6 +184,7 @@
 
                     <fieldset>
                         <legend>Miscellaneous</legend>
+                        <label for="config-dead-instance-ms">Dead Instance Threshold (ms)</label><input type="text" id="config-dead-instance-ms" class="mask-pint" name="config-dead-instance-ms" size="8" title="The number of milliseconds to consider an instance dead and, thus, a candidate for automatic instance cleanup."><br clear="all"/>
                         <label for="config-log-index-dir">Log Index Dir</label><input type="text" id="config-log-index-dir" name="config-log-index-dir" size="60" title="The directory where indexed ZooKeeper logs should be kept."><br clear="all"/>
                         <label for="config-check-ms">Live Check (ms)</label><input type="text" id="config-check-ms" class="mask-pint" name="config-check-ms" size="8" title="The number of milliseconds between live-ness checks on the ZooKeeper server"><br clear="all"/>
                         <label for="config-cleanup-ms">Cleanup Period (ms)</label><input type="text" id="config-cleanup-ms" class="mask-pint" name="config-cleanup-ms" size="8" title="The number of milliseconds between ZooKeeper log file cleanups"><br clear="all"/>
