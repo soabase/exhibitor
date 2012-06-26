@@ -148,6 +148,19 @@ public enum IntConfigs
         {
             return false;
         }
+    },
+
+    /**
+     * Marks which instances are made Observers by automatic instance management. Instances below
+     * this number are normal instances. Instances from this number and up are Observers.
+     */
+    OBSERVER_THRESHOLD()
+    {
+        @Override
+        public boolean isRestartSignificant()
+        {
+            return false;
+        }
     }
     ;
 

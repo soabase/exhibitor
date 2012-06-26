@@ -22,11 +22,13 @@ public class S3ConfigArguments
 {
     private final String        bucket;
     private final String        key;
+    private final String        heartbeatKeyPrefix;
 
-    public S3ConfigArguments(String bucket, String key)
+    public S3ConfigArguments(String bucket, String key, String heartbeatKeyPrefix)
     {
         this.bucket = bucket;
         this.key = key;
+        this.heartbeatKeyPrefix = heartbeatKeyPrefix;
     }
 
     public String getBucket()
@@ -37,5 +39,10 @@ public class S3ConfigArguments
     public String getKey()
     {
         return key;
+    }
+
+    public String getHeartbeatKeyPrefix()
+    {
+        return heartbeatKeyPrefix;
     }
 }

@@ -34,6 +34,7 @@ import com.netflix.exhibitor.core.config.ConfigListener;
 import com.netflix.exhibitor.core.config.ConfigManager;
 import com.netflix.exhibitor.core.config.ConfigProvider;
 import com.netflix.exhibitor.core.config.IntConfigs;
+import com.netflix.exhibitor.core.config.JQueryStyle;
 import com.netflix.exhibitor.core.controlpanel.ControlPanelValues;
 import com.netflix.exhibitor.core.index.IndexCache;
 import com.netflix.exhibitor.core.processes.ProcessMonitor;
@@ -79,7 +80,7 @@ public class Exhibitor implements Closeable
     private final RepeatingActivity         autoInstanceManagement;
     private final ManifestVersion           manifestVersion = new ManifestVersion();
 
-    private static final int        AUTO_INSTANCE_MANAGEMENT_PERIOD_MS = 60000;
+    public static final int        AUTO_INSTANCE_MANAGEMENT_PERIOD_MS = 60000;
 
     private CuratorFramework    localConnection;    // protected by synchronization
 
@@ -92,14 +93,20 @@ public class Exhibitor implements Closeable
 
     public static class Arguments
     {
-        private final int       connectionTimeOutMs;
-        private final int       logWindowSizeLines;
-        private final int       configCheckMs;
-        private final String    extraHeadingText;
-        private final String    thisJVMHostname;
-        private final boolean   allowNodeMutations;
+        private final int           connectionTimeOutMs;
+        private final int           logWindowSizeLines;
+        private final int           configCheckMs;
+        private final String        extraHeadingText;
+        private final String        thisJVMHostname;
+        private final boolean       allowNodeMutations;
+        private final JQueryStyle   jQueryStyle;
 
         public Arguments(int connectionTimeOutMs, int logWindowSizeLines, String thisJVMHostname, int configCheckMs, String extraHeadingText, boolean allowNodeMutations)
+        {
+            this(connectionTimeOutMs, logWindowSizeLines, thisJVMHostname, configCheckMs, extraHeadingText, allowNodeMutations, JQueryStyle.RED);
+        }
+
+        public Arguments(int connectionTimeOutMs, int logWindowSizeLines, String thisJVMHostname, int configCheckMs, String extraHeadingText, boolean allowNodeMutations, JQueryStyle jQueryStyle)
         {
             this.connectionTimeOutMs = connectionTimeOutMs;
             this.logWindowSizeLines = logWindowSizeLines;
@@ -107,6 +114,7 @@ public class Exhibitor implements Closeable
             this.configCheckMs = configCheckMs;
             this.extraHeadingText = extraHeadingText;
             this.allowNodeMutations = allowNodeMutations;
+            this.jQueryStyle = jQueryStyle;
         }
     }
 
@@ -240,6 +248,11 @@ public class Exhibitor implements Closeable
     public Collection<UITab> getAdditionalUITabs()
     {
         return additionalUITabs;
+    }
+
+    public JQueryStyle  getJQueryStyle()
+    {
+        return arguments.jQueryStyle;
     }
 
     public ConfigManager getConfigManager()

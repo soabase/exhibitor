@@ -101,10 +101,25 @@ public class ConfigManager implements Closeable
         configListeners.add(listener);
     }
 
+    public void writeHeartbeat() throws Exception
+    {
+        provider.writeInstanceHeartbeat(exhibitor.getThisJVMHostname());
+    }
+
+    public long getLastHeartbeatForInstance(String instance) throws Exception
+    {
+        return provider.getLastHeartbeatForInstance(instance);
+    }
+
     public enum CancelMode
     {
         ROLLBACK,
         FORCE_COMMIT
+    }
+
+    public PseudoLock       newConfigBasedLock(String prefix) throws Exception
+    {
+        return provider.newPseudoLock(prefix);
     }
 
     public synchronized void     cancelRollingConfig(CancelMode mode) throws Exception

@@ -146,13 +146,10 @@ function updateState()
 
             $.unblockUI();
 
-            var     pageTitle = "Exhibitor for ZooKeeper";
             if ( systemState.extraHeadingText )
             {
-                pageTitle += ' - ' + systemState.extraHeadingText;
+                $('#page-title-extra').html(systemState.extraHeadingText);
             }
-
-            $('#page-title').html(pageTitle);
             $('#version').html(systemState.version);
             $('#not-connected-alert').hide();
             $('#instance-hostname').html(systemConfig.hostname);
@@ -225,6 +222,7 @@ function buildNewConfig()
     newConfig.zookeeperDataDirectory = $('#config-zookeeper-data-dir').val();
     newConfig.logIndexDirectory = $('#config-log-index-dir').val();
     newConfig.deadInstancePeriodMs = $('#config-dead-instance-ms').val();
+    newConfig.observerThreshold = $('#config-observer-threshold').val();
     newConfig.serversSpec = $('#config-servers-spec').val();
     newConfig.javaEnvironment = $('#config-java-env').val();
     newConfig.log4jProperties = $('#config-java-log4j').val();
@@ -327,6 +325,7 @@ function ableConfig(enable)
     $('#config-zookeeper-install-dir').prop('disabled', !enable);
     $('#config-zookeeper-data-dir').prop('disabled', !enable);
     $('#config-dead-instance-ms').prop('disabled', !enable);
+    $('#config-observer-threshold').prop('disabled', !enable);
     $('#config-log-index-dir').prop('disabled', !enable);
     $('#config-servers-spec').prop('disabled', !enable);
     $('#config-java-env').prop('disabled', !enable);
@@ -370,6 +369,7 @@ function updateConfig()
     $('#config-zookeeper-install-dir').val(systemConfig.zookeeperInstallDirectory);
     $('#config-zookeeper-data-dir').val(systemConfig.zookeeperDataDirectory);
     $('#config-dead-instance-ms').val(systemConfig.deadInstancePeriodMs);
+    $('#config-observer-threshold').val(systemConfig.observerThreshold);
     $('#config-log-index-dir').val(systemConfig.logIndexDirectory);
     $('#config-servers-spec').val(systemConfig.serversSpec);
     $('#config-java-env').val(systemConfig.javaEnvironment);

@@ -24,7 +24,6 @@ import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
 import com.netflix.exhibitor.core.backup.BackupConfigSpec;
 import com.netflix.exhibitor.core.config.EncodedConfigParser;
-import com.netflix.exhibitor.core.entities.Result;
 import com.netflix.exhibitor.core.entities.UITabSpec;
 import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.JsonNodeFactory;
@@ -56,6 +55,8 @@ public class UIResource
     private final UIContext context;
     private final List<UITab> tabs;
 
+    private static final String     jQueryUiPrefix = "css/jquery/";
+
     public UIResource(@Context ContextResolver<UIContext> resolver)
     {
         context = resolver.getContext(UIContext.class);
@@ -66,6 +67,12 @@ public class UIResource
     @GET
     public Response getResource(@PathParam("file") String fileName) throws IOException
     {
+        if ( fileName.startsWith(jQueryUiPrefix) )
+        {
+            String      stripped = fileName.substring(jQueryUiPrefix.length());
+            fileName = "css/jquery/" + context.getExhibitor().getJQueryStyle().name().toLowerCase() + "/" + stripped;
+        }
+
         URL resource;
         try
         {

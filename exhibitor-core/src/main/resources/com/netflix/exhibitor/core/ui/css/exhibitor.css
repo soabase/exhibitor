@@ -77,15 +77,29 @@ label
 {
     margin-bottom: 3px;
     text-shadow: 2px 2px #888;
-    color: #C00;
     width: 100%;
     clear: both;
+    border: none;
+    background: none;
 }
 
 #page-title
 {
     font-size: 2em;
     font-weight: bold;
+    float: left;
+}
+
+#page-title-extra
+{
+    font-size: 1em;
+    padding-top: 1em;
+    font-weight: normal;
+    float: left;
+    text-shadow: none;
+    color: black;
+    margin-left: 10px;
+    font-style: italic;
 }
 
 #version
