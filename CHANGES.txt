@@ -1,4 +1,4 @@
-1.1.0 - xxxxxxxxxxxxx
+1.1.0 - June 27, 2012
 =====================
 * IMPORTANT: CLI arguments have changed a bit to support automatic instance addition/removal in the standalone
 application. For the core version, several parameter blocks have changed.
