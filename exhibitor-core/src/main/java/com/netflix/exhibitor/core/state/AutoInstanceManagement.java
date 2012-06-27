@@ -18,8 +18,6 @@ public class AutoInstanceManagement implements Activity
 {
     private final Exhibitor exhibitor;
 
-    private static final String         LOCK_NAME = "exhibitor-auto-instance-management-lock";
-
     public AutoInstanceManagement(Exhibitor exhibitor)
     {
         this.exhibitor = exhibitor;
@@ -35,18 +33,20 @@ public class AutoInstanceManagement implements Activity
     {
         if ( exhibitor.getConfigManager().getConfig().getInt(IntConfigs.AUTO_MANAGE_INSTANCES) != 0 )
         {
-            PseudoLock  lock = exhibitor.getConfigManager().newConfigBasedLock(LOCK_NAME);
-            lock.lock(Exhibitor.AUTO_INSTANCE_MANAGEMENT_PERIOD_MS / 2, TimeUnit.MILLISECONDS);
-            try
+            PseudoLock  lock = exhibitor.getConfigManager().newConfigBasedLock();
+            if ( lock.lock(Exhibitor.AUTO_INSTANCE_MANAGEMENT_PERIOD_MS / 2, TimeUnit.MILLISECONDS) )
             {
-                if ( !exhibitor.getConfigManager().isRolling() )
+                try
                 {
-                    doWork();
+                    if ( !exhibitor.getConfigManager().isRolling() )
+                    {
+                        doWork();
+                    }
                 }
-            }
-            finally
-            {
-                lock.unlock();
+                finally
+                {
+                    lock.unlock();
+                }
             }
         }
         return true;
@@ -82,7 +82,7 @@ public class AutoInstanceManagement implements Activity
             }
             else
             {
-                exhibitor.getLog().add(ActivityLog.Type.INFO, "Potentially removing stale instance from servers list: " + spec);
+                exhibitor.getLog().add(ActivityLog.Type.INFO, "Potentially removing stale instance from servers list: " + spec.getHostname());
                 hasRemovals = true;
             }
         }
@@ -123,7 +123,7 @@ public class AutoInstanceManagement implements Activity
 
         InstanceConfig          currentConfig = exhibitor.getConfigManager().getConfig();
         String                  spec = currentConfig.getString(StringConfigs.SERVERS_SPEC);
-        String                  thisValue = serverType.getCode() + ":" + (maxServerId + 1) + ":" + exhibitor.getThisJVMHostname();
+        String                  thisValue = new ServerSpec(exhibitor.getThisJVMHostname(), maxServerId + 1, serverType).toSpecString();
         final String            newSpec = Joiner.on(',').skipNulls().join((spec.length() > 0) ? spec : null, thisValue);
         exhibitor.getLog().add(ActivityLog.Type.INFO, "Adding this instance to server list due to automatic instance management");
         adjustConfig(currentConfig, newSpec);

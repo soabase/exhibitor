@@ -117,9 +117,9 @@ public class ConfigManager implements Closeable
         FORCE_COMMIT
     }
 
-    public PseudoLock       newConfigBasedLock(String prefix) throws Exception
+    public PseudoLock       newConfigBasedLock() throws Exception
     {
-        return provider.newPseudoLock(prefix);
+        return provider.newPseudoLock();
     }
 
     public synchronized void     cancelRollingConfig(CancelMode mode) throws Exception

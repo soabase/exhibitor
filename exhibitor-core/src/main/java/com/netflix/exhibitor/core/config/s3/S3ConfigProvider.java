@@ -18,6 +18,7 @@
 
 package com.netflix.exhibitor.core.config.s3;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
@@ -63,9 +64,17 @@ public class S3ConfigProvider implements ConfigProvider
     }
 
     @Override
-    public PseudoLock newPseudoLock(String prefix) throws Exception
+    public PseudoLock newPseudoLock() throws Exception
     {
-        return new S3PseudoLock(s3Client, arguments.getBucket(), prefix, 0, 0, 0);
+        return new S3PseudoLock
+        (
+            s3Client,
+            arguments.getBucket(),
+            arguments.getLockArguments().getPrefix(),
+            arguments.getLockArguments().getTimeoutMs(),
+            arguments.getLockArguments().getPollingMs(),
+            arguments.getLockArguments().getSettlingMs()
+        );
     }
 
     @Override
@@ -87,10 +96,17 @@ public class S3ConfigProvider implements ConfigProvider
     @Override
     public long getLastHeartbeatForInstance(String instanceHostname) throws Exception
     {
-        S3Object    object = s3Client.getObject(arguments.getBucket(), arguments.getHeartbeatKeyPrefix() + instanceHostname);
-        if ( object != null )
+        try
         {
-            return object.getObjectMetadata().getLastModified().getTime();
+            S3Object    object = s3Client.getObject(arguments.getBucket(), arguments.getHeartbeatKeyPrefix() + instanceHostname);
+            if ( object != null )
+            {
+                return object.getObjectMetadata().getLastModified().getTime();
+            }
+        }
+        catch ( AmazonServiceException ignore )
+        {
+            // treat this as a missing object
         }
 
         return 0;

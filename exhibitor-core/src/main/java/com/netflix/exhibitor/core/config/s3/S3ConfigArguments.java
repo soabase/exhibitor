@@ -23,12 +23,14 @@ public class S3ConfigArguments
     private final String        bucket;
     private final String        key;
     private final String        heartbeatKeyPrefix;
+    private final S3ConfigAutoManageLockArguments lockArguments;
 
-    public S3ConfigArguments(String bucket, String key, String heartbeatKeyPrefix)
+    public S3ConfigArguments(String bucket, String key, String heartbeatKeyPrefix, S3ConfigAutoManageLockArguments lockArguments)
     {
         this.bucket = bucket;
         this.key = key;
         this.heartbeatKeyPrefix = heartbeatKeyPrefix;
+        this.lockArguments = lockArguments;
     }
 
     public String getBucket()
@@ -44,5 +46,10 @@ public class S3ConfigArguments
     public String getHeartbeatKeyPrefix()
     {
         return heartbeatKeyPrefix;
+    }
+
+    public S3ConfigAutoManageLockArguments getLockArguments()
+    {
+        return lockArguments;
     }
 }

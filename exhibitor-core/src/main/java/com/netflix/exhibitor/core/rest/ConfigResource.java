@@ -26,6 +26,7 @@ import com.netflix.exhibitor.core.config.ConfigManager;
 import com.netflix.exhibitor.core.config.EncodedConfigParser;
 import com.netflix.exhibitor.core.config.InstanceConfig;
 import com.netflix.exhibitor.core.config.IntConfigs;
+import com.netflix.exhibitor.core.config.PseudoLock;
 import com.netflix.exhibitor.core.config.StringConfigs;
 import com.netflix.exhibitor.core.entities.FieldValue;
 import com.netflix.exhibitor.core.entities.Result;
@@ -50,6 +51,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * REST calls for the general Exhibitor UI
@@ -164,33 +166,6 @@ public class ConfigResource
         return Response.ok(new Result("OK", true)).build();
     }
 
-    @Path("set-rolling")
-    @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response setConfigRolling(String newConfigJson) throws Exception
-    {
-        InstanceConfig  wrapped = parseToConfig(newConfigJson);
-
-        Result  result;
-        try
-        {
-            if ( context.getExhibitor().getConfigManager().startRollingConfig(wrapped) )
-            {
-                result = new Result("OK", true);
-            }
-            else
-            {
-                result = new Result("Another process has updated the config.", false);  // TODO - appropriate message
-            }
-        }
-        catch ( Exception e )
-        {
-            result = new Result(e);
-        }
-
-        return Response.ok(result).build();
-    }
-
     @Path("set-control-panel")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -259,6 +234,39 @@ public class ConfigResource
         return Response.ok(result).build();
     }
 
+    @Path("set-rolling")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response setConfigRolling(String newConfigJson) throws Exception
+    {
+        InstanceConfig  wrapped = parseToConfig(newConfigJson);
+
+        Result  result = null;
+        try
+        {
+            PseudoLock  lock = context.getExhibitor().getConfigManager().newConfigBasedLock();
+            if ( lock.lock(10, TimeUnit.SECONDS) )  // consider making configurable in the future
+            {
+                if ( context.getExhibitor().getConfigManager().startRollingConfig(wrapped) )
+                {
+                    result = new Result("OK", true);
+                }
+            }
+
+            if ( result == null )
+            {
+                result = new Result("Another process has updated the config.", false);
+            }
+            context.getExhibitor().resetLocalConnection();
+        }
+        catch ( Exception e )
+        {
+            result = new Result(e);
+        }
+
+        return Response.ok(result).build();
+    }
+
     @Path("set")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -266,14 +274,26 @@ public class ConfigResource
     {
         InstanceConfig wrapped = parseToConfig(newConfigJson);
 
-        Result  result;
+        Result  result = null;
         try
         {
-            if ( context.getExhibitor().getConfigManager().updateConfig(wrapped) )
+            PseudoLock  lock = context.getExhibitor().getConfigManager().newConfigBasedLock();
+            if ( lock.lock(10, TimeUnit.SECONDS) )  // consider making configurable in the future
             {
-                result = new Result("OK", true);
+                try
+                {
+                    if ( context.getExhibitor().getConfigManager().updateConfig(wrapped) )
+                    {
+                        result = new Result("OK", true);
+                    }
+                }
+                finally
+                {
+                    lock.unlock();
+                }
             }
-            else
+
+            if ( result == null )
             {
                 result = new Result("Another process has updated the config.", false);
             }
@@ -318,6 +338,7 @@ public class ConfigResource
         }
         final String          zooCfgExtraValue = new EncodedConfigParser(zooCfgValues).toEncoded();
 
+        final InstanceConfig  currentConfig = context.getExhibitor().getConfigManager().getConfig();
         final String          finalBackupExtraValue = backupExtraValue;
         return new InstanceConfig()
         {
@@ -354,6 +375,11 @@ public class ConfigResource
             @Override
             public int getInt(IntConfigs config)
             {
+                if ( config.isPartOfControlPanel() )
+                {
+                    return currentConfig.getInt(config);
+                }
+
                 JsonNode node = tree.get(fixName(config));
                 if ( node == null )
                 {

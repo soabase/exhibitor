@@ -2,8 +2,6 @@ package com.netflix.exhibitor.core.config;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.security.SecureRandom;
 import java.util.Collections;
 import java.util.List;

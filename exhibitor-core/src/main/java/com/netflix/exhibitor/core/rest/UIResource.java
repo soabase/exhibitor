@@ -57,6 +57,9 @@ public class UIResource
 
     private static final String     jQueryUiPrefix = "css/jquery/";
 
+    private static final String     TEXT_UI_TAB_BASE_URL = "tab/";
+    private static final String     HTML_UI_TAB_BASE_URL = "tab-html/";
+
     public UIResource(@Context ContextResolver<UIContext> resolver)
     {
         context = resolver.getContext(UIContext.class);
@@ -126,7 +129,8 @@ public class UIResource
                 @Override
                 public UITabSpec apply(UITab tab)
                 {
-                    return new UITabSpec(tab.getName(), "tab/" + index.getAndIncrement());
+                    String base = tab.contentIsHtml() ? HTML_UI_TAB_BASE_URL : TEXT_UI_TAB_BASE_URL;
+                    return new UITabSpec(tab.getName(), base + index.getAndIncrement(), tab.contentIsHtml());
                 }
             }
         );
@@ -136,10 +140,18 @@ public class UIResource
         return Response.ok(entity).build();
     }
 
+    @Path("tab-html/{index}")
+    @GET
+    @Produces(MediaType.TEXT_HTML)
+    public Response getAdditionalTabContent(@Context UriInfo info, @PathParam("index") int index) throws Exception
+    {
+        return getAdditionalTabHtmlContent(info, index);
+    }
+
     @Path("tab/{index}")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
-    public Response getAdditionalTabContent(@Context UriInfo info, @PathParam("index") int index) throws Exception
+    public Response getAdditionalTabHtmlContent(@Context UriInfo info, @PathParam("index") int index) throws Exception
     {
         if ( (index < 0) || (index >= tabs.size()) )
         {

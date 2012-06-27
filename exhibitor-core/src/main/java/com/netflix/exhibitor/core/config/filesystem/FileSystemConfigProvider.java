@@ -95,7 +95,7 @@ public class FileSystemConfigProvider implements ConfigProvider
     }
 
     @Override
-    public PseudoLock newPseudoLock(String prefix) throws Exception
+    public PseudoLock newPseudoLock() throws Exception
     {
         return null;    // TODO
     }

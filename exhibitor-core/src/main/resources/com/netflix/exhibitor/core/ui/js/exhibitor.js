@@ -544,7 +544,9 @@ $(function ()
             tabData.url = uiTabSpec[i].url;
             customTabs[i] = tabData;
 
-            $('#tabs').append('<div id="' + tabData.id + '" class="ui-helper-hidden"><div id="' + tabData.contentId + '" class="text"></div></div>')
+            var tabContentClass = uiTabSpec[i].html ? 'tab-html' : 'text';
+            var tabContent = '<div id="' + tabData.id + '" class="ui-helper-hidden"><div id="' + tabData.contentId + '" class="' + tabContentClass + '"></div></div>';
+            $('#tabs').append(tabContent);
             $('#tabs-list').append('<li><a href="#' + tabData.id + '">' + uiTabSpec[i].name + '</a></li>');
         }
         $('#tabs').tabs({

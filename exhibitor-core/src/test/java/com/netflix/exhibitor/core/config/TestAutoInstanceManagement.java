@@ -69,9 +69,9 @@ public class TestAutoInstanceManagement
                 }
 
                 @Override
-                public PseudoLock newPseudoLock(String prefix) throws Exception
+                public PseudoLock newPseudoLock() throws Exception
                 {
-                    return new FileSystemPseudoLock(tempDirectory, prefix, 600000, 1000, 1000)
+                    return new FileSystemPseudoLock(tempDirectory, "exhibitor-lock", 600000, 1000, 0)
                     {
                         @Override
                         public boolean lock(long maxWait, TimeUnit unit) throws Exception
@@ -194,9 +194,9 @@ public class TestAutoInstanceManagement
                 }
 
                 @Override
-                public PseudoLock newPseudoLock(String prefix) throws Exception
+                public PseudoLock newPseudoLock() throws Exception
                 {
-                    return new FileSystemPseudoLock(tempDirectory, prefix, 10000, 1000, 1000);
+                    return new FileSystemPseudoLock(tempDirectory, "exhibitor-lock", 600000, 1000, 0);
                 }
             };
 
@@ -256,9 +256,9 @@ public class TestAutoInstanceManagement
                 }
 
                 @Override
-                public PseudoLock newPseudoLock(String prefix) throws Exception
+                public PseudoLock newPseudoLock() throws Exception
                 {
-                    return new FileSystemPseudoLock(tempDirectory, prefix, 10000, 1000, 1000);
+                    return new FileSystemPseudoLock(tempDirectory, "exhibitor-lock", 600000, 1000, 0);
                 }
             };
 

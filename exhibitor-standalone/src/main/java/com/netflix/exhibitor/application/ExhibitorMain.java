@@ -30,6 +30,7 @@ import com.netflix.exhibitor.core.config.DefaultProperties;
 import com.netflix.exhibitor.core.config.JQueryStyle;
 import com.netflix.exhibitor.core.config.filesystem.FileSystemConfigProvider;
 import com.netflix.exhibitor.core.config.s3.S3ConfigArguments;
+import com.netflix.exhibitor.core.config.s3.S3ConfigAutoManageLockArguments;
 import com.netflix.exhibitor.core.config.s3.S3ConfigProvider;
 import com.netflix.exhibitor.core.rest.UIContext;
 import com.netflix.exhibitor.core.rest.jersey.JerseySupport;
@@ -248,7 +249,7 @@ public class ExhibitorMain implements Closeable
             printHelp(options);
             return null;
         }
-        return new S3ConfigArguments(parts[0].trim(), parts[1].trim(), prefix);
+        return new S3ConfigArguments(parts[0].trim(), parts[1].trim(), prefix, new S3ConfigAutoManageLockArguments(prefix + "_lock_"));
     }
 
     public ExhibitorMain(BackupProvider backupProvider, ConfigProvider configProvider, Exhibitor.Arguments arguments, int httpPort) throws Exception

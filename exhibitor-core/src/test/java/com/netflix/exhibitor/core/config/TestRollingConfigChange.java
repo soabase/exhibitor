@@ -53,7 +53,7 @@ public class TestRollingConfigChange
             }
 
             @Override
-            public PseudoLock newPseudoLock(String prefix) throws Exception
+            public PseudoLock newPseudoLock() throws Exception
             {
                 return null;    // TODO
             }

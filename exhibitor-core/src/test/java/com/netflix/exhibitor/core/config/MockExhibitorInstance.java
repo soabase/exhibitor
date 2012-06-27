@@ -69,7 +69,7 @@ class MockExhibitorInstance implements Closeable
             }
 
             @Override
-            public PseudoLock newPseudoLock(String prefix) throws Exception
+            public PseudoLock newPseudoLock() throws Exception
             {
                 return null;
             }

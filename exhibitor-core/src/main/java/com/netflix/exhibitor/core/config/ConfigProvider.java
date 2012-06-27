@@ -64,9 +64,8 @@ public interface ConfigProvider
     /**
      * Allocate a new pseudo-lock for the given prefix
      *
-     * @param prefix lock prefix
      * @return new lock
      * @throws Exception errors
      */
-    public PseudoLock   newPseudoLock(String prefix) throws Exception;
+    public PseudoLock   newPseudoLock() throws Exception;
 }
