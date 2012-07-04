@@ -24,6 +24,7 @@ public abstract class PseudoLockBase implements PseudoLock
     private long      lastUpdateMs = 0;
     private boolean   ownsTheLock;
     private String    key;
+    private long      lockStartMs = 0;
 
     private static final Random             random = new SecureRandom();
 
@@ -82,6 +83,8 @@ public abstract class PseudoLockBase implements PseudoLock
         {
             throw new IllegalStateException("Already locked");
         }
+
+        lockStartMs = System.currentTimeMillis();
 
         key = lockPrefix + SEPARATOR + newRandomSequence();
 
@@ -170,7 +173,11 @@ public abstract class PseudoLockBase implements PseudoLock
         }
         else
         {
-            throw new Exception("Our key is missing: " + key);
+            long        elapsed = System.currentTimeMillis() - lockStartMs;
+            if ( elapsed > settlingMs )
+            {
+                throw new Exception("Our key is missing: " + key);
+            }
         }
 
         lastUpdateMs = System.currentTimeMillis();
