@@ -23,6 +23,7 @@ import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
+import com.google.common.io.Closeables;
 import com.netflix.exhibitor.core.config.ConfigCollection;
 import com.netflix.exhibitor.core.config.ConfigProvider;
 import com.netflix.exhibitor.core.config.LoadedInstanceConfig;
@@ -120,8 +121,15 @@ public class S3ConfigProvider implements ConfigProvider
         S3Object    object = getConfigObject();
         if ( object != null )
         {
-            lastModified = object.getObjectMetadata().getLastModified();
-            properties.load(object.getObjectContent());
+            try
+            {
+                lastModified = object.getObjectMetadata().getLastModified();
+                properties.load(object.getObjectContent());
+            }
+            finally
+            {
+                Closeables.closeQuietly(object.getObjectContent());
+            }
         }
         else
         {
@@ -136,10 +144,10 @@ public class S3ConfigProvider implements ConfigProvider
     public LoadedInstanceConfig storeConfig(ConfigCollection config, long compareLastModified) throws Exception
     {
         {
-            S3Object                        object = getConfigObject();
-            if ( object != null )
+            ObjectMetadata                  metadata = getConfigMetadata();
+            if ( metadata != null )
             {
-                Date                            lastModified = object.getObjectMetadata().getLastModified();
+                Date                            lastModified = metadata.getLastModified();
                 if ( lastModified.getTime() != compareLastModified )
                 {
                     return null;    // apparently there's no atomic way to do this with S3 so this will have to do
@@ -155,6 +163,26 @@ public class S3ConfigProvider implements ConfigProvider
         ObjectMetadata                  metadata = S3Utils.simpleUploadFile(s3Client, bytes, arguments.getBucket(), arguments.getKey());
 
         return new LoadedInstanceConfig(propertyBasedInstanceConfig, metadata.getLastModified().getTime());
+    }
+
+    private ObjectMetadata getConfigMetadata() throws Exception
+    {
+        try
+        {
+            ObjectMetadata metadata = s3Client.getObjectMetadata(arguments.getBucket(), arguments.getKey());
+            if ( metadata.getContentLength() > 0 )
+            {
+                return metadata;
+            }
+        }
+        catch ( AmazonS3Exception e )
+        {
+            if ( e.getStatusCode() != 404 )
+            {
+                throw e;
+            }
+        }
+        return null;
     }
 
     private S3Object getConfigObject() throws Exception

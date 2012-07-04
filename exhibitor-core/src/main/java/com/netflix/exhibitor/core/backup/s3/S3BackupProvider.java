@@ -165,7 +165,6 @@ public class S3BackupProvider implements BackupProvider
     @Override
     public void downloadBackup(Exhibitor exhibitor, BackupMetaData backup, OutputStream destination, Map<String, String> configValues) throws Exception
     {
-        S3Object        object = s3Client.getObject(configValues.get(CONFIG_BUCKET.getKey()), toKey(backup, configValues));
 
         byte[]          buffer = new byte[MIN_S3_PART_SIZE];
 
@@ -173,12 +172,14 @@ public class S3BackupProvider implements BackupProvider
         RetryPolicy     retryPolicy = makeRetryPolicy(configValues);
         int             retryCount = 0;
         boolean         done = false;
+
         while ( !done )
         {
             Throttle            throttle = makeThrottle(configValues);
             InputStream         in = null;
             try
             {
+                S3Object            object = s3Client.getObject(configValues.get(CONFIG_BUCKET.getKey()), toKey(backup, configValues));
                 in = object.getObjectContent();
 
                 for(;;)
