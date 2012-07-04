@@ -11,7 +11,7 @@ public class AutoManageLockArguments
     public AutoManageLockArguments(String prefix)
     {
         // TODO get defaults right
-        this(prefix, (int)TimeUnit.MINUTES.toMillis(1), 250);
+        this(prefix, (int)TimeUnit.MINUTES.toMillis(5), 250);
     }
 
     public AutoManageLockArguments(String prefix, int timeoutMs, int pollingMs)
