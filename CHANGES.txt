@@ -2,6 +2,17 @@
 =====================
 * The S3Client could potentially leak connections due to https://forums.aws.amazon.com/message.jspa?messageID=296676
 
+* Issue 26: Make sure default prefixes don't use underscore as it's reserved
+
+* Include activity class name in log message
+
+* Issue 28: log4j.properties wasn't being written correctly. Thanks to user "mgarski".
+
+* Use the latest Curator version
+
+* Automatic instance management was incorrectly handling instance that had yet to write a heartbeat.
+They were treated as stale.
+
 1.1.0 - June 27, 2012
 =====================
 * IMPORTANT: CLI arguments have changed a bit to support automatic instance addition/removal in the standalone
