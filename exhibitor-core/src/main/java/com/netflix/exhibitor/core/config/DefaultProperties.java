@@ -151,7 +151,7 @@ public class DefaultProperties
 
                     case DEAD_INSTANCE_PERIOD_MS:
                     {
-                        return (int)TimeUnit.MILLISECONDS.convert(1, TimeUnit.HOURS);
+                        return (int)TimeUnit.MILLISECONDS.convert(15, TimeUnit.MINUTES);
                     }
 
                     case OBSERVER_THRESHOLD:
