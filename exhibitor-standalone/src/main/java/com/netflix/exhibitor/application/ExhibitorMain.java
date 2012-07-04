@@ -78,8 +78,8 @@ public class ExhibitorMain implements Closeable
     private static final String JQUERY_STYLE = "jquerystyle";
 
     private static final String DEFAULT_FILESYSTEMCONFIG_NAME = "exhibitor.properties";
-    private static final String DEFAULT_FILESYSTEMCONFIG_PREFIX = "_exhibitor_";
-    private static final String DEFAULT_FILESYSTEMCONFIG_LOCK_PREFIX = "_exhibitor_lock_";
+    private static final String DEFAULT_FILESYSTEMCONFIG_PREFIX = "exhibitor-";
+    private static final String DEFAULT_FILESYSTEMCONFIG_LOCK_PREFIX = "exhibitor-lock-";
 
     public static void main(String[] args) throws Exception
     {
