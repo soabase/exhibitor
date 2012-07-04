@@ -1,5 +1,6 @@
 package com.netflix.exhibitor.core.config.s3;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -70,7 +71,15 @@ public class S3PseudoLock extends PseudoLockBase
     @Override
     protected byte[] getFileContents(String key) throws Exception
     {
-        S3Object    object = client.getObject(bucket, key);
+        S3Object    object = null;
+        try
+        {
+            object = client.getObject(bucket, key);
+        }
+        catch ( AmazonServiceException e )
+        {
+            // ignore - treat it as missing
+        }
         if ( object != null )
         {
             try
