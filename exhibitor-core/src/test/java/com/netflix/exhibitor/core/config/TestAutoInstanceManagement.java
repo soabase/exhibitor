@@ -65,7 +65,7 @@ public class TestAutoInstanceManagement
                 @Override
                 public long getLastHeartbeatForInstance(String instanceHostname) throws Exception
                 {
-                    return 0;
+                    return System.currentTimeMillis();
                 }
 
                 @Override
@@ -190,7 +190,7 @@ public class TestAutoInstanceManagement
                 @Override
                 public long getLastHeartbeatForInstance(String instanceHostname) throws Exception
                 {
-                    return 0;
+                    return System.currentTimeMillis();
                 }
 
                 @Override
@@ -252,7 +252,7 @@ public class TestAutoInstanceManagement
                 @Override
                 public long getLastHeartbeatForInstance(String instanceHostname) throws Exception
                 {
-                    return instanceHostname.equals("dead") ? 0 : System.currentTimeMillis();
+                    return instanceHostname.equals("dead") ? 1 : System.currentTimeMillis();    // zero is treated specially to mean no heartbeat yet
                 }
 
                 @Override

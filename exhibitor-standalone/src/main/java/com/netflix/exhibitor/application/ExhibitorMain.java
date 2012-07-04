@@ -25,6 +25,7 @@ import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.backup.BackupProvider;
 import com.netflix.exhibitor.core.backup.filesystem.FileSystemBackupProvider;
 import com.netflix.exhibitor.core.backup.s3.S3BackupProvider;
+import com.netflix.exhibitor.core.config.AutoManageLockArguments;
 import com.netflix.exhibitor.core.config.ConfigProvider;
 import com.netflix.exhibitor.core.config.DefaultProperties;
 import com.netflix.exhibitor.core.config.JQueryStyle;
@@ -59,6 +60,7 @@ public class ExhibitorMain implements Closeable
     private static final String FILESYSTEMCONFIG_DIRECTORY = "fsconfigdir";
     private static final String FILESYSTEMCONFIG_NAME = "fsconfigname";
     private static final String FILESYSTEMCONFIG_PREFIX = "fsconfigprefix";
+    private static final String FILESYSTEMCONFIG_LOCK_PREFIX = "fsconfiglockprefix";
     private static final String S3_CREDENTIALS = "s3credentials";
     private static final String S3_BACKUP = "s3backup";
     private static final String S3_CONFIG = "s3config";
@@ -77,6 +79,7 @@ public class ExhibitorMain implements Closeable
 
     private static final String DEFAULT_FILESYSTEMCONFIG_NAME = "exhibitor.properties";
     private static final String DEFAULT_FILESYSTEMCONFIG_PREFIX = "_exhibitor_";
+    private static final String DEFAULT_FILESYSTEMCONFIG_LOCK_PREFIX = "_exhibitor_lock_";
 
     public static void main(String[] args) throws Exception
     {
@@ -86,6 +89,7 @@ public class ExhibitorMain implements Closeable
         options.addOption(null, FILESYSTEMCONFIG_DIRECTORY, true, "Directory to store Exhibitor properties (cannot be used with s3config). Exhibitor uses file system locks so you can specify a shared location so as to enable complete ensemble management. Default location is " + System.getProperty("user.dir"));
         options.addOption(null, FILESYSTEMCONFIG_NAME, true, "The name of the file to store config in. Used in conjunction with " + FILESYSTEMCONFIG_DIRECTORY + ". Default is " + DEFAULT_FILESYSTEMCONFIG_NAME);
         options.addOption(null, FILESYSTEMCONFIG_PREFIX, true, "A prefix for various config values such as heartbeats. Used in conjunction with " + FILESYSTEMCONFIG_DIRECTORY + ". Default is " + DEFAULT_FILESYSTEMCONFIG_PREFIX);
+        options.addOption(null, FILESYSTEMCONFIG_LOCK_PREFIX, true, "A prefix for a locking mechanism. Used in conjunction with " + FILESYSTEMCONFIG_DIRECTORY + ". Default is " + DEFAULT_FILESYSTEMCONFIG_LOCK_PREFIX);
         options.addOption(null, S3_CREDENTIALS, true, "Required if you use s3backup or s3config. Argument is the path to an AWS credential properties file with two properties: " + PropertyBasedS3Credential.PROPERTY_S3_KEY_ID + " and " + PropertyBasedS3Credential.PROPERTY_S3_SECRET_KEY);
         options.addOption(null, S3_BACKUP, true, "If true, enables AWS S3 backup of ZooKeeper log files (s3credentials must be provided as well).");
         options.addOption(null, S3_CONFIG, true, "Enables AWS S3 shared config files as opposed to file system config files (s3credentials must be provided as well). Argument is [bucket name]:[key].");
@@ -210,7 +214,8 @@ public class ExhibitorMain implements Closeable
         File directory = commandLine.hasOption(FILESYSTEMCONFIG_DIRECTORY) ? new File(commandLine.getOptionValue(FILESYSTEMCONFIG_DIRECTORY)) : new File(System.getProperty("user.dir"));
         String name = commandLine.hasOption(FILESYSTEMCONFIG_NAME) ? commandLine.getOptionValue(FILESYSTEMCONFIG_NAME) : DEFAULT_FILESYSTEMCONFIG_NAME;
         String prefix = commandLine.hasOption(FILESYSTEMCONFIG_PREFIX) ? commandLine.getOptionValue(FILESYSTEMCONFIG_PREFIX) : DEFAULT_FILESYSTEMCONFIG_PREFIX;
-        return new FileSystemConfigProvider(directory, name, prefix, DefaultProperties.get(backupProvider));
+        String lockPrefix = commandLine.hasOption(FILESYSTEMCONFIG_LOCK_PREFIX) ? commandLine.getOptionValue(FILESYSTEMCONFIG_LOCK_PREFIX) : DEFAULT_FILESYSTEMCONFIG_LOCK_PREFIX;
+        return new FileSystemConfigProvider(directory, name, prefix, DefaultProperties.get(backupProvider), new AutoManageLockArguments(lockPrefix));
     }
 
     private static ConfigProvider getS3Provider(Options options, CommandLine commandLine, PropertyBasedS3Credential awsCredentials) throws Exception

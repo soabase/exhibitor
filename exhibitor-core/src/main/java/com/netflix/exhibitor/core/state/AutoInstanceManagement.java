@@ -75,15 +75,23 @@ public class AutoInstanceManagement implements Activity
         boolean                     hasRemovals = false;
         for ( ServerSpec spec : usState.getServerList().getSpecs() )
         {
-            long        elapsedSinceLastHeartbeat = usState.getUs().equals(spec) ? 0 : (System.currentTimeMillis() - exhibitor.getConfigManager().getLastHeartbeatForInstance(spec.getHostname()));
-            if ( elapsedSinceLastHeartbeat <= exhibitor.getConfigManager().getConfig().getInt(IntConfigs.DEAD_INSTANCE_PERIOD_MS) )
+            if ( (usState.getUs() != null) && usState.getUs().equals(spec) )
             {
                 newSpecList.add(spec);
             }
             else
             {
-                exhibitor.getLog().add(ActivityLog.Type.INFO, "Potentially removing stale instance from servers list: " + spec.getHostname());
-                hasRemovals = true;
+                long        lastHeartbeatForInstance = exhibitor.getConfigManager().getLastHeartbeatForInstance(spec.getHostname());
+                long        elapsedSinceLastHeartbeat = System.currentTimeMillis() - lastHeartbeatForInstance;
+                if ( (lastHeartbeatForInstance <= 0) || (elapsedSinceLastHeartbeat <= exhibitor.getConfigManager().getConfig().getInt(IntConfigs.DEAD_INSTANCE_PERIOD_MS)) )
+                {
+                    newSpecList.add(spec);
+                }
+                else
+                {
+                    exhibitor.getLog().add(ActivityLog.Type.INFO, "Potentially removing stale instance from servers list: " + spec.getHostname());
+                    hasRemovals = true;
+                }
             }
         }
 

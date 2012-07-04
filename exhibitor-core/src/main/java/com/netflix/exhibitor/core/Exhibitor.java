@@ -157,7 +157,7 @@ public class Exhibitor implements Closeable
         cleanupManager = new CleanupManager(this);
         indexCache = new IndexCache(log);
         processMonitor = new ProcessMonitor(this);
-        autoInstanceManagement = new RepeatingActivity(log, activityQueue, QueueGroups.MAIN, new AutoInstanceManagement(this), AUTO_INSTANCE_MANAGEMENT_PERIOD_MS);
+        autoInstanceManagement = new RepeatingActivity(log, activityQueue, QueueGroups.MAIN, new AutoInstanceManagement(this), getAutoInstanceManagementPeriod());
 
         controlPanelValues = new ControlPanelValues();
 
@@ -348,4 +348,8 @@ public class Exhibitor implements Closeable
         localConnection = null;
     }
 
+    private static int getAutoInstanceManagementPeriod()
+    {
+        return AUTO_INSTANCE_MANAGEMENT_PERIOD_MS + (int)(AUTO_INSTANCE_MANAGEMENT_PERIOD_MS * Math.random());  // add some randomness to avoid overlap with other Exhibitors
+    }
 }
