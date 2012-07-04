@@ -72,7 +72,7 @@ public class AutoInstanceManagement implements Activity
     private void checkForStaleInstances(UsState usState) throws Exception
     {
         List<ServerSpec>            newSpecList = Lists.newArrayList();
-        boolean                     hasRemovals = false;
+        List<String>                removals = Lists.newArrayList();
         for ( ServerSpec spec : usState.getServerList().getSpecs() )
         {
             if ( (usState.getUs() != null) && usState.getUs().equals(spec) )
@@ -89,13 +89,12 @@ public class AutoInstanceManagement implements Activity
                 }
                 else
                 {
-                    exhibitor.getLog().add(ActivityLog.Type.INFO, "Potentially removing stale instance from servers list: " + spec.getHostname());
-                    hasRemovals = true;
+                    removals.add(spec.getHostname());
                 }
             }
         }
 
-        if ( hasRemovals )
+        if ( removals.size() > 0 )
         {
             List<String>    transformed = Lists.transform
             (
@@ -110,7 +109,8 @@ public class AutoInstanceManagement implements Activity
                 }
             );
             String          newSpec = Joiner.on(',').join(transformed);
-            adjustConfig(exhibitor.getConfigManager().getConfig(), newSpec);
+            String          reason = Joiner.on(", ").join(removals);
+            adjustConfig(exhibitor.getConfigManager().getConfig(), newSpec, "Removing stale instance(s) from servers list: " + reason);
         }
     }
 
@@ -133,11 +133,10 @@ public class AutoInstanceManagement implements Activity
         String                  spec = currentConfig.getString(StringConfigs.SERVERS_SPEC);
         String                  thisValue = new ServerSpec(exhibitor.getThisJVMHostname(), maxServerId + 1, serverType).toSpecString();
         final String            newSpec = Joiner.on(',').skipNulls().join((spec.length() > 0) ? spec : null, thisValue);
-        exhibitor.getLog().add(ActivityLog.Type.INFO, "Adding this instance to server list due to automatic instance management");
-        adjustConfig(currentConfig, newSpec);
+        adjustConfig(currentConfig, newSpec, "Adding this instance to server list due to automatic instance management");
     }
 
-    private void adjustConfig(final InstanceConfig currentConfig, final String newSpec) throws Exception
+    private void adjustConfig(final InstanceConfig currentConfig, final String newSpec, String reason) throws Exception
     {
         InstanceConfig          newConfig = new InstanceConfig()
         {
@@ -157,6 +156,9 @@ public class AutoInstanceManagement implements Activity
                 return currentConfig.getInt(config);
             }
         };
-        exhibitor.getConfigManager().startRollingConfig(newConfig); // if this fails due to an old config it's fine - it will just try again next time
+        if ( exhibitor.getConfigManager().startRollingConfig(newConfig) ) // if this fails due to an old config it's fine - it will just try again next time
+        {
+            exhibitor.getLog().add(ActivityLog.Type.INFO, reason);
+        }
     }
 }
