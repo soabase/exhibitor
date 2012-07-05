@@ -61,7 +61,7 @@ public class S3BackupProvider implements BackupProvider
     private static final int        MIN_S3_PART_SIZE = 5 * (1024 * 1024);
 
     @VisibleForTesting
-    static final String       SEPARATOR = "|";
+    static final String       SEPARATOR = "/";
     private static final String       SEPARATOR_REPLACEMENT = "_";
 
     public S3BackupProvider(S3ClientFactory factory, S3Credential credential) throws Exception

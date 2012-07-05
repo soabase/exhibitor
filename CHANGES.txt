@@ -23,6 +23,9 @@ line they'll get the updated config anyway.
 
 * Down or Not-Serving instances will now get restarted periodically (by a factor of 10 times IntConfigs.CHECK_MS).
 
+* IMPORTANT: For some internal reasons I needed to change the separator in S3 backup keys from "|" to
+"/". This will make any current backups inaccessible. I apologize for this.
+
 1.1.0 - June 27, 2012
 =====================
 * IMPORTANT: CLI arguments have changed a bit to support automatic instance addition/removal in the standalone
