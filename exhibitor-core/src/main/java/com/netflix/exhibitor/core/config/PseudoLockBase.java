@@ -163,8 +163,8 @@ public abstract class PseudoLockBase implements PseudoLock
             if ( bytes != null )
             {
                 String      lockerId = new String(bytes);
-                long        lockerAge = System.nanoTime() - getEpochStampForKey(key);
-                ownsTheLock = (lockerKey.equals(key) && lockerId.equals(id)) && (lockerAge >= TimeUnit.NANOSECONDS.convert(settlingMs, TimeUnit.MILLISECONDS));
+                long        lockerAge = System.currentTimeMillis() - getEpochStampForKey(key);
+                ownsTheLock = (lockerKey.equals(key) && lockerId.equals(id)) && (lockerAge >= settlingMs);
             }
             else    // was deleted probably
             {
