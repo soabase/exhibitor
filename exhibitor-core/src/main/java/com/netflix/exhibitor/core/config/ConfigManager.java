@@ -40,18 +40,26 @@ public class ConfigManager implements Closeable
 {
     private final Exhibitor exhibitor;
     private final ConfigProvider provider;
+    private final int maxAttempts;
     private final RepeatingActivity repeatingActivity;
     private final AtomicReference<LoadedInstanceConfig> config = new AtomicReference<LoadedInstanceConfig>();
     private final Set<ConfigListener> configListeners = Sets.newSetFromMap(Maps.<ConfigListener, Boolean>newConcurrentMap());
     private final AtomicReference<RollingConfigAdvanceAttempt> rollingConfigAdvanceAttempt = new AtomicReference<RollingConfigAdvanceAttempt>(null);
 
     @VisibleForTesting
-    final static int        MAX_ATTEMPTS = 4;
+    final static int DEFAULT_MAX_ATTEMPTS = 4;
 
     public ConfigManager(Exhibitor exhibitor, ConfigProvider provider, int checkMs) throws Exception
     {
+        this(exhibitor, provider, checkMs, DEFAULT_MAX_ATTEMPTS);
+    }
+
+    @VisibleForTesting
+    ConfigManager(Exhibitor exhibitor, ConfigProvider provider, int checkMs, int maxAttempts) throws Exception
+    {
         this.exhibitor = exhibitor;
         this.provider = provider;
+        this.maxAttempts = maxAttempts;
 
         Activity    activity = new Activity()
         {
@@ -209,57 +217,53 @@ public class ConfigManager implements Closeable
 
     private boolean advanceOrStartRollingConfig(ConfigCollection config, int rollingHostNamesIndex) throws Exception
     {
-        List<String>    rollingHostNames = config.getRollingConfigState().getRollingHostNames();
-        boolean         updateConfigResult;
-        if ( (rollingHostNamesIndex + 1) >= rollingHostNames.size() )
+        List<String>        rollingHostNames = config.getRollingConfigState().getRollingHostNames();
+        boolean             updateConfigResult;
+        ConfigCollection    newCollection = checkNextInstanceState(config, rollingHostNames, rollingHostNamesIndex);
+        if ( newCollection != null )
         {
-            // we're done - switch back to single config
-            ConfigCollection        newCollection = new ConfigCollectionImpl(config.getRollingConfig(), null);
+            rollingConfigAdvanceAttempt.set(null);
             updateConfigResult = internalUpdateConfig(newCollection);
         }
         else
         {
-            ConfigCollection                newCollection = new ConfigCollectionImpl(config.getRootConfig(), config.getRollingConfig(), rollingHostNames, rollingHostNamesIndex + 1);
-            RollingReleaseState             state = new RollingReleaseState(new InstanceState(), newCollection);
-            RemoteInstanceRequest.Result    result = checkNextInstanceState(state);
-            if ( (result == null) || (result.errorMessage.length() == 0) )
+            if ( rollingHostNamesIndex < 0 )
             {
+                // this is the start phase - park the bad instance in the back for now
+                List<String>        newRollingHostNames = Lists.newArrayList(rollingHostNames);
+                Collections.rotate(newRollingHostNames, -1);
+                ConfigCollection        collection = new ConfigCollectionImpl(config.getRootConfig(), config.getRollingConfig(), newRollingHostNames, rollingHostNamesIndex + 1);
+
                 rollingConfigAdvanceAttempt.set(null);
-                updateConfigResult = internalUpdateConfig(newCollection);
+                updateConfigResult = internalUpdateConfig(collection);
             }
             else
             {
-                if ( rollingHostNamesIndex >= 0 )
-                {
-                    ConfigCollection        statusChangeCollection = getBadInstanceStatus(config, state.getCurrentRollingHostname());
-                    updateConfigResult = internalUpdateConfig(statusChangeCollection);
-                }
-                else
-                {
-                    // this is the start phase - park the bad instance in the back for now
-                    List<String>        newRollingHostNames = Lists.newArrayList(rollingHostNames);
-                    Collections.rotate(newRollingHostNames, -1);
-                    newCollection = new ConfigCollectionImpl(config.getRootConfig(), config.getRollingConfig(), newRollingHostNames, rollingHostNamesIndex + 1);
-
-                    rollingConfigAdvanceAttempt.set(null);
-                    updateConfigResult = internalUpdateConfig(newCollection);
-                }
+                updateConfigResult = true;
             }
         }
         return updateConfigResult;
     }
 
-    private RemoteInstanceRequest.Result checkNextInstanceState(RollingReleaseState state)
+    private ConfigCollection checkNextInstanceState(ConfigCollection config, List<String> rollingHostNames, int rollingHostNamesIndex)
     {
+        if ( (rollingHostNamesIndex + 1) >= rollingHostNames.size() )
+        {
+            // we're done - switch back to single config
+            return new ConfigCollectionImpl(config.getRollingConfig(), null);
+        }
+
+        ConfigCollection                newCollection = new ConfigCollectionImpl(config.getRootConfig(), config.getRollingConfig(), rollingHostNames, rollingHostNamesIndex + 1);
+        RollingReleaseState             state = new RollingReleaseState(new InstanceState(), newCollection);
         if ( state.getCurrentRollingHostname().equals(exhibitor.getThisJVMHostname()) )
         {
-            return null;
+            return newCollection;
         }
 
         RollingConfigAdvanceAttempt         activeAttempt = rollingConfigAdvanceAttempt.get();
 
         RemoteInstanceRequest.Result        result;
-        if ( (activeAttempt == null) || !activeAttempt.getHostname().equals(state.getCurrentRollingHostname()) || (activeAttempt.getAttemptCount() < MAX_ATTEMPTS) )
+        if ( (activeAttempt == null) || !activeAttempt.getHostname().equals(state.getCurrentRollingHostname()) || (activeAttempt.getAttemptCount() < maxAttempts) )
         {
             RemoteInstanceRequest           remoteInstanceRequest = new RemoteInstanceRequest(exhibitor, state.getCurrentRollingHostname());
             result = remoteInstanceRequest.makeRequest(exhibitor.getRemoteInstanceRequestClient(), "getStatus");
@@ -271,16 +275,23 @@ public class ConfigManager implements Closeable
             }
             activeAttempt.incrementAttemptCount();
 
-            if ( (result.errorMessage.length() != 0) && (activeAttempt.getAttemptCount() >= MAX_ATTEMPTS) )
+            if ( result.errorMessage.length() != 0 )
             {
-                result = null;  // it must be down. Skip it.
+                if ( activeAttempt.getAttemptCount() >= maxAttempts )
+                {
+                    newCollection = checkNextInstanceState(config, rollingHostNames, rollingHostNamesIndex + 1);  // it must be down. Skip it.
+                }
+                else
+                {
+                    newCollection = null;
+                }
             }
         }
         else
         {
-            result = null;
+            newCollection = null;
         }
-        return result;
+        return newCollection;
     }
 
     private boolean internalUpdateConfig(ConfigCollection newCollection) throws Exception
@@ -312,68 +323,5 @@ public class ConfigManager implements Closeable
             config.set(newConfig);
             notifyListeners();
         }
-    }
-
-    private ConfigCollection getBadInstanceStatus(final ConfigCollection currentConfig, final String badHostname)
-    {
-        final RollingConfigState        currentState = currentConfig.getRollingConfigState();
-        final RollingConfigState        newState = new RollingConfigState()
-        {
-            @Override
-            public String getRollingStatus()
-            {
-                return badHostname + " cannot be reached. Will skip if this continues.";
-            }
-
-            @Override
-            public int getRollingPercentDone()
-            {
-                return currentState.getRollingPercentDone();
-            }
-
-            @Override
-            public List<String> getRollingHostNames()
-            {
-                return currentState.getRollingHostNames();
-            }
-
-            @Override
-            public int getRollingHostNamesIndex()
-            {
-                return currentState.getRollingHostNamesIndex();
-            }
-        };
-        return new ConfigCollection()
-        {
-            @Override
-            public InstanceConfig getConfigForThisInstance(String hostname)
-            {
-                return currentConfig.getConfigForThisInstance(hostname);
-            }
-
-            @Override
-            public InstanceConfig getRootConfig()
-            {
-                return currentConfig.getRootConfig();
-            }
-
-            @Override
-            public InstanceConfig getRollingConfig()
-            {
-                return currentConfig.getRollingConfig();
-            }
-
-            @Override
-            public boolean isRolling()
-            {
-                return currentConfig.isRolling();
-            }
-
-            @Override
-            public RollingConfigState getRollingConfigState()
-            {
-                return newState;
-            }
-        };
     }
 }

@@ -1,4 +1,4 @@
-1.1.1 - xxxxxxxxxxxxx
+1.2.0 - xxxxxxxxxxxxx
 =====================
 * The S3Client could potentially leak connections due to https://forums.aws.amazon.com/message.jspa?messageID=296676
 
@@ -21,7 +21,7 @@ instance to come back. This doesn't work for instances being removed by automati
 Now, Rolling Config will skip instances that don't respond in a reasonable time. If they come back on
 line they'll get the updated config anyway.
 
-* Down or Not-Serving instances will now get restarted periodically (a factor of IntConfigs.CHECK_MS).
+* Down or Not-Serving instances will now get restarted periodically (by a factor of 10 times IntConfigs.CHECK_MS).
 
 1.1.0 - June 27, 2012
 =====================

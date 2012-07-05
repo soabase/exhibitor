@@ -176,7 +176,7 @@ public abstract class PseudoLockBase implements PseudoLock
             long        elapsed = System.currentTimeMillis() - lockStartMs;
             if ( elapsed > settlingMs )
             {
-                throw new Exception("Our key is missing: " + key);
+                throw new Exception(String.format("Our key is missing. Key: %s, Elapsed: %d, SettlingMs: %d", key, elapsed, settlingMs));
             }
         }
 
