@@ -10,8 +10,16 @@
 
 * Use the latest Curator version
 
-* Automatic instance management was incorrectly handling instance that had yet to write a heartbeat.
-They were treated as stale.
+* Lots of fixes/tweaks for automatic instance management.
+
+* ExhibitorArguments is now constructed via a builder as there are too many combinations for
+simple constructors. Note that there is an additional required ExhibitorArgument:
+restPort.
+
+* Rolling Config change wasn't handling dead/down instances. It would just hang waiting for the
+instance to come back. This doesn't work for instances being removed by automatic instance management.
+Now, Rolling Config will skip instances that don't respond in a reasonable time. If they come back on
+line they'll get the updated config anyway.
 
 1.1.0 - June 27, 2012
 =====================
