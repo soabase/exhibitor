@@ -31,6 +31,8 @@ public abstract class PseudoLockBase implements PseudoLock
     private static final String     SEPARATOR = "_";
     private static final int        DEFAULT_SETTLING_MS = 5000;
 
+    private static final int        MISSING_KEY_FACTOR = 10;
+
     /**
      * @param lockPrefix key prefix
      * @param timeoutMs max age for locks
@@ -174,9 +176,9 @@ public abstract class PseudoLockBase implements PseudoLock
         else
         {
             long        elapsed = System.currentTimeMillis() - lockStartMs;
-            if ( elapsed > settlingMs )
+            if ( elapsed > (settlingMs * MISSING_KEY_FACTOR) )
             {
-                throw new Exception(String.format("Our key is missing. Key: %s, Elapsed: %d, SettlingMs: %d", key, elapsed, settlingMs));
+                throw new Exception(String.format("Our key is missing. Key: %s, Elapsed: %d, Max Wait: %d", key, elapsed, settlingMs * MISSING_KEY_FACTOR));
             }
         }
 

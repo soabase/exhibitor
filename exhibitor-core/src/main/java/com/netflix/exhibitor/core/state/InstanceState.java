@@ -23,7 +23,8 @@ public class InstanceState
     private final InstanceStateTypes        state;
     private final ServerList                serverList;
     private final RestartSignificantConfig  currentConfig;
-    private final long                      timestampMs = System.currentTimeMillis();
+
+    private volatile long                      timestampMs;
 
     public InstanceState()
     {
@@ -37,6 +38,8 @@ public class InstanceState
         this.serverList = serverList;
         this.state = state;
         this.currentConfig = currentConfig;
+
+        updateTimestampMs();
     }
 
     public ServerList getServerList()
@@ -57,6 +60,11 @@ public class InstanceState
     public long getTimestampMs()
     {
         return timestampMs;
+    }
+
+    public void updateTimestampMs()
+    {
+        timestampMs = System.currentTimeMillis();
     }
 
     @SuppressWarnings("RedundantIfStatement")

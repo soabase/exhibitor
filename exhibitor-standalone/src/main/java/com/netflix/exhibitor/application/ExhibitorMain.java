@@ -154,10 +154,18 @@ public class ExhibitorMain implements Closeable
             backupProvider = new FileSystemBackupProvider();
         }
 
+        int         timeoutMs = Integer.parseInt(commandLine.getOptionValue(TIMEOUT, "30000"));
+        int         logWindowSizeLines = Integer.parseInt(commandLine.getOptionValue(LOGLINES, "1000"));
+        int         configCheckMs = Integer.parseInt(commandLine.getOptionValue(CONFIGCHECKMS, "30000"));
+        String      useHostname = commandLine.getOptionValue(HOSTNAME, hostname);
+        int         httpPort = Integer.parseInt(commandLine.getOptionValue(HTTP_PORT, "8080"));
+        String      extraHeadingText = commandLine.getOptionValue(EXTRA_HEADING_TEXT, null);
+        boolean     allowNodeMutations = "true".equalsIgnoreCase(commandLine.getOptionValue(NODE_MUTATIONS));
+
         ConfigProvider      provider;
         if ( commandLine.hasOption(S3_CONFIG) )
         {
-            provider = getS3Provider(options, commandLine, awsCredentials);
+            provider = getS3Provider(options, commandLine, awsCredentials, useHostname);
         }
         else
         {
@@ -169,13 +177,6 @@ public class ExhibitorMain implements Closeable
             return;
         }
         
-        int         timeoutMs = Integer.parseInt(commandLine.getOptionValue(TIMEOUT, "30000"));
-        int         logWindowSizeLines = Integer.parseInt(commandLine.getOptionValue(LOGLINES, "1000"));
-        int         configCheckMs = Integer.parseInt(commandLine.getOptionValue(CONFIGCHECKMS, "30000"));
-        String      useHostname = commandLine.getOptionValue(HOSTNAME, hostname);
-        int         httpPort = Integer.parseInt(commandLine.getOptionValue(HTTP_PORT, "8080"));
-        String      extraHeadingText = commandLine.getOptionValue(EXTRA_HEADING_TEXT, null);
-        boolean     allowNodeMutations = "true".equalsIgnoreCase(commandLine.getOptionValue(NODE_MUTATIONS));
         JQueryStyle jQueryStyle;
         try
         {
@@ -229,7 +230,7 @@ public class ExhibitorMain implements Closeable
         return new FileSystemConfigProvider(directory, name, prefix, DefaultProperties.get(backupProvider), new AutoManageLockArguments(lockPrefix));
     }
 
-    private static ConfigProvider getS3Provider(Options options, CommandLine commandLine, PropertyBasedS3Credential awsCredentials) throws Exception
+    private static ConfigProvider getS3Provider(Options options, CommandLine commandLine, PropertyBasedS3Credential awsCredentials, String hostname) throws Exception
     {
         ConfigProvider provider;
         if ( awsCredentials == null )
@@ -240,7 +241,7 @@ public class ExhibitorMain implements Closeable
         else
         {
             String  prefix = options.hasOption(S3_CONFIG_PREFIX) ? commandLine.getOptionValue(S3_CONFIG_PREFIX) : DEFAULT_FILESYSTEMCONFIG_PREFIX;
-            provider = new S3ConfigProvider(new S3ClientFactoryImpl(), awsCredentials, getS3Arguments(commandLine.getOptionValue(S3_CONFIG), options, prefix));
+            provider = new S3ConfigProvider(new S3ClientFactoryImpl(), awsCredentials, getS3Arguments(commandLine.getOptionValue(S3_CONFIG), options, prefix), hostname);
         }
         return provider;
     }

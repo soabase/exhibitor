@@ -78,7 +78,7 @@ public class TestMonitorRunningInstance
         MonitorRunningInstance      monitor = new MonitorRunningInstance(mockExhibitor)
         {
             @Override
-            protected void restartZooKeeper() throws Exception
+            protected void restartZooKeeper(InstanceState currentInstanceState) throws Exception
             {
                 semaphore.release();
             }

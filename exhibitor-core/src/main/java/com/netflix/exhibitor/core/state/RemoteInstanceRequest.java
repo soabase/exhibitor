@@ -46,6 +46,11 @@ public class RemoteInstanceRequest
         }
     }
 
+    public String getHostname()
+    {
+        return hostname;
+    }
+
     public Result         makeRequest(RemoteInstanceRequestClient client, String methodName, Object... values)
     {
         String      remoteResponse;

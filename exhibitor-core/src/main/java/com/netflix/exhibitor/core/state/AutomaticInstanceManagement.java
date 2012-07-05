@@ -14,19 +14,19 @@ import com.netflix.exhibitor.core.config.StringConfigs;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class AutoInstanceManagement implements Activity
+public class AutomaticInstanceManagement implements Activity
 {
     private final Exhibitor exhibitor;
     private final int minInstances;
 
     private static final int DEFAULT_MIN_INSTANCES = 3;
 
-    public AutoInstanceManagement(Exhibitor exhibitor)
+    public AutomaticInstanceManagement(Exhibitor exhibitor)
     {
         this(exhibitor, DEFAULT_MIN_INSTANCES);
     }
 
-    public AutoInstanceManagement(Exhibitor exhibitor, int minInstances)
+    public AutomaticInstanceManagement(Exhibitor exhibitor, int minInstances)
     {
         this.exhibitor = exhibitor;
         this.minInstances = minInstances;

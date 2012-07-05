@@ -42,7 +42,7 @@ import com.netflix.exhibitor.core.processes.ProcessOperations;
 import com.netflix.exhibitor.core.processes.StandardProcessOperations;
 import com.netflix.exhibitor.core.rest.ClusterResource;
 import com.netflix.exhibitor.core.rest.UITab;
-import com.netflix.exhibitor.core.state.AutoInstanceManagement;
+import com.netflix.exhibitor.core.state.AutomaticInstanceManagement;
 import com.netflix.exhibitor.core.state.CleanupManager;
 import com.netflix.exhibitor.core.state.ManifestVersion;
 import com.netflix.exhibitor.core.state.MonitorRunningInstance;
@@ -132,7 +132,7 @@ public class Exhibitor implements Closeable
         cleanupManager = new CleanupManager(this);
         indexCache = new IndexCache(log);
         processMonitor = new ProcessMonitor(this);
-        autoInstanceManagement = new RepeatingActivity(log, activityQueue, QueueGroups.MAIN, new AutoInstanceManagement(this), getAutoInstanceManagementPeriod());
+        autoInstanceManagement = new RepeatingActivity(log, activityQueue, QueueGroups.MAIN, new AutomaticInstanceManagement(this), getAutoInstanceManagementPeriod());
 
         controlPanelValues = new ControlPanelValues();
 

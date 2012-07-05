@@ -10,7 +10,7 @@ public class S3ConfigAutoManageLockArguments extends AutoManageLockArguments
     public S3ConfigAutoManageLockArguments(String prefix)
     {
         super(prefix);
-        settlingMs = (int)TimeUnit.SECONDS.toMillis(30); // TODO - get this right
+        settlingMs = (int)TimeUnit.SECONDS.toMillis(5); // TODO - get this right
     }
 
     public S3ConfigAutoManageLockArguments(String prefix, int timeoutMs, int pollingMs, int settlingMs)

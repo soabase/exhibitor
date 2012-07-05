@@ -104,11 +104,14 @@ public class MonitorRunningInstance implements Closeable
         {
             if ( (localCurrentInstanceState.getState() == InstanceStateTypes.DOWN) || (localCurrentInstanceState.getState() == InstanceStateTypes.NOT_SERVING) )
             {
-                long        elapsedMs = System.currentTimeMillis() - localCurrentInstanceState.getTimestampMs();
-                if ( elapsedMs > (config.getInt(IntConfigs.CHECK_MS) * DOWN_RECHECK_FACTOR) )
+                if ( !exhibitor.getConfigManager().isRolling() )
                 {
-                    exhibitor.getLog().add(ActivityLog.Type.INFO, "Restarting down/not-serving ZooKeeper");
-                    restartZooKeeper();
+                    long        elapsedMs = System.currentTimeMillis() - localCurrentInstanceState.getTimestampMs();
+                    if ( elapsedMs > (config.getInt(IntConfigs.CHECK_MS) * DOWN_RECHECK_FACTOR) )
+                    {
+                        exhibitor.getLog().add(ActivityLog.Type.INFO, "Restarting down/not-serving ZooKeeper after " + elapsedMs + " ms pause");
+                        restartZooKeeper(localCurrentInstanceState);
+                    }
                 }
             }
         }
@@ -123,12 +126,12 @@ public class MonitorRunningInstance implements Closeable
             if ( serverListChange )
             {
                 exhibitor.getLog().add(ActivityLog.Type.INFO, "Server list has changed");
-                restartZooKeeper();
+                restartZooKeeper(localCurrentInstanceState);
             }
             else if ( configChange )
             {
                 exhibitor.getLog().add(ActivityLog.Type.INFO, "ZooKeeper related configuration has changed");
-                restartZooKeeper();
+                restartZooKeeper(localCurrentInstanceState);
             }
             else
             {
@@ -136,7 +139,7 @@ public class MonitorRunningInstance implements Closeable
                 {
                     case DOWN:
                     {
-                        restartZooKeeper();
+                        restartZooKeeper(localCurrentInstanceState);
                         break;
                     }
 
@@ -151,8 +154,9 @@ public class MonitorRunningInstance implements Closeable
     }
 
     @VisibleForTesting
-    protected void restartZooKeeper() throws Exception
+    protected void restartZooKeeper(InstanceState currentInstanceState) throws Exception
     {
+        currentInstanceState.updateTimestampMs();
         if ( !exhibitor.getControlPanelValues().isSet(ControlPanelTypes.RESTARTS) )
         {
             return;

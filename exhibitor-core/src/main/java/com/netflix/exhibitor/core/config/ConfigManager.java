@@ -24,6 +24,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.activity.Activity;
+import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.QueueGroups;
 import com.netflix.exhibitor.core.activity.RepeatingActivity;
 import com.netflix.exhibitor.core.state.InstanceState;
@@ -279,10 +280,12 @@ public class ConfigManager implements Closeable
             {
                 if ( activeAttempt.getAttemptCount() >= maxAttempts )
                 {
+                    exhibitor.getLog().add(ActivityLog.Type.INFO, "Exhausted attempts to connect to " + remoteInstanceRequest.getHostname());
                     newCollection = checkNextInstanceState(config, rollingHostNames, rollingHostNamesIndex + 1);  // it must be down. Skip it.
                 }
                 else
                 {
+                    exhibitor.getLog().add(ActivityLog.Type.INFO, "Could not connect to " + remoteInstanceRequest.getHostname() + " - attempt #" + activeAttempt.getAttemptCount());
                     newCollection = null;
                 }
             }
