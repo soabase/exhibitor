@@ -225,21 +225,25 @@ public class S3BackupProvider implements BackupProvider
         do
         {
             listing = (listing == null) ? s3Client.listObjects(request) : s3Client.listNextBatchOfObjects(listing);
-            completeList.addAll
-            (
-                Lists.transform
+            List<S3ObjectSummary>   objectSummaries = listing.getObjectSummaries();
+            if ( (objectSummaries != null) && (objectSummaries.size() > 0) )
+            {
+                completeList.addAll
                 (
-                    listing.getObjectSummaries(),
-                    new Function<S3ObjectSummary, BackupMetaData>()
-                    {
-                        @Override
-                        public BackupMetaData apply(S3ObjectSummary summary)
+                    Lists.transform
+                    (
+                        objectSummaries,
+                        new Function<S3ObjectSummary, BackupMetaData>()
                         {
-                            return fromKey(summary.getKey());
+                            @Override
+                            public BackupMetaData apply(S3ObjectSummary summary)
+                            {
+                                return fromKey(summary.getKey());
+                            }
                         }
-                    }
-                )
-            );
+                    )
+                );
+            }
         } while ( listing.isTruncated() );
         return completeList;
     }
