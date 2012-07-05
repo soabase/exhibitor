@@ -269,7 +269,7 @@ public class TestAutoInstanceManagement
             Mockito.when(monitorRunningInstance.getCurrentInstanceState()).thenReturn(InstanceStateTypes.NOT_SERVING);
             Mockito.when(exhibitor.getMonitorRunningInstance()).thenReturn(monitorRunningInstance);
 
-            AutoInstanceManagement      management = new AutoInstanceManagement(exhibitor);
+            AutoInstanceManagement      management = new AutoInstanceManagement(exhibitor, 1);
             management.call();
         }
         finally
