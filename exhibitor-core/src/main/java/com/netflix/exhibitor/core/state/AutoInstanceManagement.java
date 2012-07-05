@@ -17,12 +17,19 @@ import java.util.concurrent.TimeUnit;
 public class AutoInstanceManagement implements Activity
 {
     private final Exhibitor exhibitor;
+    private final int minInstances;
 
-    private static final int        MIN_INSTANCES = 3;
+    private static final int DEFAULT_MIN_INSTANCES = 3;
 
     public AutoInstanceManagement(Exhibitor exhibitor)
     {
+        this(exhibitor, DEFAULT_MIN_INSTANCES);
+    }
+
+    public AutoInstanceManagement(Exhibitor exhibitor, int minInstances)
+    {
         this.exhibitor = exhibitor;
+        this.minInstances = minInstances;
     }
 
     @Override
@@ -74,7 +81,7 @@ public class AutoInstanceManagement implements Activity
     private void checkForStaleInstances(UsState usState) throws Exception
     {
         List<ServerSpec>            serverSpecList = usState.getServerList().getSpecs();
-        if ( serverSpecList.size() <= MIN_INSTANCES )
+        if ( serverSpecList.size() <= minInstances )
         {
             return;
         }
