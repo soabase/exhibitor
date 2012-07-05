@@ -18,6 +18,8 @@ public class AutoInstanceManagement implements Activity
 {
     private final Exhibitor exhibitor;
 
+    private static final int        MIN_INSTANCES = 3;
+
     public AutoInstanceManagement(Exhibitor exhibitor)
     {
         this.exhibitor = exhibitor;
@@ -71,9 +73,15 @@ public class AutoInstanceManagement implements Activity
 
     private void checkForStaleInstances(UsState usState) throws Exception
     {
+        List<ServerSpec>            serverSpecList = usState.getServerList().getSpecs();
+        if ( serverSpecList.size() <= MIN_INSTANCES )
+        {
+            return;
+        }
+
         List<ServerSpec>            newSpecList = Lists.newArrayList();
         List<String>                removals = Lists.newArrayList();
-        for ( ServerSpec spec : usState.getServerList().getSpecs() )
+        for ( ServerSpec spec : serverSpecList )
         {
             if ( (usState.getUs() != null) && usState.getUs().equals(spec) )
             {
