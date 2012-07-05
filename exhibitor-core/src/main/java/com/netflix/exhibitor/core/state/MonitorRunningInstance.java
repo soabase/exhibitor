@@ -156,7 +156,10 @@ public class MonitorRunningInstance implements Closeable
     @VisibleForTesting
     protected void restartZooKeeper(InstanceState currentInstanceState) throws Exception
     {
-        currentInstanceState.updateTimestampMs();
+        if ( currentInstanceState != null )
+        {
+            currentInstanceState.updateTimestampMs();
+        }
         if ( !exhibitor.getControlPanelValues().isSet(ControlPanelTypes.RESTARTS) )
         {
             return;
