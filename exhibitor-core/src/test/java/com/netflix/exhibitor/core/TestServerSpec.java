@@ -2,7 +2,7 @@ package com.netflix.exhibitor.core;
 
 import com.netflix.exhibitor.core.state.ServerSpec;
 import com.netflix.exhibitor.core.state.ServerType;
-import junit.framework.Assert;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 public class TestServerSpec

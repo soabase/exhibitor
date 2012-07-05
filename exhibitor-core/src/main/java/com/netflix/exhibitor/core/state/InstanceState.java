@@ -24,6 +24,13 @@ public class InstanceState
     private final ServerList                serverList;
     private final RestartSignificantConfig  currentConfig;
 
+    public InstanceState()
+    {
+        state = InstanceStateTypes.LATENT;
+        serverList = new ServerList("");
+        currentConfig = null;
+    }
+
     public InstanceState(ServerList serverList, InstanceStateTypes state, RestartSignificantConfig currentConfig)
     {
         this.serverList = serverList;

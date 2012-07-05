@@ -22,6 +22,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
 import com.netflix.exhibitor.core.Exhibitor;
+import com.netflix.exhibitor.core.ExhibitorArguments;
 import com.netflix.exhibitor.core.backup.BackupProvider;
 import com.netflix.exhibitor.core.backup.filesystem.FileSystemBackupProvider;
 import com.netflix.exhibitor.core.backup.s3.S3BackupProvider;
@@ -186,7 +187,17 @@ public class ExhibitorMain implements Closeable
             return;
         }
 
-        Exhibitor.Arguments     arguments = new Exhibitor.Arguments(timeoutMs, logWindowSizeLines, useHostname, configCheckMs, extraHeadingText, allowNodeMutations, jQueryStyle);
+        ExhibitorArguments arguments = ExhibitorArguments.builder()
+            .connectionTimeOutMs(timeoutMs)
+            .logWindowSizeLines(logWindowSizeLines)
+            .thisJVMHostname(useHostname)
+            .configCheckMs(configCheckMs)
+            .extraHeadingText(extraHeadingText)
+            .allowNodeMutations(allowNodeMutations)
+            .jQueryStyle(jQueryStyle)
+            .restPort(httpPort)
+            .build();
+
         ExhibitorMain exhibitorMain = new ExhibitorMain(backupProvider, provider, arguments, httpPort);
         exhibitorMain.start();
         exhibitorMain.join();
@@ -257,7 +268,7 @@ public class ExhibitorMain implements Closeable
         return new S3ConfigArguments(parts[0].trim(), parts[1].trim(), prefix, new S3ConfigAutoManageLockArguments(prefix + "_lock_"));
     }
 
-    public ExhibitorMain(BackupProvider backupProvider, ConfigProvider configProvider, Exhibitor.Arguments arguments, int httpPort) throws Exception
+    public ExhibitorMain(BackupProvider backupProvider, ConfigProvider configProvider, ExhibitorArguments arguments, int httpPort) throws Exception
     {
         Exhibitor               exhibitor = new Exhibitor(configProvider, null, backupProvider, arguments);
         exhibitor.start();
