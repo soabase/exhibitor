@@ -159,7 +159,7 @@ public class ConfigManager implements Closeable
             RollingReleaseState     state = new RollingReleaseState(instanceState, localConfig);
             if ( state.getCurrentRollingHostname().equals(exhibitor.getThisJVMHostname()) )
             {
-                if ( state.serverListHasSynced() && (instanceState.getState() == InstanceStateTypes.SERVING) )
+                if ( state.serverListHasSynced() )
                 {
                     if ( (instanceState.getState() == InstanceStateTypes.SERVING) || (instanceState.getState() == InstanceStateTypes.NOT_SERVING) )
                     {
