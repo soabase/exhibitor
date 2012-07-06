@@ -1,5 +1,5 @@
-1.2.0 - xxxxxxxxxxxxx
-=====================
+1.2.0 - July 5, 2012
+====================
 * The S3Client could potentially leak connections due to https://forums.aws.amazon.com/message.jspa?messageID=296676
 
 * Issue 26: Make sure default prefixes don't use underscore as it's reserved
