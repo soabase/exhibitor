@@ -161,7 +161,10 @@ public class ConfigManager implements Closeable
             {
                 if ( state.serverListHasSynced() && (instanceState.getState() == InstanceStateTypes.SERVING) )
                 {
-                    advanceRollingConfig(localConfig);
+                    if ( (instanceState.getState() == InstanceStateTypes.SERVING) || (instanceState.getState() == InstanceStateTypes.NOT_SERVING) )
+                    {
+                        advanceRollingConfig(localConfig);
+                    }
                 }
             }
         }
