@@ -21,6 +21,8 @@ package com.netflix.exhibitor.core.backup.s3;
 import com.amazonaws.services.s3.model.*;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.io.Closeables;
 import com.google.common.io.Files;
@@ -225,25 +227,34 @@ public class S3BackupProvider implements BackupProvider
         do
         {
             listing = (listing == null) ? s3Client.listObjects(request) : s3Client.listNextBatchOfObjects(listing);
-            List<S3ObjectSummary>   objectSummaries = listing.getObjectSummaries();
-            if ( (objectSummaries != null) && (objectSummaries.size() > 0) )
-            {
-                completeList.addAll
-                (
-                    Lists.transform
-                    (
-                        objectSummaries,
-                        new Function<S3ObjectSummary, BackupMetaData>()
-                        {
-                            @Override
-                            public BackupMetaData apply(S3ObjectSummary summary)
-                            {
-                                return fromKey(summary.getKey());
-                            }
-                        }
-                    )
-                );
-            }
+
+            Iterable<S3ObjectSummary> filtered = Iterables.filter
+            (
+                listing.getObjectSummaries(),
+                new Predicate<S3ObjectSummary>()
+                {
+                    @Override
+                    public boolean apply(S3ObjectSummary summary)
+                    {
+                        return fromKey(summary.getKey()) != null;
+                    }
+                }
+            );
+
+            Iterable<BackupMetaData> transformed = Iterables.transform
+            (
+                filtered,
+                new Function<S3ObjectSummary, BackupMetaData>()
+                {
+                    @Override
+                    public BackupMetaData apply(S3ObjectSummary summary)
+                    {
+                        return fromKey(summary.getKey());
+                    }
+                }
+            );
+
+            completeList.addAll(Lists.newArrayList(transformed));
         } while ( listing.isTruncated() );
         return completeList;
     }
@@ -294,7 +305,7 @@ public class S3BackupProvider implements BackupProvider
     private PartETag uploadChunk(byte[] buffer, int bytesRead, InitiateMultipartUploadResult initResponse, int index) throws Exception
     {
         byte[]          md5 = S3Utils.md5(buffer, bytesRead);
-        
+
         UploadPartRequest   request = new UploadPartRequest();
         request.setBucketName(initResponse.getBucketName());
         request.setKey(initResponse.getKey());
@@ -310,7 +321,7 @@ public class S3BackupProvider implements BackupProvider
         {
             throw new Exception("Unable to match MD5 for part " + index);
         }
-        
+
         return partETag;
     }
 
@@ -349,9 +360,13 @@ public class S3BackupProvider implements BackupProvider
         return prefix;
     }
 
-    private BackupMetaData fromKey(String key)
+    private static BackupMetaData fromKey(String key)
     {
         String[]        parts = key.split("\\" + SEPARATOR);
+        if ( parts.length != 3 )
+        {
+            return null;
+        }
         return new BackupMetaData(parts[1], Long.parseLong(parts[2]));
     }
 }
