@@ -143,13 +143,9 @@ public abstract class PseudoLockBase implements PseudoLock
      */
     public synchronized void unlock() throws Exception
     {
-        if ( !ownsTheLock )
-        {
-            throw new IllegalStateException("Already unlocked");
-        }
-
         deleteFile(key);
         notifyAll();
+        ownsTheLock = false;
     }
 
     protected abstract void createFile(String key, byte[] contents) throws Exception;

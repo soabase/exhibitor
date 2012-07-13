@@ -51,7 +51,7 @@ public class FileSystemPseudoLock extends PseudoLockBase
     protected void deleteFile(String key) throws Exception
     {
         File f = getFile(key);
-        if ( !f.delete() )
+        if ( f.exists() && !f.delete() )
         {
             throw new IOException("Could not delete: " + f);
         }
