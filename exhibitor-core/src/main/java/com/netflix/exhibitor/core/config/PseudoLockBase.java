@@ -202,7 +202,7 @@ public abstract class PseudoLockBase implements PseudoLock
         for ( String key : keys )
         {
             long    epochStamp = getEpochStampForKey(key);
-            if ( (System.currentTimeMillis() - epochStamp) > timeoutMs )
+            if ( !key.equals(this.key) && ((System.currentTimeMillis() - epochStamp) > timeoutMs) )
             {
                 deleteFile(key);
             }
