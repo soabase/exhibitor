@@ -2,6 +2,11 @@
 =====================
 * Fixed some edge cases in pseudo lock that might leave lock files around
 
+* File-based pseudo lock wasn't ignoring non-lock files
+
+* Reworked backup indexing. There's not much value in having to choose which backup to index
+so now all backups as well as the active logs are indexed.
+
 1.2.2 - July 12, 2012
 =====================
 * Major bug: Starting a rolling config from the UI leaked S3 lock files which stopped

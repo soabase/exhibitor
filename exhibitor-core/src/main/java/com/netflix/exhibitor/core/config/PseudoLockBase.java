@@ -156,6 +156,11 @@ public abstract class PseudoLockBase implements PseudoLock
 
     protected abstract List<String> getFileNames(String lockPrefix) throws Exception;
 
+    public String getLockPrefix()
+    {
+        return lockPrefix;
+    }
+
     private void checkUpdate() throws Exception
     {
         if ( (System.currentTimeMillis() - lastUpdateMs) < pollingMs )

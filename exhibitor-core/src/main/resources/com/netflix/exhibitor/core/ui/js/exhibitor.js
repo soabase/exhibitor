@@ -58,8 +58,17 @@ function messageDialog(title, message, noIcon)
     $("#message-dialog").dialog("open");
 }
 
-function okCancelDialog(title, message, okFunction)
+function okCancelDialog(title, message, okFunction, noIcon)
 {
+    if ( noIcon )
+    {
+        $('#message-dialog-icon').hide();
+    }
+    else
+    {
+        $('#message-dialog-icon').show();
+    }
+
     $('#message-dialog-text').html(message);
     $("#message-dialog").dialog("option", "title", title);
     $("#message-dialog").dialog("option", "buttons",

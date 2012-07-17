@@ -132,6 +132,18 @@ public class BackupManager implements Closeable
     }
 
     /**
+     * Return a stream for the specified backup
+     *
+     * @param metaData the backup to get
+     * @return the stream or null if the stream doesn't exist
+     * @throws Exception errors
+     */
+    public BackupStream getBackupStream(BackupMetaData metaData) throws Exception
+    {
+        return backupProvider.get().getBackupStream(exhibitor, metaData, getBackupConfig());
+    }
+
+    /**
      * Return the stored backup config
      *
      * @return backup config

@@ -17,6 +17,8 @@
 package com.netflix.exhibitor.core.config.filesystem;
 
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.io.Files;
 import com.netflix.exhibitor.core.config.PseudoLockBase;
@@ -69,9 +71,22 @@ public class FileSystemPseudoLock extends PseudoLockBase
         File[] files = directory.listFiles();
         if ( files != null )
         {
-            return Lists.transform
+            Iterable<File> filtered = Iterables.filter
             (
                 Arrays.asList(files),
+                new Predicate<File>()
+                {
+                    @Override
+                    public boolean apply(File f)
+                    {
+                        return f.getName().startsWith(getLockPrefix());
+                    }
+                }
+            );
+
+            Iterable<String> transformed = Iterables.transform
+            (
+                filtered,
                 new Function<File, String>()
                 {
                     @Override
@@ -81,6 +96,8 @@ public class FileSystemPseudoLock extends PseudoLockBase
                     }
                 }
             );
+
+            return Lists.newArrayList(transformed);
         }
         return Lists.newArrayList();
     }
