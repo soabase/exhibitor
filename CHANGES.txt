@@ -12,6 +12,8 @@ an instance will get cleaned immediately.
 
 * Removed "Restarts When Unlisted" button. It doesn't have any meaning anymore.
 
+* Log button should always be active if the Exhibitor instance can be reached.
+
 1.2.2 - July 12, 2012
 =====================
 * Major bug: Starting a rolling config from the UI leaked S3 lock files which stopped

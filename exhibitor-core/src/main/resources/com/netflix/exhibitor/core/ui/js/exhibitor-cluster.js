@@ -134,27 +134,31 @@ function stopStartDialog(hostname)
 
 function logDialog(hostname)
 {
-    $('#log-text').text("Loading...");
     return function() {
+        $('#log-text').text("Loading...");
+
         makeRemoteCall(URL_CLUSTER_LOG_BASE, hostname, function(text){
             $('#log-text').text(text);
-            $('#log-dialog').dialog("option", "title", hostname);
-            $('#log-dialog').dialog("open");
         });
+
+        $('#log-dialog').dialog("option", "title", hostname);
+        $('#log-dialog').dialog("open");
     };
 }
 
 function word4ltrDialog(hostname)
 {
-    $('#word-4ltr-text').text("Loading...");
     return function() {
         $('#word-4ltr-button').click(function(){
+            $('#word-4ltr-text').text("Loading...");
             makeRemoteCall(URL_CLUSTER_4LTR_BASE + $('#word-4ltr').val() + "/", hostname, function(text){
                 $('#word-4ltr-text').text(text);
-                $('#word-4ltr-dialog').dialog("option", "title", hostname);
-                $('#word-4ltr-dialog').dialog("open");
             })
         });
+
+        $('#word-4ltr-text').text("");
+        $('#word-4ltr-dialog').dialog("option", "title", hostname);
+        $('#word-4ltr-dialog').dialog("open");
     };
 }
 
