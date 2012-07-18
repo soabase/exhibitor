@@ -194,7 +194,7 @@ function updateOneServerState(index, data, hostname)
 
         $(domId + '-power-button').button("option", "disabled", false);
         $(domId + '-4ltr-button').button("option", "disabled", !isRunning);
-        $(domId + '-log-button').button("option", "disabled", !isRunning);
+        $(domId + '-log-button').button("option", "disabled", false);
 
         $(domId + '-power-button').button("option", "label", data.response.switches.restarts ? "Restart..." : "Stop...");
 
