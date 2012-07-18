@@ -19,7 +19,6 @@ package com.netflix.exhibitor.core.controlpanel;
 public enum ControlPanelTypes
 {
     RESTARTS,
-    UNLISTED_RESTARTS,
     CLEANUP,
     BACKUPS
     ;

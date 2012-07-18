@@ -22,7 +22,6 @@ public enum InstanceStateTypes
     DOWN(1),
     NOT_SERVING(2),
     SERVING(3),
-    UNLISTED_DOWN(4),
     NO_RESTARTS_DOWN(5)
     ;
 

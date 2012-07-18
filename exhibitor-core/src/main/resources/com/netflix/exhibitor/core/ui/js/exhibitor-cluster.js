@@ -83,7 +83,6 @@ function internalBuildServerItems(serversList)
 
         makeLightSwitch(domId + '-instance-restarts-enabled', null, true);
         makeLightSwitch(domId + '-cleanup-enabled', null, true);
-        makeLightSwitch(domId + '-unlisted-restarts', null, true);
         makeLightSwitch(domId + '-backups-enabled', null, true);
         if ( systemState.backupActive )
         {
@@ -203,12 +202,10 @@ function updateOneServerState(index, data, hostname)
 
         ableLightSwitch(domId + '-instance-restarts-enabled', handleSwitch(hostname, "restarts"));
         ableLightSwitch(domId + '-cleanup-enabled', handleSwitch(hostname, "cleanup"));
-        ableLightSwitch(domId + '-unlisted-restarts', handleSwitch(hostname, "unlistedRestarts"));
         ableLightSwitch(domId + '-backups-enabled', handleSwitch(hostname, "backups"));
 
         checkLightSwitch(domId + '-instance-restarts-enabled', data.response.switches.restarts);
         checkLightSwitch(domId + '-cleanup-enabled', data.response.switches.cleanup);
-        checkLightSwitch(domId + '-unlisted-restarts', data.response.switches.unlistedRestarts);
         checkLightSwitch(domId + '-backups-enabled', data.response.switches.backups);
 
         statusMessage = data.response.description;
@@ -250,7 +247,6 @@ function updateOneServerState(index, data, hostname)
 
         ableLightSwitch(domId + '-instance-restarts-enabled', null, false);
         ableLightSwitch(domId + '-cleanup-enabled', null, false);
-        ableLightSwitch(domId + '-unlisted-restarts', null, false);
         ableLightSwitch(domId + '-backups-enabled', null, false);
 
         statusColor = "#F00";

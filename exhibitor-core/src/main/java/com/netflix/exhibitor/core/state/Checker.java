@@ -58,13 +58,6 @@ public class Checker
                 potentialState = InstanceStateTypes.NO_RESTARTS_DOWN;
             }
         }
-        else
-        {
-            if ( !exhibitor.getControlPanelValues().isSet(ControlPanelTypes.UNLISTED_RESTARTS) )
-            {
-                potentialState = InstanceStateTypes.UNLISTED_DOWN;
-            }
-        }
 
         InstanceStateTypes      actualState = potentialState;
         String                  ruok = new FourLetterWord(FourLetterWord.Word.RUOK, hostname, config, exhibitor.getConnectionTimeOutMs()).getResponse();
