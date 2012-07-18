@@ -137,6 +137,7 @@ function stopStartDialog(hostname)
 
 function logDialog(hostname)
 {
+    $('#log-text').text("Loading...");
     return function() {
         makeRemoteCall(URL_CLUSTER_LOG_BASE, hostname, function(text){
             $('#log-text').text(text);
@@ -148,6 +149,7 @@ function logDialog(hostname)
 
 function word4ltrDialog(hostname)
 {
+    $('#word-4ltr-text').text("Loading...");
     return function() {
         $('#word-4ltr-button').click(function(){
             makeRemoteCall(URL_CLUSTER_4LTR_BASE + $('#word-4ltr').val() + "/", hostname, function(text){

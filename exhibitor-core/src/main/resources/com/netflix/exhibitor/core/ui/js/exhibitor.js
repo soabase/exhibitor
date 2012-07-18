@@ -519,6 +519,7 @@ function checkConfigConfirmation()
         || (newConfig.electionPort != systemConfig.electionPort)
         || (newConfig.javaEnvironment != systemConfig.javaEnvironment)
         || (newConfig.log4jProperties != systemConfig.log4jProperties)
+        || (JSON.stringify(newConfig.zooCfgExtra) != JSON.stringify(systemConfig.zooCfgExtra))
     ;
 
     if ( !hasEnsembleLevelChange )
