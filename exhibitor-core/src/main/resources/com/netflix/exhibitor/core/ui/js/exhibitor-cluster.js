@@ -6,8 +6,6 @@ var STATE_LATENT = 0;
 var STATE_DOWN = 1;
 var STATE_NOT_SERVING = 2;
 var STATE_SERVING = 3;
-var STATE_DOWN_BECAUSE_UNLISTED = 4;
-var STATE_DOWN_BECAUSE_RESTARTS_TURNED_OFF = 5;
 
 function makeServersList()
 {
@@ -225,8 +223,6 @@ function updateOneServerState(index, data, hostname)
             }
 
             case STATE_NOT_SERVING:
-            case STATE_DOWN_BECAUSE_UNLISTED:
-            case STATE_DOWN_BECAUSE_RESTARTS_TURNED_OFF:
             {
                 statusColor = "#FF0";
                 break;
