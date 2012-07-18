@@ -1,11 +1,11 @@
-1.2.3 - xxxxxxxxxxxxx
+1.2.3 - July 18, 2012
 =====================
 * Fixed some edge cases in pseudo lock that might leave lock files around
 
 * File-based pseudo lock wasn't ignoring non-lock files
 
 * Reworked backup indexing. There's not much value in having to choose which backup to index
-so now all backups as well as the active logs are indexed.
+so now all backups as well as the active logs are indexed. Also fixed some bugs in the UI.
 
 * When the auto-manage instances state changes, clear the heartbeat. This avoids an edge case where
 an instance will get cleaned immediately.
