@@ -31,6 +31,7 @@ public class ExhibitorArguments
     final int           restPort;
     final String        restPath;
     final String        restScheme;
+    final Runnable      shutdownProc;
 
     public static class Builder
     {
@@ -42,7 +43,7 @@ public class ExhibitorArguments
          */
         public Builder connectionTimeOutMs(int connectionTimeOutMs)
         {
-            arguments = new ExhibitorArguments(connectionTimeOutMs, arguments.logWindowSizeLines, arguments.configCheckMs, arguments.extraHeadingText, arguments.thisJVMHostname, arguments.allowNodeMutations, arguments.jQueryStyle, arguments.restPort, arguments.restPath, arguments.restScheme);
+            arguments = new ExhibitorArguments(connectionTimeOutMs, arguments.logWindowSizeLines, arguments.configCheckMs, arguments.extraHeadingText, arguments.thisJVMHostname, arguments.allowNodeMutations, arguments.jQueryStyle, arguments.restPort, arguments.restPath, arguments.restScheme, arguments.shutdownProc);
             return this;
         }
 
@@ -52,7 +53,7 @@ public class ExhibitorArguments
          */
         public Builder logWindowSizeLines(int logWindowSizeLines)
         {
-            arguments = new ExhibitorArguments(arguments.connectionTimeOutMs, logWindowSizeLines, arguments.configCheckMs, arguments.extraHeadingText, arguments.thisJVMHostname, arguments.allowNodeMutations, arguments.jQueryStyle, arguments.restPort, arguments.restPath, arguments.restScheme);
+            arguments = new ExhibitorArguments(arguments.connectionTimeOutMs, logWindowSizeLines, arguments.configCheckMs, arguments.extraHeadingText, arguments.thisJVMHostname, arguments.allowNodeMutations, arguments.jQueryStyle, arguments.restPort, arguments.restPath, arguments.restScheme, arguments.shutdownProc);
             return this;
         }
 
@@ -62,7 +63,7 @@ public class ExhibitorArguments
          */
         public Builder configCheckMs(int configCheckMs)
         {
-            arguments = new ExhibitorArguments(arguments.connectionTimeOutMs, arguments.logWindowSizeLines, configCheckMs, arguments.extraHeadingText, arguments.thisJVMHostname, arguments.allowNodeMutations, arguments.jQueryStyle, arguments.restPort, arguments.restPath, arguments.restScheme);
+            arguments = new ExhibitorArguments(arguments.connectionTimeOutMs, arguments.logWindowSizeLines, configCheckMs, arguments.extraHeadingText, arguments.thisJVMHostname, arguments.allowNodeMutations, arguments.jQueryStyle, arguments.restPort, arguments.restPath, arguments.restScheme, arguments.shutdownProc);
             return this;
         }
 
@@ -72,7 +73,7 @@ public class ExhibitorArguments
          */
         public Builder extraHeadingText(String extraHeadingText)
         {
-            arguments = new ExhibitorArguments(arguments.connectionTimeOutMs, arguments.logWindowSizeLines, arguments.configCheckMs, extraHeadingText, arguments.thisJVMHostname, arguments.allowNodeMutations, arguments.jQueryStyle, arguments.restPort, arguments.restPath, arguments.restScheme);
+            arguments = new ExhibitorArguments(arguments.connectionTimeOutMs, arguments.logWindowSizeLines, arguments.configCheckMs, extraHeadingText, arguments.thisJVMHostname, arguments.allowNodeMutations, arguments.jQueryStyle, arguments.restPort, arguments.restPath, arguments.restScheme, arguments.shutdownProc);
             return this;
         }
 
@@ -82,7 +83,7 @@ public class ExhibitorArguments
          */
         public Builder thisJVMHostname(String thisJVMHostname)
         {
-            arguments = new ExhibitorArguments(arguments.connectionTimeOutMs, arguments.logWindowSizeLines, arguments.configCheckMs, arguments.extraHeadingText, thisJVMHostname, arguments.allowNodeMutations, arguments.jQueryStyle, arguments.restPort, arguments.restPath, arguments.restScheme);
+            arguments = new ExhibitorArguments(arguments.connectionTimeOutMs, arguments.logWindowSizeLines, arguments.configCheckMs, arguments.extraHeadingText, thisJVMHostname, arguments.allowNodeMutations, arguments.jQueryStyle, arguments.restPort, arguments.restPath, arguments.restScheme, arguments.shutdownProc);
             return this;
         }
 
@@ -92,7 +93,7 @@ public class ExhibitorArguments
          */
         public Builder allowNodeMutations(boolean allowNodeMutations)
         {
-            arguments = new ExhibitorArguments(arguments.connectionTimeOutMs, arguments.logWindowSizeLines, arguments.configCheckMs, arguments.extraHeadingText, arguments.thisJVMHostname, allowNodeMutations, arguments.jQueryStyle, arguments.restPort, arguments.restPath, arguments.restScheme);
+            arguments = new ExhibitorArguments(arguments.connectionTimeOutMs, arguments.logWindowSizeLines, arguments.configCheckMs, arguments.extraHeadingText, arguments.thisJVMHostname, allowNodeMutations, arguments.jQueryStyle, arguments.restPort, arguments.restPath, arguments.restScheme, arguments.shutdownProc);
             return this;
         }
 
@@ -102,7 +103,7 @@ public class ExhibitorArguments
          */
         public Builder jQueryStyle(JQueryStyle jQueryStyle)
         {
-            arguments = new ExhibitorArguments(arguments.connectionTimeOutMs, arguments.logWindowSizeLines, arguments.configCheckMs, arguments.extraHeadingText, arguments.thisJVMHostname, arguments.allowNodeMutations, jQueryStyle, arguments.restPort, arguments.restPath, arguments.restScheme);
+            arguments = new ExhibitorArguments(arguments.connectionTimeOutMs, arguments.logWindowSizeLines, arguments.configCheckMs, arguments.extraHeadingText, arguments.thisJVMHostname, arguments.allowNodeMutations, jQueryStyle, arguments.restPort, arguments.restPath, arguments.restScheme, arguments.shutdownProc);
             return this;
         }
 
@@ -112,7 +113,7 @@ public class ExhibitorArguments
          */
         public Builder restPort(int restPort)
         {
-            arguments = new ExhibitorArguments(arguments.connectionTimeOutMs, arguments.logWindowSizeLines, arguments.configCheckMs, arguments.extraHeadingText, arguments.thisJVMHostname, arguments.allowNodeMutations, arguments.jQueryStyle, restPort, arguments.restPath, arguments.restScheme);
+            arguments = new ExhibitorArguments(arguments.connectionTimeOutMs, arguments.logWindowSizeLines, arguments.configCheckMs, arguments.extraHeadingText, arguments.thisJVMHostname, arguments.allowNodeMutations, arguments.jQueryStyle, restPort, arguments.restPath, arguments.restScheme, arguments.shutdownProc);
             return this;
         }
 
@@ -122,7 +123,7 @@ public class ExhibitorArguments
          */
         public Builder restPath(String restPath)
         {
-            arguments = new ExhibitorArguments(arguments.connectionTimeOutMs, arguments.logWindowSizeLines, arguments.configCheckMs, arguments.extraHeadingText, arguments.thisJVMHostname, arguments.allowNodeMutations, arguments.jQueryStyle, arguments.restPort, restPath, arguments.restScheme);
+            arguments = new ExhibitorArguments(arguments.connectionTimeOutMs, arguments.logWindowSizeLines, arguments.configCheckMs, arguments.extraHeadingText, arguments.thisJVMHostname, arguments.allowNodeMutations, arguments.jQueryStyle, arguments.restPort, restPath, arguments.restScheme, arguments.shutdownProc);
             return this;
         }
 
@@ -132,7 +133,17 @@ public class ExhibitorArguments
          */
         public Builder restScheme(String restScheme)
         {
-            arguments = new ExhibitorArguments(arguments.connectionTimeOutMs, arguments.logWindowSizeLines, arguments.configCheckMs, arguments.extraHeadingText, arguments.thisJVMHostname, arguments.allowNodeMutations, arguments.jQueryStyle, arguments.restPort, arguments.restPath, restScheme);
+            arguments = new ExhibitorArguments(arguments.connectionTimeOutMs, arguments.logWindowSizeLines, arguments.configCheckMs, arguments.extraHeadingText, arguments.thisJVMHostname, arguments.allowNodeMutations, arguments.jQueryStyle, arguments.restPort, arguments.restPath, restScheme, arguments.shutdownProc);
+            return this;
+        }
+
+        /**
+         * @param shutdownProc functor used to shutdown the Exhibitor service
+         * @return this
+         */
+        public Builder shutdownProc(Runnable shutdownProc)
+        {
+            arguments = new ExhibitorArguments(arguments.connectionTimeOutMs, arguments.logWindowSizeLines, arguments.configCheckMs, arguments.extraHeadingText, arguments.thisJVMHostname, arguments.allowNodeMutations, arguments.jQueryStyle, arguments.restPort, arguments.restPath, arguments.restScheme, shutdownProc);
             return this;
         }
 
@@ -160,10 +171,10 @@ public class ExhibitorArguments
 
     private ExhibitorArguments()
     {
-        this(30000, 1000, 5000, null, null, false, JQueryStyle.RED, 0, "/", "http");
+        this(30000, 1000, 5000, null, null, false, JQueryStyle.RED, 0, "/", "http", null);
     }
 
-    public ExhibitorArguments(int connectionTimeOutMs, int logWindowSizeLines, int configCheckMs, String extraHeadingText, String thisJVMHostname, boolean allowNodeMutations, JQueryStyle jQueryStyle, int restPort, String restPath, String restScheme)
+    public ExhibitorArguments(int connectionTimeOutMs, int logWindowSizeLines, int configCheckMs, String extraHeadingText, String thisJVMHostname, boolean allowNodeMutations, JQueryStyle jQueryStyle, int restPort, String restPath, String restScheme, Runnable shutdownProc)
     {
         this.connectionTimeOutMs = connectionTimeOutMs;
         this.logWindowSizeLines = logWindowSizeLines;
@@ -175,5 +186,6 @@ public class ExhibitorArguments
         this.restPort = restPort;
         this.restPath = restPath;
         this.restScheme = restScheme;
+        this.shutdownProc = shutdownProc;
     }
 }

@@ -65,7 +65,7 @@ public class Exhibitor implements Closeable
     private final ControlPanelValues        controlPanelValues;
     private final BackupManager             backupManager;
     private final ConfigManager             configManager;
-    private final ExhibitorArguments arguments;
+    private final ExhibitorArguments        arguments;
     private final ProcessMonitor            processMonitor;
     private final RepeatingActivity         autoInstanceManagement;
     private final ManifestVersion           manifestVersion = new ManifestVersion();
@@ -318,6 +318,11 @@ public class Exhibitor implements Closeable
     public String getRestScheme()
     {
         return arguments.restScheme;
+    }
+
+    public Runnable getShutdownProc()
+    {
+        return arguments.shutdownProc;
     }
 
     public RemoteInstanceRequestClient getRemoteInstanceRequestClient()
