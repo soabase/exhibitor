@@ -1,3 +1,8 @@
+1.2.4 - xxxxxxxxxxxxx
+=====================
+* Support shutting down. The Standalone version now sets a shutdown hook. There is also a REST
+API for shutting down. Core-only users must set the shutdownProc in the ExhibitorArguments.
+
 1.2.3 - July 18, 2012
 =====================
 * Fixed some edge cases in pseudo lock that might leave lock files around
