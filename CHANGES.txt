@@ -1,4 +1,4 @@
-1.2.4 - xxxxxxxxxxxxx
+1.2.4 - July 31, 2012
 =====================
 * Support shutting down. The Standalone version now sets a shutdown hook. There is also a REST
 API for shutting down. Core-only users must set the shutdownProc in the ExhibitorArguments.
