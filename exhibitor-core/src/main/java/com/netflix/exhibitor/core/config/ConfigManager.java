@@ -171,6 +171,10 @@ public class ConfigManager implements Closeable
                         {
                             advanceRollingConfig(localConfig);
                         }
+                        else
+                        {
+                            exhibitor.getLog().add(ActivityLog.Type.INFO, "Waiting for instance sync before advancing rolling config. Attempt " + waitingForQuorumAttempts.get() + " of " + maxAttempts);
+                        }
                     }
                 }
             }
