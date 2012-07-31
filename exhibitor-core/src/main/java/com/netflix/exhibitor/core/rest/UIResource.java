@@ -199,7 +199,7 @@ public class UIResource
 
     static String getLog(UIContext context)
     {
-        List<String> log = context.getExhibitor().getLog().toDisplayList("\t");
+        List<String> log = context.getExhibitor().getLog().toDisplayList("\t", context.getExhibitor().getLogDirection());
         StringBuilder str = new StringBuilder();
         for ( String s : log )
         {

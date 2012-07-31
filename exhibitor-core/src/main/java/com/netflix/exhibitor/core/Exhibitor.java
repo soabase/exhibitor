@@ -330,6 +330,11 @@ public class Exhibitor implements Closeable
         return ClusterResource.getRemoteInstanceRequestClient();
     }
 
+    public ExhibitorArguments.LogDirection getLogDirection()
+    {
+        return arguments.logDirection;
+    }
+
     private synchronized void closeLocalConnection()
     {
         Closeables.closeQuietly(localConnection);
