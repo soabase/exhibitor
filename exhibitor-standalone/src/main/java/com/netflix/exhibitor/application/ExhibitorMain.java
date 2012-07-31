@@ -170,16 +170,16 @@ public class ExhibitorMain implements Closeable
         String      extraHeadingText = commandLine.getOptionValue(EXTRA_HEADING_TEXT, null);
         boolean     allowNodeMutations = "true".equalsIgnoreCase(commandLine.getOptionValue(NODE_MUTATIONS));
 
-        ConfigProvider      provider;
+        ConfigProvider      configProvider;
         if ( commandLine.hasOption(S3_CONFIG) )
         {
-            provider = getS3Provider(options, commandLine, awsCredentials, useHostname);
+            configProvider = getS3Provider(options, commandLine, awsCredentials, useHostname);
         }
         else
         {
-            provider = getFileSystemProvider(commandLine, backupProvider);
+            configProvider = getFileSystemProvider(commandLine, backupProvider);
         }
-        if ( provider == null )
+        if ( configProvider == null )
         {
             printHelp(options);
             return;
@@ -207,7 +207,7 @@ public class ExhibitorMain implements Closeable
             .restPort(httpPort)
         ;
 
-        ExhibitorMain exhibitorMain = new ExhibitorMain(backupProvider, provider, builder, httpPort);
+        ExhibitorMain exhibitorMain = new ExhibitorMain(backupProvider, configProvider, builder, httpPort);
         setShutdown(exhibitorMain);
 
         exhibitorMain.start();
