@@ -1,3 +1,7 @@
+1.2.5 - August 2, 2012
+======================
+* Various dependency version changes needed for internal Netflix compatibility.
+
 1.2.4 - July 31, 2012
 =====================
 * Support shutting down. The Standalone version now sets a shutdown hook. There is also a REST
