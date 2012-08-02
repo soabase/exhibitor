@@ -15,6 +15,13 @@ be 2 * max of tickTime * initLimit or syncLimit.
 
 * Issue 38: Include HTTP 403 in the AWS status codes that indicate an S3 object is not found.
 
+* Pull 45 from user cblack: If credentials are supplied, use them. Otherwise the AWS SDK will attempt
+to resolve credentials in the following order:
+
+Environment Variables - AWS_ACCESS_KEY_ID and AWS_SECRET_KEY
+Java System Properties - aws.accessKeyId and aws.secretKey
+Instance Profile Credentials - delivered through the Amazon EC2 metadata service.
+
 1.2.3 - July 18, 2012
 =====================
 * Fixed some edge cases in pseudo lock that might leave lock files around
