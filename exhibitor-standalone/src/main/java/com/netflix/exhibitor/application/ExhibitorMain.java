@@ -96,11 +96,11 @@ public class ExhibitorMain implements Closeable
     private static final String DEFAULT_FILESYSTEMCONFIG_PREFIX = "exhibitor-";
     private static final String DEFAULT_FILESYSTEMCONFIG_LOCK_PREFIX = "exhibitor-lock-";
 
-    public static final String BASIC_AUTH_REALM = "basicauthrealm";
-    public static final String CONSOLE_USER = "consoleuser";
-    public static final String CURATOR_USER = "curatoruser";
-    public static final String CONSOLE_PASSWORD = "consolepassword";
-    public static final String CURATOR_PASSWORD = "curatorpassword";
+    private static final String BASIC_AUTH_REALM = "basicauthrealm";
+    private static final String CONSOLE_USER = "consoleuser";
+    private static final String CURATOR_USER = "curatoruser";
+    private static final String CONSOLE_PASSWORD = "consolepassword";
+    private static final String CURATOR_PASSWORD = "curatorpassword";
 
     public static void main(String[] args) throws Exception
     {
