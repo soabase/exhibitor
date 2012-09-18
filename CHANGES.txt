@@ -2,6 +2,8 @@
 ======================
 * When shutting down ZooKeeper, attempt a simple kill first before trying kill -9.
 
+* Issue 51: Include log4j in standalone version
+
 1.2.5 - August 2, 2012
 ======================
 * Various dependency version changes needed for internal Netflix compatibility.
