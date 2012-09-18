@@ -7,7 +7,8 @@
 * Reworked how CLI options are displayed in the standalone version. There are so many now it was
 getting confusing.
 
-* Issue 55: Added a way to specify the ACL in the standalone version.
+* Issue 55: Added a way to specify the ACL in the standalone version. Run with "--help" to see
+the how to set the options.
 
 1.2.5 - August 2, 2012
 ======================
