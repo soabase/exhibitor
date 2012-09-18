@@ -38,6 +38,7 @@ public class ExhibitorCLI
     private final Options backupOptions;
     private final Options s3Options;
     private final Options generalOptions;
+    private final Options aclOptions;
 
     public static final String FILESYSTEMCONFIG_DIRECTORY = "fsconfigdir";
     public static final String FILESYSTEMCONFIG_NAME = "fsconfigname";
@@ -63,6 +64,9 @@ public class ExhibitorCLI
     public static final String CURATOR_USER = "curatoruser";
     public static final String CONSOLE_PASSWORD = "consolepassword";
     public static final String CURATOR_PASSWORD = "curatorpassword";
+    public static final String ACL_SCHEME = "aclscheme";
+    public static final String ACL_ID = "aclid";
+    public static final String ACL_PERMISSIONS = "aclperms";
 
     public static final String DEFAULT_FILESYSTEMCONFIG_NAME = "exhibitor.properties";
     public static final String DEFAULT_FILESYSTEMCONFIG_PREFIX = "exhibitor-";
@@ -105,12 +109,18 @@ public class ExhibitorCLI
         generalOptions.addOption(null, JQUERY_STYLE, true, "Styling used for the JQuery-based UI. Currently available options: " + getStyleOptions());
         generalOptions.addOption(ALT_HELP, HELP, false, "Print this help");
 
+        aclOptions = new Options();
+        aclOptions.addOption(null, ACL_ID, true, "Enable ACL for Exhibitor's internal ZooKeeper connection. This sets the ACL's ID.");
+        aclOptions.addOption(null, ACL_SCHEME, true, "Enable ACL for Exhibitor's internal ZooKeeper connection. This sets the ACL's Scheme.");
+        aclOptions.addOption(null, ACL_PERMISSIONS, true, "Enable ACL for Exhibitor's internal ZooKeeper connection. This sets the ACL's Permissions - a comma list of possible permissions. If this isn't specified the permission is set to ALL. Values: read, write, create, delete, admin");
+
         options = new Options();
         addAll(authOptions);
         addAll(configOptions);
         addAll(backupOptions);
         addAll(s3Options);
         addAll(generalOptions);
+        addAll(aclOptions);
     }
 
     public Options getOptions()
@@ -144,6 +154,7 @@ public class ExhibitorCLI
         formatter.printHelp(" ", "== Configuration Options ==", configOptions, null);
         formatter.printHelp(" ", "== Backup Options ==", backupOptions, null);
         formatter.printHelp(" ", "== Authorization Options ==", authOptions, null);
+        formatter.printHelp(" ", "== ACL Options ==", aclOptions, null);
         System.exit(0);
     }
 

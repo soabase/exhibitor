@@ -4,6 +4,11 @@
 
 * Issue 51: Include log4j in standalone version
 
+* Reworked how CLI options are displayed in the standalone version. There are so many now it was
+getting confusing.
+
+* Issue 55: Added a way to specify the ACL in the standalone version.
+
 1.2.5 - August 2, 2012
 ======================
 * Various dependency version changes needed for internal Netflix compatibility.

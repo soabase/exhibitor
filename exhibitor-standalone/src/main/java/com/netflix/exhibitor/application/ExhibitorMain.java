@@ -19,6 +19,7 @@
 package com.netflix.exhibitor.application;
 
 import com.google.common.io.Closeables;
+import com.netflix.curator.framework.api.ACLProvider;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.ExhibitorArguments;
 import com.netflix.exhibitor.core.backup.BackupProvider;
@@ -42,6 +43,9 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
+import org.apache.zookeeper.ZooDefs;
+import org.apache.zookeeper.data.ACL;
+import org.apache.zookeeper.data.Id;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.security.BasicAuthenticator;
 import org.mortbay.jetty.security.Constraint;
@@ -56,6 +60,8 @@ import org.slf4j.LoggerFactory;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.netflix.exhibitor.application.ExhibitorCLI.*;
@@ -150,11 +156,23 @@ public class ExhibitorMain implements Closeable
             String password = commandLine.getOptionValue(CONSOLE_PASSWORD);
             String curatorUser = commandLine.getOptionValue(CURATOR_USER);
             String curatorPassword = commandLine.getOptionValue(CURATOR_PASSWORD);
-
             SecurityHandler handler = null;
             if ( notNullOrEmpty(realm) && notNullOrEmpty(user) && notNullOrEmpty(password) && notNullOrEmpty(curatorUser) && notNullOrEmpty(curatorPassword) )
             {
                 handler = getSecurityHandler(realm, user, password, curatorUser, curatorPassword);
+            }
+
+            String      aclId = commandLine.getOptionValue(ACL_ID);
+            String      aclScheme = commandLine.getOptionValue(ACL_SCHEME);
+            String      aclPerms = commandLine.getOptionValue(ACL_PERMISSIONS);
+            ACLProvider aclProvider = null;
+            if ( notNullOrEmpty(aclId) || notNullOrEmpty(aclScheme) || notNullOrEmpty(aclPerms) )
+            {
+                aclProvider = getAclProvider(cli, aclId, aclScheme, aclPerms);
+                if ( aclProvider == null )
+                {
+                    return;
+                }
             }
 
             ExhibitorArguments.Builder builder = ExhibitorArguments.builder()
@@ -165,7 +183,8 @@ public class ExhibitorMain implements Closeable
                 .extraHeadingText(extraHeadingText)
                 .allowNodeMutations(allowNodeMutations)
                 .jQueryStyle(jQueryStyle)
-                .restPort(httpPort);
+                .restPort(httpPort)
+                .aclProvider(aclProvider);
 
             ExhibitorMain exhibitorMain = new ExhibitorMain(backupProvider, configProvider, builder, httpPort, handler);
             setShutdown(exhibitorMain);
@@ -180,6 +199,74 @@ public class ExhibitorMain implements Closeable
                 exhibitorMain.close();
             }
         }
+    }
+
+    private static ACLProvider getAclProvider(ExhibitorCLI cli, String aclId, String aclScheme, String aclPerms)
+    {
+        int     perms;
+        if ( notNullOrEmpty(aclPerms) )
+        {
+            perms = 0;
+            for ( String verb : aclPerms.split(",") )
+            {
+                verb = verb.trim();
+                if ( verb.equalsIgnoreCase("read") )
+                {
+                    perms |= ZooDefs.Perms.READ;
+                }
+                else if ( verb.equalsIgnoreCase("write") )
+                {
+                    perms |= ZooDefs.Perms.WRITE;
+                }
+                else if ( verb.equalsIgnoreCase("create") )
+                {
+                    perms |= ZooDefs.Perms.CREATE;
+                }
+                else if ( verb.equalsIgnoreCase("delete") )
+                {
+                    perms |= ZooDefs.Perms.DELETE;
+                }
+                else if ( verb.equalsIgnoreCase("admin") )
+                {
+                    perms |= ZooDefs.Perms.ADMIN;
+                }
+                else
+                {
+                    System.err.println("Unknown ACL perm value: " + verb);
+                    cli.printHelp();
+                    return null;
+                }
+            }
+        }
+        else
+        {
+            perms = ZooDefs.Perms.ALL;
+        }
+
+        if ( aclId == null )
+        {
+            aclId = "";
+        }
+        if ( aclScheme == null )
+        {
+            aclScheme = "";
+        }
+
+        final ACL       acl = new ACL(perms, new Id(aclScheme, aclId));
+        return new ACLProvider()
+        {
+            @Override
+            public List<ACL> getDefaultAcl()
+            {
+                return Collections.singletonList(acl);
+            }
+
+            @Override
+            public List<ACL> getAclForPath(String path)
+            {
+                return Collections.singletonList(acl);
+            }
+        };
     }
 
     private static ConfigProvider getFileSystemProvider(CommandLine commandLine, BackupProvider backupProvider) throws IOException
