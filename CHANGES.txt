@@ -7,6 +7,9 @@
 * Reworked how CLI options are displayed in the standalone version. There are so many now it was
 getting confusing.
 
+* Issue 54: Added a new REST API to the Cluster APIs to get the status/state of the entire cluster.
+See the wiki for details.
+
 * Issue 55: Added a way to specify the ACL in the standalone version. Run with "--help" to see
 the how to set the options.
 
