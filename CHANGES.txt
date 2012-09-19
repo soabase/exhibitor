@@ -11,7 +11,7 @@ getting confusing.
 See the wiki for details.
 
 * Issue 55: Added a way to specify the ACL in the standalone version. Run with "--help" to see
-the how to set the options.
+how to set the options.
 
 1.2.5 - August 2, 2012
 ======================
