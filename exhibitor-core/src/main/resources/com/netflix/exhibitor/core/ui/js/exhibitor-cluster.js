@@ -164,7 +164,7 @@ function word4ltrDialog(hostname)
 
 function makeRemoteCall(baseUrl, hostname, callback)
 {
-    $.getJSON(baseUrl + hostname, function(data){
+    $.getJSON(baseUrl + hostname + '?ts=' + Date.now(), function(data){
         if ( data.success )
         {
             if ( callback )
@@ -275,6 +275,6 @@ function updateServerState(serversList)
                 }
             };
         };
-        $.getJSON(URL_CLUSTER_GET_STATE_BASE + thisHostname, callback(i, thisHostname));
+        $.getJSON(URL_CLUSTER_GET_STATE_BASE + thisHostname + '?ts=' + Date.now(), callback(i, thisHostname));
     }
 }

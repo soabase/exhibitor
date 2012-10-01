@@ -98,7 +98,7 @@ function updateState()
 {
     if ( !hasBackupConfig )
     {
-        $.getJSON(URL_GET_BACKUP_CONFIG, function(data){
+        $.getJSON(URL_GET_BACKUP_CONFIG + '?ts=' + Date.now(), function(data){
             hasBackupConfig = true;
             addBackupExtraConfig(data);
         });
@@ -107,6 +107,7 @@ function updateState()
 
     $.ajax({
         url: URL_GET_STATE,
+        cache: false,
         type: 'GET',
         success: function (data, dummy, jqXHR){
             systemState = data;
@@ -288,6 +289,7 @@ function changeControlPanelConfig(field, selector)
     $.ajax({
         type: 'POST',
         url: URL_SET_CONTROL_PANEL_CONFIG,
+        cache: false,
         data: payload,
         contentType: 'application/json',
         success:function(data)
@@ -318,6 +320,7 @@ function submitConfigChanges(rolling)
     $.ajax({
         type: 'POST',
         url: rolling ? URL_SET_CONFIG_ROLLING : URL_SET_CONFIG,
+        cache: false,
         data: payload,
         contentType: 'application/json',
         success:function(data){
@@ -561,7 +564,7 @@ function checkConfigConfirmation()
 var customTabs = new Array();
 $(function ()
 {
-    $.getJSON(URL_GET_TABS, function (data){
+    $.getJSON(URL_GET_TABS + '?ts=' + Date.now(), function (data){
         var uiTabSpec = $.makeArray(data);
         for ( var i = 0; i < uiTabSpec.length; ++i )
         {
