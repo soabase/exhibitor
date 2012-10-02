@@ -13,6 +13,9 @@ See the wiki for details.
 * Issue 55: Added a way to specify the ACL in the standalone version. Run with "--help" to see
 how to set the options.
 
+* Issue 57: I think this issue is caused by browser caching. I've added cache defeating query
+parameters to all AJAX URLs.
+
 1.2.5 - August 2, 2012
 ======================
 * Various dependency version changes needed for internal Netflix compatibility.
