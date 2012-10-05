@@ -1,6 +1,6 @@
 var BUILTIN_TAB_QTY = 4;
 var AUTO_REFRESH_PERIOD = 5000;
-var UPDATE_STATE_PERIOD = 10000;
+var UPDATE_STATE_PERIOD = 2500;
 
 var URL_GET_BACKUPS = "../index/get-backups";
 var URL_NEW_INDEX = "../index/new-index";
