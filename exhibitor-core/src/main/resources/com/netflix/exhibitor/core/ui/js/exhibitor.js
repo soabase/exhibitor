@@ -13,6 +13,8 @@ var URL_RELEASE_CACHE_INDEX_SEARCH_BASE = "../index/release-cache/";
 
 var URL_CLUSTER_LOG_BASE = "../cluster/log/";
 var URL_CLUSTER_RESTART_BASE = "../cluster/restart/";
+var URL_CLUSTER_START_BASE = "../cluster/start/";
+var URL_CLUSTER_STOP_BASE = "../cluster/stop/";
 var URL_CLUSTER_4LTR_BASE = "../cluster/4ltr/";
 var URL_CLUSTER_SET_CONFIG_BASE = "../cluster/set/";
 var URL_CLUSTER_GET_STATE_BASE = "../cluster/state/";

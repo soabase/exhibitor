@@ -26,6 +26,10 @@ It must be either "file", "s3", "zookeeper" or "none". Configtype "none" is a sp
 to be used for running Exhibitor on the ZooKeeper cluster that is storing config for the main ZooKeeper
 ensemble.
 
+* Issue 63: Restart, Stop, Start buttons on the control panels now better reflect the state of the
+"Automatic Instance Restarts" switch. If the switch is On, the button is "Restart". If the switch is
+Off, the button is "Stop" if the instance is running and "Start" if the instance is not running.
+
 * Issue 61: The "Additional Config" section should retain the order that it was entered instead of
 being alphabetized.
 
