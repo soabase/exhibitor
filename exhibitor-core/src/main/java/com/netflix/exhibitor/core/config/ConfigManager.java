@@ -26,6 +26,7 @@ import com.netflix.exhibitor.core.activity.Activity;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.QueueGroups;
 import com.netflix.exhibitor.core.activity.RepeatingActivity;
+import com.netflix.exhibitor.core.config.none.NoneConfigProvider;
 import com.netflix.exhibitor.core.state.InstanceState;
 import com.netflix.exhibitor.core.state.InstanceStateTypes;
 import com.netflix.exhibitor.core.state.RemoteInstanceRequest;
@@ -128,6 +129,11 @@ public class ConfigManager implements Closeable
     public boolean      isHeartbeatAliveForInstance(String instanceHostname, int deadInstancePeriodMs) throws Exception
     {
         return provider.isHeartbeatAliveForInstance(instanceHostname, deadInstancePeriodMs);
+    }
+
+    public boolean isStandaloneMode()
+    {
+        return provider instanceof NoneConfigProvider;
     }
 
     public enum CancelMode

@@ -79,6 +79,7 @@ public class ConfigResource
         mainNode.put("version", context.getExhibitor().getVersion());
         mainNode.put("running", "imok".equals(response));
         mainNode.put("backupActive", context.getExhibitor().getBackupManager().isActive());
+        mainNode.put("standaloneMode", context.getExhibitor().getConfigManager().isStandaloneMode());
         mainNode.put("extraHeadingText", context.getExhibitor().getExtraHeadingText());
         mainNode.put("nodeMutationsAllowed", context.getExhibitor().nodeMutationsAllowed());
 

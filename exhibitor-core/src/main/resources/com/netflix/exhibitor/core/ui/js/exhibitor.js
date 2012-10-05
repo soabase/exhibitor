@@ -36,6 +36,8 @@ var URL_RESTART = "stop";
 var doConfigUpdates = true;
 var configChangesBeingSubmitted = false;
 
+var backupTabIndex = 3;
+
 function messageDialog(title, message, noIcon)
 {
     if ( noIcon )
@@ -94,6 +96,7 @@ var systemState = {};
 var systemConfig = {};
 var connectedToExhibitor = true;
 var currentVersion = null;
+var backupTabRemoved = false;
 function updateState()
 {
     if ( !hasBackupConfig )
@@ -140,8 +143,22 @@ function updateState()
             }
             else
             {
+                if ( !backupTabRemoved )
+                {
+                    backupTabRemoved = true;
+                    $("#tabs").tabs("remove", backupTabIndex);
+                    backupTabIndex = -1;
+                    --BUILTIN_TAB_QTY;
+                }
                 $('#config-backups-fieldset').hide();
                 $('#backups-enabled-control').hide();
+            }
+
+            if ( systemState.standaloneMode )
+            {
+                $('#standalone-mode-message').show();
+                $('#cp-auto-init-container').hide();
+                $('#fieldset-automatic-instance-management').hide();
             }
 
             if ( systemState.nodeMutationsAllowed )
@@ -442,7 +459,7 @@ function updateConfig()
 function refreshCurrentTab()
 {
     var selected = $("#tabs").tabs("option", "selected");
-    if ( selected == 3 )
+    if ( selected == backupTabIndex )
     {
         var radio = $('input:radio:checked[name="restore-item-radio"]');
         updateRestoreItems(radio.val());
@@ -551,7 +568,14 @@ function checkConfigConfirmation()
 
     if ( hasEnsembleLevelChange )
     {
-        $('#config-commit-dialog').dialog("open");
+        if ( systemState.standaloneMode )
+        {
+            $('#standalone-config-commit-dialog').dialog("open");
+        }
+        else
+        {
+            $('#config-commit-dialog').dialog("open");
+        }
     }
     else
     {
@@ -755,6 +779,25 @@ $(function ()
                     $('#config-commit-dialog').dialog("close");
                     submitConfigChanges(true);
                 });
+            }
+        }
+    );
+
+    $('#standalone-config-commit-dialog').dialog({
+        width: 500,
+        height: 250,
+        modal: true,
+        autoOpen: false,
+        title: "Config Change Warning"
+    });
+    $("#standalone-config-commit-dialog").dialog("option", "buttons", {
+            'Cancel': function (){
+                $(this).dialog("close");
+            },
+
+            'OK': function (){
+                $(this).dialog("close");
+                submitConfigChanges(false);
             }
         }
     );

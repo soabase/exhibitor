@@ -27,7 +27,6 @@ import com.netflix.curator.framework.CuratorFramework;
 import com.netflix.curator.framework.CuratorFrameworkFactory;
 import com.netflix.curator.framework.api.ACLProvider;
 import com.netflix.curator.retry.ExponentialBackoffRetry;
-import com.netflix.curator.utils.ZKPaths;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.ExhibitorArguments;
 import com.netflix.exhibitor.core.backup.BackupProvider;
@@ -38,6 +37,7 @@ import com.netflix.exhibitor.core.config.ConfigProvider;
 import com.netflix.exhibitor.core.config.DefaultProperties;
 import com.netflix.exhibitor.core.config.JQueryStyle;
 import com.netflix.exhibitor.core.config.filesystem.FileSystemConfigProvider;
+import com.netflix.exhibitor.core.config.none.NoneConfigProvider;
 import com.netflix.exhibitor.core.config.s3.S3ConfigArguments;
 import com.netflix.exhibitor.core.config.s3.S3ConfigAutoManageLockArguments;
 import com.netflix.exhibitor.core.config.s3.S3ConfigProvider;
@@ -156,6 +156,11 @@ public class ExhibitorMain implements Closeable
             cli.printHelp();
             return;
         }
+        boolean        isNoneConfigProvider = (configProvider instanceof NoneConfigProvider);
+        if ( isNoneConfigProvider )
+        {
+            backupProvider = null;
+        }
 
         JQueryStyle jQueryStyle;
         try
@@ -237,12 +242,28 @@ public class ExhibitorMain implements Closeable
         {
             configProvider = getZookeeperProvider(commandLine, useHostname);
         }
+        else if ( configType.equals("none") )
+        {
+            System.out.println("Warning: you have intentionally turned off shared configuration. This mode is meant for special purposes only. Please verify that this is your intent.");
+            configProvider = getNoneProvider(commandLine);
+        }
         else
         {
             configProvider = null;
             System.err.println("Unknown configtype: " + configType);
         }
         return configProvider;
+    }
+
+    private static ConfigProvider getNoneProvider(CommandLine commandLine)
+    {
+        if ( !commandLine.hasOption(NONE_CONFIG_DIRECTORY) )
+        {
+            System.err.println(NONE_CONFIG_DIRECTORY + " is required when configtype is \"none\"");
+            return null;
+        }
+
+        return new NoneConfigProvider(commandLine.getOptionValue(NONE_CONFIG_DIRECTORY));
     }
 
     private static ConfigProvider getZookeeperProvider(CommandLine commandLine, String useHostname) throws Exception
@@ -376,10 +397,10 @@ public class ExhibitorMain implements Closeable
 
     private static ConfigProvider getFileSystemProvider(CommandLine commandLine, BackupProvider backupProvider, String hostname) throws IOException
     {
-        File directory = commandLine.hasOption(FILESYSTEMCONFIG_DIRECTORY) ? new File(commandLine.getOptionValue(FILESYSTEMCONFIG_DIRECTORY)) : new File(System.getProperty("user.dir"));
-        String name = commandLine.hasOption(FILESYSTEMCONFIG_NAME) ? commandLine.getOptionValue(FILESYSTEMCONFIG_NAME) : DEFAULT_FILESYSTEMCONFIG_NAME;
-        String prefix = commandLine.hasOption(FILESYSTEMCONFIG_PREFIX) ? commandLine.getOptionValue(FILESYSTEMCONFIG_PREFIX) : DEFAULT_FILESYSTEMCONFIG_PREFIX;
-        String lockPrefix = commandLine.hasOption(FILESYSTEMCONFIG_LOCK_PREFIX) ? commandLine.getOptionValue(FILESYSTEMCONFIG_LOCK_PREFIX) : DEFAULT_FILESYSTEMCONFIG_LOCK_PREFIX;
+        File directory = commandLine.hasOption(FILESYSTEM_CONFIG_DIRECTORY) ? new File(commandLine.getOptionValue(FILESYSTEM_CONFIG_DIRECTORY)) : new File(System.getProperty("user.dir"));
+        String name = commandLine.hasOption(FILESYSTEM_CONFIG_NAME) ? commandLine.getOptionValue(FILESYSTEM_CONFIG_NAME) : DEFAULT_FILESYSTEMCONFIG_NAME;
+        String prefix = commandLine.hasOption(FILESYSTEM_CONFIG_PREFIX) ? commandLine.getOptionValue(FILESYSTEM_CONFIG_PREFIX) : DEFAULT_FILESYSTEMCONFIG_PREFIX;
+        String lockPrefix = commandLine.hasOption(FILESYSTEM_CONFIG_LOCK_PREFIX) ? commandLine.getOptionValue(FILESYSTEM_CONFIG_LOCK_PREFIX) : DEFAULT_FILESYSTEMCONFIG_LOCK_PREFIX;
         return new FileSystemConfigProvider(directory, name, prefix, DefaultProperties.get(backupProvider), new AutoManageLockArguments(lockPrefix), hostname);
     }
 
