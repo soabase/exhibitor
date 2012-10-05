@@ -21,7 +21,7 @@ as a datastore for Exhibitor's shared config. You can run Exhibitor on the share
 but it will need to be run without shared config. Please see the Github wiki for details.
 
 * The change for Issue 58 involved more CLI options for config. For clarity, I've broken the config
-options into groups - a group for each type. A new required CLI option has been added: "configtype".
+options into groups - a group for each type. A new *required* CLI option has been added: "configtype".
 It must be either "file", "s3", "zookeeper" or "none". Configtype "none" is a special purpose type
 to be used for running Exhibitor on the ZooKeeper cluster that is storing config for the main ZooKeeper
 ensemble.
