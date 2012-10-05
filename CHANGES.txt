@@ -26,6 +26,9 @@ It must be either "file", "s3", "zookeeper" or "none". Configtype "none" is a sp
 to be used for running Exhibitor on the ZooKeeper cluster that is storing config for the main ZooKeeper
 ensemble.
 
+* Issue 61: The "Additional Config" section should retain the order that it was entered instead of
+being alphabetized.
+
 1.2.5 - August 2, 2012
 ======================
 * Various dependency version changes needed for internal Netflix compatibility.
