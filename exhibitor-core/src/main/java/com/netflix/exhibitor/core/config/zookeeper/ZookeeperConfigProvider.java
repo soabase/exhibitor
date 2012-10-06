@@ -235,6 +235,12 @@ public class ZookeeperConfigProvider implements ConfigProvider
         return new ZookeeperPseudoLock(lock);
     }
 
+    @VisibleForTesting
+    PathChildrenCache getPathChildrenCache()
+    {
+        return cache;
+    }
+
     private ChildData getConfigNode()
     {
         return Iterables.find
