@@ -63,10 +63,7 @@ public class AutomaticInstanceManagement implements Activity
             {
                 if ( lock.lock(Exhibitor.AUTO_INSTANCE_MANAGEMENT_PERIOD_MS / 2, TimeUnit.MILLISECONDS) )
                 {
-                    if ( !exhibitor.getConfigManager().isRolling() )
-                    {
-                        doWork();
-                    }
+                    doWork();
                 }
             }
             finally
@@ -126,6 +123,12 @@ public class AutomaticInstanceManagement implements Activity
 
         if ( removals.size() > 0 )
         {
+            if ( exhibitor.getConfigManager().isRolling() )
+            {
+                exhibitor.getLog().add(ActivityLog.Type.INFO, "Temporarily skipping removing stale instance(s) because there is a rolling config in progress");
+                return;
+            }
+
             List<String>    transformed = Lists.transform
             (
                 newSpecList,
@@ -146,6 +149,12 @@ public class AutomaticInstanceManagement implements Activity
 
     private void addUsIn(UsState usState) throws Exception
     {
+        if ( exhibitor.getConfigManager().isRolling() )
+        {
+            exhibitor.getLog().add(ActivityLog.Type.INFO, "Temporarily skipping adding this instance because there is a rolling config in progress");
+            return;
+        }
+
         int         maxServerId = 0;
         for ( ServerSpec spec : usState.getServerList().getSpecs() )
         {
