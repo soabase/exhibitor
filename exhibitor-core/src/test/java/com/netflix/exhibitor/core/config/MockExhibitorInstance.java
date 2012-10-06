@@ -106,7 +106,7 @@ class MockExhibitorInstance implements Closeable
             }
 
             @Override
-            public LoadedInstanceConfig storeConfig(ConfigCollection config, long compareLastModified) throws Exception
+            public LoadedInstanceConfig storeConfig(ConfigCollection config, long compareVersion) throws Exception
             {
                 this.config = config;
                 modified.incrementAndGet();

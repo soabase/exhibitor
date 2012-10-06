@@ -179,14 +179,14 @@ public class S3ConfigProvider implements ConfigProvider
     }
 
     @Override
-    public LoadedInstanceConfig storeConfig(ConfigCollection config, long compareLastModified) throws Exception
+    public LoadedInstanceConfig storeConfig(ConfigCollection config, long compareVersion) throws Exception
     {
         {
             ObjectMetadata                  metadata = getConfigMetadata();
             if ( metadata != null )
             {
                 Date                            lastModified = metadata.getLastModified();
-                if ( lastModified.getTime() != compareLastModified )
+                if ( lastModified.getTime() != compareVersion )
                 {
                     return null;    // apparently there's no atomic way to do this with S3 so this will have to do
                 }

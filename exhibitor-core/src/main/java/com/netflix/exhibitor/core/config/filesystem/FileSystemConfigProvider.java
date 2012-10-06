@@ -145,7 +145,7 @@ public class FileSystemConfigProvider implements ConfigProvider
     }
 
     @Override
-    public LoadedInstanceConfig storeConfig(ConfigCollection config, long compareLastModified) throws Exception
+    public LoadedInstanceConfig storeConfig(ConfigCollection config, long compareVersion) throws Exception
     {
         File                            propertiesFile = new File(propertiesDirectory, propertyFileName);
         PropertyBasedInstanceConfig     propertyBasedInstanceConfig = new PropertyBasedInstanceConfig(config);

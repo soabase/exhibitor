@@ -39,12 +39,12 @@ public interface ConfigProvider extends Closeable
      * Store the config
      *
      * @param config config
-     * @param compareLastModified modified value to compare with. If the config storage doesn't
+     * @param compareVersion modified value to compare with. If the config storage doesn't
      *                            match, the new config is not stored and null is returned
      * @throws Exception errors
      * @return return updated loaded values or null
      */
-    public LoadedInstanceConfig storeConfig(ConfigCollection config, long compareLastModified) throws Exception;
+    public LoadedInstanceConfig storeConfig(ConfigCollection config, long compareVersion) throws Exception;
 
     /**
      * To track live vs dead instances, a heartbeat is periodically written for instances. The provider

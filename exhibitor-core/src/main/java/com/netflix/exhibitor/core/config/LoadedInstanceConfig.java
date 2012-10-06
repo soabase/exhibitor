@@ -19,12 +19,12 @@ package com.netflix.exhibitor.core.config;
 public class LoadedInstanceConfig
 {
     private final ConfigCollection      config;
-    private final long                  lastModified;
+    private final long                  version;
 
-    public LoadedInstanceConfig(ConfigCollection config, long lastModified)
+    public LoadedInstanceConfig(ConfigCollection config, long version)
     {
         this.config = config;
-        this.lastModified = lastModified;
+        this.version = version;
     }
 
     public ConfigCollection getConfig()
@@ -32,8 +32,8 @@ public class LoadedInstanceConfig
         return config;
     }
 
-    public long getLastModified()
+    public long getVersion()
     {
-        return lastModified;
+        return version;
     }
 }

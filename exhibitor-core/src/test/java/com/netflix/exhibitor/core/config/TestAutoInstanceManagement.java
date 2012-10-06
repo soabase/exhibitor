@@ -78,7 +78,7 @@ public class TestAutoInstanceManagement
                 }
 
                 @Override
-                public LoadedInstanceConfig storeConfig(ConfigCollection config, long compareLastModified) throws Exception
+                public LoadedInstanceConfig storeConfig(ConfigCollection config, long compareVersion) throws Exception
                 {
                     loadedInstanceConfig = new LoadedInstanceConfig(config, 0);
                     return loadedInstanceConfig;
@@ -219,7 +219,7 @@ public class TestAutoInstanceManagement
                 }
 
                 @Override
-                public LoadedInstanceConfig storeConfig(ConfigCollection config, long compareLastModified) throws Exception
+                public LoadedInstanceConfig storeConfig(ConfigCollection config, long compareVersion) throws Exception
                 {
                     return new LoadedInstanceConfig(config, 0);
                 }
@@ -295,7 +295,7 @@ public class TestAutoInstanceManagement
                 }
 
                 @Override
-                public LoadedInstanceConfig storeConfig(ConfigCollection config, long compareLastModified) throws Exception
+                public LoadedInstanceConfig storeConfig(ConfigCollection config, long compareVersion) throws Exception
                 {
                     queue.put(config.getRollingConfig().getString(StringConfigs.SERVERS_SPEC));
                     return new LoadedInstanceConfig(config, 0);

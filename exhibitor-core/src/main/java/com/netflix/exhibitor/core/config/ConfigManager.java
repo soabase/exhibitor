@@ -330,7 +330,7 @@ public class ConfigManager implements Closeable
 
     private boolean internalUpdateConfig(ConfigCollection newCollection) throws Exception
     {
-        LoadedInstanceConfig updated = provider.storeConfig(newCollection, config.get().getLastModified());
+        LoadedInstanceConfig updated = provider.storeConfig(newCollection, config.get().getVersion());
         if ( updated != null )
         {
             setNewConfig(updated);
@@ -365,7 +365,7 @@ public class ConfigManager implements Closeable
     private synchronized void doWork() throws Exception
     {
         LoadedInstanceConfig    newConfig = provider.loadConfig();
-        if ( newConfig.getLastModified() != config.get().getLastModified() )
+        if ( newConfig.getVersion() != config.get().getVersion() )
         {
             setNewConfig(newConfig);
         }
