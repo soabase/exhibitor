@@ -36,6 +36,8 @@ being alphabetized.
 * Issue 59: Support a separate Transaction Log directory in the config. It can be blank and will
 default to the Snapshot directory.
 
+* Updates to the control panel were not warning if another process updated the config at the same time.
+
 1.2.5 - August 2, 2012
 ======================
 * Various dependency version changes needed for internal Netflix compatibility.
