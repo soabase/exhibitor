@@ -57,6 +57,8 @@ public class ConfigResource
 {
     private final UIContext context;
 
+    private static final String CANT_UPDATE_CONFIG_MESSAGE = "It appears that another process has updated the config. Your change was not committed.";
+
     public ConfigResource(@Context ContextResolver<UIContext> resolver)
     {
         context = resolver.getContext(UIContext.class);
@@ -223,7 +225,10 @@ public class ConfigResource
                         return (newValue != null) ? newValue : currentConfig.getInt(config);
                     }
                 };
-                context.getExhibitor().getConfigManager().updateConfig(newConfig);
+                if ( !context.getExhibitor().getConfigManager().updateConfig(newConfig) )
+                {
+                    error = CANT_UPDATE_CONFIG_MESSAGE;
+                }
             }
         }
 
@@ -299,7 +304,7 @@ public class ConfigResource
 
             if ( result == null )
             {
-                result = new Result("Another process has updated the config.", false);
+                result = new Result(CANT_UPDATE_CONFIG_MESSAGE, false);
             }
             context.getExhibitor().resetLocalConnection();
         }
