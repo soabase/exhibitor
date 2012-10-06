@@ -322,6 +322,11 @@ function changeControlPanelConfig(field, selector)
     });
 }
 
+function hideShowConfigProcessingDialog(showIt)
+{
+    $('#updating-config-dialog').dialog(showIt ? "open" : "close");
+}
+
 function submitConfigChanges(rolling)
 {
     if ( configChangesBeingSubmitted )
@@ -337,6 +342,7 @@ function submitConfigChanges(rolling)
     var payload = JSON.stringify(newConfig);
 
     configChangesBeingSubmitted = true;
+    hideShowConfigProcessingDialog(true);
     $.ajax({
         type: 'POST',
         url: rolling ? URL_SET_CONFIG_ROLLING : URL_SET_CONFIG,
@@ -344,6 +350,7 @@ function submitConfigChanges(rolling)
         data: payload,
         contentType: 'application/json',
         success:function(data){
+            hideShowConfigProcessingDialog(false);
             configChangesBeingSubmitted = false;
             if ( !data.succeeded )
             {
@@ -351,7 +358,9 @@ function submitConfigChanges(rolling)
             }
         },
         error:function(){
+            hideShowConfigProcessingDialog(false);
             configChangesBeingSubmitted = false;
+            messageDialog("There was a communication error. The config change may not have committed.")
         }
     });
     turnOffEditableSwitch();
@@ -807,6 +816,18 @@ $(function ()
             }
         }
     );
+
+    $('#updating-config-progressbar').progressbar({
+        value: 100
+    });
+    $('#updating-config-dialog').dialog({
+        width: 300,
+        height: 100,
+        modal: true,
+        autoOpen: false,
+        title: "Config change in progress...",
+        resizable: false
+    });
 
     makeLightSwitch('#config-editable', handleEditableSwitch);
     makeLightSwitch('#cp-auto-init-instances', function(){
