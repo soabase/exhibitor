@@ -30,12 +30,6 @@ public class ZookeeperPseudoLock implements PseudoLock
     }
 
     @Override
-    public void lock() throws Exception
-    {
-        lock.acquire();
-    }
-
-    @Override
     public boolean lock(long maxWait, TimeUnit unit) throws Exception
     {
         return lock.acquire(maxWait, unit);

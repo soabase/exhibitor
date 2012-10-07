@@ -45,10 +45,10 @@ public class TestS3PseudoLock
             }
         };
         S3PseudoLock        lock = new S3PseudoLock(client, "foo", "bar", 10, 10, 0);
-        lock.lock();
+        lock.lock(1, TimeUnit.DAYS);
         Thread.sleep(20);
         S3PseudoLock        lock2 = new S3PseudoLock(client, "foo", "bar", 10, 10, 0);
-        lock2.lock();   // should clean the previous lock
+        lock2.lock(1, TimeUnit.DAYS);   // should clean the previous lock
 
         String              cleaned = queue.poll(5, TimeUnit.SECONDS);
         Assert.assertNotNull(cleaned);

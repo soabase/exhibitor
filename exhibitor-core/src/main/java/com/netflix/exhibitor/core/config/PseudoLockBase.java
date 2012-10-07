@@ -78,16 +78,6 @@ public abstract class PseudoLockBase implements PseudoLock
     }
 
     /**
-     * Acquire the lock, blocking until it is acquired
-     *
-     * @throws Exception errors
-     */
-    public synchronized void  lock() throws Exception
-    {
-        lock(0, null);
-    }
-
-    /**
      * Acquire the lock, blocking at most <code>maxWait</code> until it is acquired
      *
      * @param maxWait max time to wait

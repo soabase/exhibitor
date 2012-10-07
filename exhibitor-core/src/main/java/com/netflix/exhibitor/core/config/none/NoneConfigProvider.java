@@ -123,12 +123,6 @@ public class NoneConfigProvider implements ConfigProvider
         return new PseudoLock()
         {
             @Override
-            public void lock() throws Exception
-            {
-                // NOP
-            }
-
-            @Override
             public boolean lock(long maxWait, TimeUnit unit) throws Exception
             {
                 return true;

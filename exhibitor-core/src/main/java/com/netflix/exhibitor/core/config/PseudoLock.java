@@ -21,13 +21,6 @@ import java.util.concurrent.TimeUnit;
 public interface PseudoLock
 {
     /**
-     * Acquire the lock, blocking until it is acquired
-     *
-     * @throws Exception errors
-     */
-    public void  lock() throws Exception;
-
-    /**
      * Acquire the lock, blocking at most <code>maxWait</code> until it is acquired
      *
      * @param maxWait max time to wait
