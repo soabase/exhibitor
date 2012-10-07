@@ -61,7 +61,7 @@ public class AutomaticInstanceManagement implements Activity
             PseudoLock  lock = exhibitor.getConfigManager().newConfigBasedLock();
             try
             {
-                if ( lock.lock(Exhibitor.AUTO_INSTANCE_MANAGEMENT_PERIOD_MS / 2, TimeUnit.MILLISECONDS) )
+                if ( lock.lock(exhibitor.getLog(), Exhibitor.AUTO_INSTANCE_MANAGEMENT_PERIOD_MS / 2, TimeUnit.MILLISECONDS) )
                 {
                     doWork();
                 }

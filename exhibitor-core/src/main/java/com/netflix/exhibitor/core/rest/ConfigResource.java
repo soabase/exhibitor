@@ -168,7 +168,7 @@ public class ConfigResource
             PseudoLock  lock = context.getExhibitor().getConfigManager().newConfigBasedLock();
             try
             {
-                if ( lock.lock(10, TimeUnit.SECONDS) )  // TODO consider making configurable in the future
+                if ( lock.lock(context.getExhibitor().getLog(), 10, TimeUnit.SECONDS) )  // TODO consider making configurable in the future
                 {
                     if ( context.getExhibitor().getConfigManager().startRollingConfig(wrapped) )
                     {
@@ -208,7 +208,7 @@ public class ConfigResource
             PseudoLock  lock = context.getExhibitor().getConfigManager().newConfigBasedLock();
             try
             {
-                if ( lock.lock(10, TimeUnit.SECONDS) )  // TODO consider making configurable in the future
+                if ( lock.lock(context.getExhibitor().getLog(), 10, TimeUnit.SECONDS) )  // TODO consider making configurable in the future
                 {
                     if ( context.getExhibitor().getConfigManager().updateConfig(wrapped) )
                     {

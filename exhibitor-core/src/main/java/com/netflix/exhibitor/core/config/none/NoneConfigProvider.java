@@ -17,6 +17,7 @@
 package com.netflix.exhibitor.core.config.none;
 
 import com.google.common.io.Closeables;
+import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.config.ConfigCollection;
 import com.netflix.exhibitor.core.config.ConfigProvider;
 import com.netflix.exhibitor.core.config.LoadedInstanceConfig;
@@ -123,7 +124,7 @@ public class NoneConfigProvider implements ConfigProvider
         return new PseudoLock()
         {
             @Override
-            public boolean lock(long maxWait, TimeUnit unit) throws Exception
+            public boolean lock(ActivityLog log, long maxWait, TimeUnit unit) throws Exception
             {
                 return true;
             }

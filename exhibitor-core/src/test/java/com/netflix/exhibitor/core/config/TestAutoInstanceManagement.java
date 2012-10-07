@@ -19,6 +19,7 @@ package com.netflix.exhibitor.core.config;
 import com.google.common.io.Files;
 import com.netflix.curator.test.DirectoryUtils;
 import com.netflix.exhibitor.core.Exhibitor;
+import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.config.filesystem.FileSystemPseudoLock;
 import com.netflix.exhibitor.core.state.AutomaticInstanceManagement;
 import com.netflix.exhibitor.core.state.InstanceStateTypes;
@@ -106,10 +107,10 @@ public class TestAutoInstanceManagement
                     return new FileSystemPseudoLock(tempDirectory, "exhibitor-lock", 600000, 1000, 0)
                     {
                         @Override
-                        public boolean lock(long maxWait, TimeUnit unit) throws Exception
+                        public boolean lock(ActivityLog log, long maxWait, TimeUnit unit) throws Exception
                         {
                             lockAttemptsLatch.countDown();
-                            boolean locked = super.lock(maxWait, unit);
+                            boolean locked = super.lock(log, maxWait, unit);
                             isLockedLatch.countDown();
                             return locked;
                         }
