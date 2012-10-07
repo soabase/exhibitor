@@ -38,6 +38,8 @@ default to the Snapshot directory.
 
 * Updates to the control panel were not warning if another process updated the config at the same time.
 
+* Automatic instance management checkbox moved to the Config tab.
+
 1.2.5 - August 2, 2012
 ======================
 * Various dependency version changes needed for internal Netflix compatibility.
