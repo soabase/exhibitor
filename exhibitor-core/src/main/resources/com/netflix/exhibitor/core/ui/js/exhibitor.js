@@ -34,6 +34,8 @@ var URL_GET_BACKUP_CONFIG = "backup-config";
 var URL_GET_TABS = "tabs";
 var URL_RESTART = "stop";
 
+var AUTOMATIC_INSTANCE_MANAGEMENT_HELP_TEXT = "When on, as new instances read the shared config they will automatically add themselves to the ensemble via a rolling release. Additionally, old instances will be automatically removed via rolling release.";
+
 var doConfigUpdates = true;
 var configChangesBeingSubmitted = false;
 
@@ -798,6 +800,11 @@ $(function ()
         autoOpen: false,
         title: "Config change in progress...",
         resizable: false
+    });
+
+    $('#cp-auto-init-instances-help').attr("title", AUTOMATIC_INSTANCE_MANAGEMENT_HELP_TEXT);
+    $('#cp-auto-init-instances-help-button').button().click(function(){
+        messageDialog("Automatic Server List Add/Remove", AUTOMATIC_INSTANCE_MANAGEMENT_HELP_TEXT);
     });
 
     makeLightSwitch('#config-editable', handleEditableSwitch);
