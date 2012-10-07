@@ -18,7 +18,6 @@ package com.netflix.exhibitor.core.rest;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.hash.Hashing;
 import com.netflix.exhibitor.core.backup.BackupConfigSpec;
 import com.netflix.exhibitor.core.config.ConfigManager;
@@ -27,7 +26,6 @@ import com.netflix.exhibitor.core.config.InstanceConfig;
 import com.netflix.exhibitor.core.config.IntConfigs;
 import com.netflix.exhibitor.core.config.PseudoLock;
 import com.netflix.exhibitor.core.config.StringConfigs;
-import com.netflix.exhibitor.core.entities.FieldValue;
 import com.netflix.exhibitor.core.entities.Result;
 import com.netflix.exhibitor.core.state.FourLetterWord;
 import com.netflix.exhibitor.core.state.ServerList;
@@ -49,7 +47,6 @@ import javax.ws.rs.ext.ContextResolver;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Path("exhibitor/v1/config")
@@ -101,14 +98,7 @@ public class ConfigResource
             String fixedName = fixName(c);
             int value = config.getInt(c);
 
-            if ( c.isPartOfControlPanel() )
-            {
-                controlPanelNode.put(fixedName, value);
-            }
-            else
-            {
-                configNode.put(fixedName, value);
-            }
+            configNode.put(fixedName, value);
         }
 
         EncodedConfigParser     zooCfgParser = new EncodedConfigParser(config.getString(StringConfigs.ZOO_CFG_EXTRA));
@@ -163,77 +153,6 @@ public class ConfigResource
     {
         context.getExhibitor().getConfigManager().cancelRollingConfig(ConfigManager.CancelMode.FORCE_COMMIT);
         return Response.ok(new Result("OK", true)).build();
-    }
-
-    @Path("set-control-panel")
-    @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response setControlPanelConfig(List<FieldValue> fieldValues) throws Exception
-    {
-        String      error = null;
-
-        if ( context.getExhibitor().getConfigManager().isRolling() )
-        {
-            error = "Cannot be changed while there is a rolling config in progress";
-        }
-        else
-        {
-            final Map<IntConfigs, Integer>    updatedValues = Maps.newHashMap();
-            for ( FieldValue fieldValue : fieldValues )
-            {
-                boolean         found = false;
-                for ( IntConfigs config : IntConfigs.values() )
-                {
-                    if ( config.isPartOfControlPanel() && fixName(config).equals(fieldValue.getField()) )
-                    {
-                        found = true;
-                        try
-                        {
-                            int         value = fieldValue.getValue().equals("true") ? 1 : (fieldValue.getValue().equals("false") ? 0 : Integer.parseInt(fieldValue.getValue()));
-                            updatedValues.put(config, value);
-                        }
-                        catch ( NumberFormatException e )
-                        {
-                            error = "Bad value: " + fieldValue.getValue();
-                            break;
-                        }
-                    }
-                }
-
-                if ( !found )
-                {
-                    error = "Unknown config field: " + fieldValue.getField();
-                    break;
-                }
-            }
-
-            if ( error == null )
-            {
-                final InstanceConfig    currentConfig = context.getExhibitor().getConfigManager().getConfig();
-                InstanceConfig          newConfig = new InstanceConfig()
-                {
-                    @Override
-                    public String getString(StringConfigs config)
-                    {
-                        return currentConfig.getString(config);
-                    }
-
-                    @Override
-                    public int getInt(IntConfigs config)
-                    {
-                        Integer     newValue = updatedValues.get(config);
-                        return (newValue != null) ? newValue : currentConfig.getInt(config);
-                    }
-                };
-                if ( !context.getExhibitor().getConfigManager().updateConfig(newConfig) )
-                {
-                    error = CANT_UPDATE_CONFIG_MESSAGE;
-                }
-            }
-        }
-
-        Result      result = new Result(error, error == null);
-        return Response.ok(result).build();
     }
 
     @Path("set-rolling")
@@ -347,7 +266,6 @@ public class ConfigResource
         }
         final String          zooCfgExtraValue = new EncodedConfigParser(zooCfgValues).toEncoded();
 
-        final InstanceConfig  currentConfig = context.getExhibitor().getConfigManager().getConfig();
         final String          finalBackupExtraValue = backupExtraValue;
         return new InstanceConfig()
         {
@@ -384,11 +302,6 @@ public class ConfigResource
             @Override
             public int getInt(IntConfigs config)
             {
-                if ( config.isPartOfControlPanel() )
-                {
-                    return currentConfig.getInt(config);
-                }
-
                 JsonNode node = tree.get(fixName(config));
                 if ( node == null )
                 {

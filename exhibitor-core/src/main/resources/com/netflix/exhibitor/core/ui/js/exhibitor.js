@@ -26,7 +26,6 @@ var URL_EXPLORER_ANALYZE = "../explorer/analyze";
 
 var URL_GET_STATE = "../config/get-state";
 var URL_SET_CONFIG = "../config/set";
-var URL_SET_CONTROL_PANEL_CONFIG = "../config/set-control-panel";
 var URL_SET_CONFIG_ROLLING = "../config/set-rolling";
 var URL_ROLLBACK_ROLLING = "../config/rollback-rolling";
 var URL_FORCE_COMMIT_ROLLING = "../config/force-commit-rolling";
@@ -295,31 +294,6 @@ function turnOffEditableSwitch()
 {
     checkLightSwitch('#config-editable', false);
     handleEditableSwitch();
-}
-
-function changeControlPanelConfig(field, selector)
-{
-    var tab = new Array();
-    var update = {};
-    update.field = field;
-    update.value = $(selector).attr('checked') != undefined;
-    tab.push(update);
-
-    var payload = JSON.stringify(tab);
-    $.ajax({
-        type: 'POST',
-        url: URL_SET_CONTROL_PANEL_CONFIG,
-        cache: false,
-        data: payload,
-        contentType: 'application/json',
-        success:function(data)
-        {
-            if ( !data.succeeded )
-            {
-                messageDialog("Error", data.message);
-            }
-        }
-    });
 }
 
 function hideShowConfigProcessingDialog(showIt)
