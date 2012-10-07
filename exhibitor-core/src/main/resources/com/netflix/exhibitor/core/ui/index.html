@@ -58,10 +58,6 @@
 
 
             <div id="tabs-main" class="ui-helper-hidden">
-                <div id="cp-auto-init-container" class="ui-widget ui-corner-all ui-state-highlight" title="When on, as new instances read the shared config they will automatically add themselves to the ensemble via a rolling release. Additionally, old instances will be automatically removed via rolling release.">
-                    <label for="cp-auto-init-instances">Automatically add/remove instances in the server list</label><input type="checkbox" id="cp-auto-init-instances"><br clear="all"/>
-                </div>
-
                 <div id="base-server-item">
                 </div>
             </div>
@@ -190,6 +186,7 @@
 
                     <fieldset id="fieldset-automatic-instance-management">
                         <legend>Automatic Server List Add/Remove</legend>
+                        <span title="When on, as new instances read the shared config they will automatically add themselves to the ensemble via a rolling release. Additionally, old instances will be automatically removed via rolling release."><input type="checkbox" id="cp-auto-init-instances"></span><br clear="all"/>
                         <label for="config-dead-instance-ms">Dead Instance Threshold (ms)</label><input type="text" id="config-dead-instance-ms" class="mask-pint" name="config-dead-instance-ms" size="8" title="The number of milliseconds to consider an instance dead and, thus, a candidate for automatic instance cleanup."><br clear="all"/>
                         <label for="config-observer-threshold">Observer Threshold</label><input type="text" id="config-observer-threshold" class="mask-pint" name="config-observer-threshold" size="3" title="Marks which instances are made Observers by automatic instance management. Instances below this number are normal instances. Instances from this number and up are Observers."><br clear="all"/>
                     </fieldset>

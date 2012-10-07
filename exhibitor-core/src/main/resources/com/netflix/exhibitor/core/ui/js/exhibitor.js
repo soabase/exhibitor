@@ -159,7 +159,6 @@ function updateState()
             if ( systemState.standaloneMode )
             {
                 $('#standalone-mode-message').show();
-                $('#cp-auto-init-container').hide();
                 $('#fieldset-automatic-instance-management').hide();
             }
 
@@ -265,6 +264,7 @@ function buildNewConfig()
     newConfig.cleanupMaxFiles = $('#config-cleanup-max-files').val();
     newConfig.backupPeriodMs = $('#config-backup-ms').val();
     newConfig.backupMaxStoreMs = $('#config-backup-max-store-ms').val();
+    newConfig.autoManageInstances = $('#cp-auto-init-instances').prop("checked") ? "1" : "0";
 
     var zooCfgTab = $('#config-custom').val().split("\n");
     newConfig.zooCfgExtra = {};
@@ -378,7 +378,7 @@ function getBackupExtraId(obj)
 
 function ableConfig(enable)
 {
-    ableLightSwitch('#cp-auto-init-instances', null, !enable);  // control panel stuff is opposite
+    ableLightSwitch('#cp-auto-init-instances', null, enable);
 
     $('#config-zookeeper-install-dir').prop('disabled', !enable);
     $('#config-zookeeper-snapshot-dir').prop('disabled', !enable);
@@ -411,10 +411,6 @@ function ableConfig(enable)
 
 function updateConfig()
 {
-    if ( systemConfig.controlPanel ) {
-        checkLightSwitch('#cp-auto-init-instances', systemConfig.controlPanel.autoManageInstances);
-    }
-
     if ( !doConfigUpdates || configChangesBeingSubmitted ) {
         return;
     }
@@ -425,6 +421,7 @@ function updateConfig()
         configExtra += p + "=" + systemConfig.zooCfgExtra[p] + "\n";
     }
 
+    checkLightSwitch('#cp-auto-init-instances', (systemConfig.autoManageInstances != "0"));
     $('#config-zookeeper-install-dir').val(systemConfig.zookeeperInstallDirectory);
     $('#config-zookeeper-snapshot-dir').val(systemConfig.zookeeperDataDirectory);
     $('#config-zookeeper-log-dir').val(systemConfig.zookeeperLogDirectory);
@@ -830,9 +827,7 @@ $(function ()
     });
 
     makeLightSwitch('#config-editable', handleEditableSwitch);
-    makeLightSwitch('#cp-auto-init-instances', function(){
-        changeControlPanelConfig('autoManageInstances', '#cp-auto-init-instances');
-    });
+    makeLightSwitch('#cp-auto-init-instances');
     turnOffEditableSwitch();
 
     initRestoreUI();

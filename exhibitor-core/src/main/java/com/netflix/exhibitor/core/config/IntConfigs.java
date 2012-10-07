@@ -124,12 +124,6 @@ public enum IntConfigs
         {
             return false;
         }
-
-        @Override
-        public boolean isPartOfControlPanel()
-        {
-            return true;
-        }
     },
 
     /**
