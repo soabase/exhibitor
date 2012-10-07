@@ -148,6 +148,11 @@ public class FileSystemConfigProvider implements ConfigProvider
     public LoadedInstanceConfig storeConfig(ConfigCollection config, long compareVersion) throws Exception
     {
         File                            propertiesFile = new File(propertiesDirectory, propertyFileName);
+        if ( propertiesFile.lastModified() != compareVersion )
+        {
+            return null;
+        }
+
         PropertyBasedInstanceConfig     propertyBasedInstanceConfig = new PropertyBasedInstanceConfig(config);
 
         long                lastModified = 0;
