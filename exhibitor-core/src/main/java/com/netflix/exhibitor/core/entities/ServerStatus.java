@@ -24,17 +24,19 @@ public class ServerStatus
     private String      hostname;
     private int         code;
     private String      description;
+    private boolean     isLeader;
 
     public ServerStatus()
     {
-        this("", 0, "");
+        this("", 0, "", false);
     }
 
-    public ServerStatus(String hostname, int code, String description)
+    public ServerStatus(String hostname, int code, String description, boolean isLeader)
     {
         this.hostname = hostname;
         this.code = code;
         this.description = description;
+        this.isLeader = isLeader;
     }
 
     public String getHostname()
@@ -65,5 +67,15 @@ public class ServerStatus
     public void setDescription(String description)
     {
         this.description = description;
+    }
+
+    public boolean isLeader()
+    {
+        return isLeader;
+    }
+
+    public void setLeader(boolean leader)
+    {
+        isLeader = leader;
     }
 }

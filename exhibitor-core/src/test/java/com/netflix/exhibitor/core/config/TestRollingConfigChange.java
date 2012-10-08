@@ -22,7 +22,7 @@ import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.ActivityQueue;
 import com.netflix.exhibitor.core.state.InstanceState;
 import com.netflix.exhibitor.core.state.InstanceStateTypes;
-import com.netflix.exhibitor.core.state.RemoteInstanceRequestClient;
+import com.netflix.exhibitor.core.automanage.RemoteInstanceRequestClient;
 import com.netflix.exhibitor.core.state.RestartSignificantConfig;
 import com.netflix.exhibitor.core.state.ServerList;
 import org.mockito.Mockito;
@@ -43,6 +43,11 @@ public class TestRollingConfigChange
 
         RemoteInstanceRequestClient     mockClient = new RemoteInstanceRequestClient()
         {
+            @Override
+            public void close() throws IOException
+            {
+            }
+
             @Override
             public <T> T getWebResource(URI remoteUri, MediaType type, Class<T> clazz) throws Exception
             {
@@ -97,6 +102,11 @@ public class TestRollingConfigChange
         RemoteInstanceRequestClient     mockClient = new RemoteInstanceRequestClient()
         {
             @Override
+            public void close() throws IOException
+            {
+            }
+
+            @Override
             public <T> T getWebResource(URI remoteUri, MediaType type, Class<T> clazz) throws Exception
             {
                 throw new Exception();
@@ -136,6 +146,11 @@ public class TestRollingConfigChange
 
         RemoteInstanceRequestClient     mockClient = new RemoteInstanceRequestClient()
         {
+            @Override
+            public void close() throws IOException
+            {
+            }
+
             @Override
             public <T> T getWebResource(URI remoteUri, MediaType type, Class<T> clazz) throws Exception
             {
@@ -216,6 +231,11 @@ public class TestRollingConfigChange
 
         RemoteInstanceRequestClient     mockClient = new RemoteInstanceRequestClient()
         {
+            @Override
+            public void close() throws IOException
+            {
+            }
+
             @Override
             public <T> T getWebResource(URI remoteUri, MediaType type, Class<T> clazz) throws Exception
             {
@@ -346,6 +366,11 @@ public class TestRollingConfigChange
 
         RemoteInstanceRequestClient     mockClient = new RemoteInstanceRequestClient()
         {
+            @Override
+            public void close() throws IOException
+            {
+            }
+
             @Override
             public <T> T getWebResource(URI remoteUri, MediaType type, Class<T> clazz) throws Exception
             {

@@ -21,7 +21,7 @@ import com.netflix.curator.test.DirectoryUtils;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.config.filesystem.FileSystemPseudoLock;
-import com.netflix.exhibitor.core.state.AutomaticInstanceManagement;
+import com.netflix.exhibitor.core.automanage.AutomaticInstanceManagement;
 import com.netflix.exhibitor.core.state.InstanceStateTypes;
 import com.netflix.exhibitor.core.state.MonitorRunningInstance;
 import org.mockito.Mockito;

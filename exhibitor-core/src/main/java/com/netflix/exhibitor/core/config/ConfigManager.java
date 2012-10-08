@@ -29,7 +29,7 @@ import com.netflix.exhibitor.core.activity.RepeatingActivity;
 import com.netflix.exhibitor.core.config.none.NoneConfigProvider;
 import com.netflix.exhibitor.core.state.InstanceState;
 import com.netflix.exhibitor.core.state.InstanceStateTypes;
-import com.netflix.exhibitor.core.state.RemoteInstanceRequest;
+import com.netflix.exhibitor.core.automanage.RemoteInstanceRequest;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Collections;

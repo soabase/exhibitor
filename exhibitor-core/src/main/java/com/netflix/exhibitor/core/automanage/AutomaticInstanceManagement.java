@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.netflix.exhibitor.core.state;
+package com.netflix.exhibitor.core.automanage;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
@@ -27,6 +27,10 @@ import com.netflix.exhibitor.core.config.InstanceConfig;
 import com.netflix.exhibitor.core.config.IntConfigs;
 import com.netflix.exhibitor.core.config.PseudoLock;
 import com.netflix.exhibitor.core.config.StringConfigs;
+import com.netflix.exhibitor.core.state.InstanceStateTypes;
+import com.netflix.exhibitor.core.state.ServerSpec;
+import com.netflix.exhibitor.core.state.ServerType;
+import com.netflix.exhibitor.core.state.UsState;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -166,7 +170,7 @@ public class AutomaticInstanceManagement implements Activity
 
         int                     observerThreshold = exhibitor.getConfigManager().getConfig().getInt(IntConfigs.OBSERVER_THRESHOLD);
         int                     newUsIndex = usState.getServerList().getSpecs().size() + 1;
-        ServerType              serverType = (newUsIndex >= observerThreshold) ? ServerType.OBSERVER : ServerType.STANDARD;
+        ServerType serverType = (newUsIndex >= observerThreshold) ? ServerType.OBSERVER : ServerType.STANDARD;
 
         InstanceConfig          currentConfig = exhibitor.getConfigManager().getConfig();
         String                  spec = currentConfig.getString(StringConfigs.SERVERS_SPEC);
