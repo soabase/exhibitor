@@ -40,6 +40,8 @@ default to the Snapshot directory.
 
 * Automatic instance management checkbox moved to the Config tab.
 
+* Lots of UI/logging tweaks and improvements.
+
 1.2.5 - August 2, 2012
 ======================
 * Various dependency version changes needed for internal Netflix compatibility.
