@@ -252,7 +252,7 @@ function buildNewConfig()
     newConfig.zookeeperDataDirectory = $('#config-zookeeper-snapshot-dir').val();
     newConfig.zookeeperLogDirectory = $('#config-zookeeper-log-dir').val();
     newConfig.logIndexDirectory = $('#config-log-index-dir').val();
-    newConfig.deadInstancePeriodMs = $('#config-dead-instance-ms').val();
+    newConfig.autoManageInstancesSettlingPeriodMs = $('#config-automatic-management-period-ms').val();
     newConfig.observerThreshold = $('#config-observer-threshold').val();
     newConfig.serversSpec = $('#config-servers-spec').val();
     newConfig.javaEnvironment = $('#config-java-env').val();
@@ -359,7 +359,7 @@ function ableConfig(enable)
     $('#config-zookeeper-install-dir').prop('disabled', !enable);
     $('#config-zookeeper-snapshot-dir').prop('disabled', !enable);
     $('#config-zookeeper-log-dir').prop('disabled', !enable);
-    $('#config-dead-instance-ms').prop('disabled', !enable);
+    $('#config-automatic-management-period-ms').prop('disabled', !enable);
     $('#config-observer-threshold').prop('disabled', !enable);
     $('#config-log-index-dir').prop('disabled', !enable);
     $('#config-servers-spec').prop('disabled', !enable);
@@ -401,7 +401,7 @@ function updateConfig()
     $('#config-zookeeper-install-dir').val(systemConfig.zookeeperInstallDirectory);
     $('#config-zookeeper-snapshot-dir').val(systemConfig.zookeeperDataDirectory);
     $('#config-zookeeper-log-dir').val(systemConfig.zookeeperLogDirectory);
-    $('#config-dead-instance-ms').val(systemConfig.deadInstancePeriodMs);
+    $('#config-automatic-management-period-ms').val(systemConfig.autoManageInstancesSettlingPeriodMs);
     $('#config-observer-threshold').val(systemConfig.observerThreshold);
     $('#config-log-index-dir').val(systemConfig.logIndexDirectory);
     $('#config-servers-spec').val(systemConfig.serversSpec);

@@ -170,7 +170,7 @@ public class ConfigResource
             {
                 if ( lock.lock(context.getExhibitor().getLog(), 10, TimeUnit.SECONDS) )  // TODO consider making configurable in the future
                 {
-                    if ( context.getExhibitor().getConfigManager().startRollingConfig(wrapped) )
+                    if ( context.getExhibitor().getConfigManager().startRollingConfig(wrapped, null) )
                     {
                         result = new Result("OK", true);
                     }

@@ -31,9 +31,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import java.io.UnsupportedEncodingException;
 import java.util.Properties;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 
 public class TestZookeeperConfigProvider
@@ -130,128 +128,6 @@ public class TestZookeeperConfigProvider
         finally
         {
             Closeables.closeQuietly(config);
-        }
-    }
-
-    @Test
-    public void testAlive() throws Exception
-    {
-        ZookeeperConfigProvider configA = new ZookeeperConfigProvider(client, "/foo", new Properties(), "a");
-        ZookeeperConfigProvider configB = new ZookeeperConfigProvider(client, "/foo", new Properties(), "b");
-        ZookeeperConfigProvider configC = new ZookeeperConfigProvider(client, "/foo", new Properties(), "c");
-        try
-        {
-            configA.start();
-            configB.start();
-            configC.start();
-
-            timing.sleepABit();
-
-            Assert.assertTrue(configA.isHeartbeatAliveForInstance("a", 10000));
-            Assert.assertTrue(configA.isHeartbeatAliveForInstance("b", 10000));
-            Assert.assertTrue(configA.isHeartbeatAliveForInstance("c", 10000));
-
-            Assert.assertTrue(configB.isHeartbeatAliveForInstance("a", 10000));
-            Assert.assertTrue(configB.isHeartbeatAliveForInstance("b", 10000));
-            Assert.assertTrue(configB.isHeartbeatAliveForInstance("c", 10000));
-
-            Assert.assertTrue(configC.isHeartbeatAliveForInstance("a", 10000));
-            Assert.assertTrue(configC.isHeartbeatAliveForInstance("b", 10000));
-            Assert.assertTrue(configC.isHeartbeatAliveForInstance("c", 10000));
-
-            Assert.assertFalse(configA.isHeartbeatAliveForInstance("z", 10000));
-            Assert.assertFalse(configB.isHeartbeatAliveForInstance("z", 10000));
-            Assert.assertFalse(configC.isHeartbeatAliveForInstance("z", 10000));
-        }
-        finally
-        {
-            Closeables.closeQuietly(configC);
-            Closeables.closeQuietly(configB);
-            Closeables.closeQuietly(configA);
-        }
-    }
-
-    @Test
-    public void testInstanceDies() throws Exception
-    {
-        final CountDownLatch    aAddLatch = new CountDownLatch(3);
-        final CountDownLatch    bAddLatch = new CountDownLatch(3);
-        final CountDownLatch    cAddLatch = new CountDownLatch(3);
-
-        final CountDownLatch    bRemovalLatch = new CountDownLatch(1);
-        final CountDownLatch    cRemovalLatch = new CountDownLatch(1);
-
-        ZookeeperConfigProvider configA = new ZookeeperConfigProvider(client, "/foo", new Properties(), "a")
-        {
-            @Override
-            protected void handleCacheEvent(PathChildrenCacheEvent event) throws UnsupportedEncodingException
-            {
-                super.handleCacheEvent(event);
-                if ( event.getType() == PathChildrenCacheEvent.Type.CHILD_ADDED )
-                {
-                    aAddLatch.countDown();
-                }
-            }
-        };
-        ZookeeperConfigProvider configB = new ZookeeperConfigProvider(client, "/foo", new Properties(), "b")
-        {
-            @Override
-            protected void handleCacheEvent(PathChildrenCacheEvent event) throws UnsupportedEncodingException
-            {
-                super.handleCacheEvent(event);
-                if ( event.getType() == PathChildrenCacheEvent.Type.CHILD_ADDED )
-                {
-                    bAddLatch.countDown();
-                }
-                else if ( event.getType() == PathChildrenCacheEvent.Type.CHILD_REMOVED )
-                {
-                    bRemovalLatch.countDown();
-                }
-            }
-        };
-        ZookeeperConfigProvider configC = new ZookeeperConfigProvider(client, "/foo", new Properties(), "c")
-        {
-            @Override
-            protected void handleCacheEvent(PathChildrenCacheEvent event) throws UnsupportedEncodingException
-            {
-                super.handleCacheEvent(event);
-                if ( event.getType() == PathChildrenCacheEvent.Type.CHILD_ADDED )
-                {
-                    cAddLatch.countDown();
-                }
-                else if ( event.getType() == PathChildrenCacheEvent.Type.CHILD_REMOVED )
-                {
-                    cRemovalLatch.countDown();
-                }
-            }
-        };
-        try
-        {
-            configA.start();
-            configB.start();
-            configC.start();
-
-            Assert.assertTrue(timing.awaitLatch(aAddLatch));
-            Assert.assertTrue(timing.awaitLatch(bAddLatch));
-            Assert.assertTrue(timing.awaitLatch(cAddLatch));
-
-            configA.close();    // simulate dying
-            configA = null;
-
-            Assert.assertTrue(timing.awaitLatch(bRemovalLatch));
-            Assert.assertTrue(timing.awaitLatch(cRemovalLatch));
-
-            Assert.assertTrue(configB.isHeartbeatAliveForInstance("a", Integer.MAX_VALUE));
-            Assert.assertTrue(configC.isHeartbeatAliveForInstance("a", Integer.MAX_VALUE));
-
-            Assert.assertFalse(configB.isHeartbeatAliveForInstance("a", -1));
-            Assert.assertFalse(configC.isHeartbeatAliveForInstance("a", -1));
-        }
-        finally
-        {
-            Closeables.closeQuietly(configC);
-            Closeables.closeQuietly(configB);
-            Closeables.closeQuietly(configA);
         }
     }
 }

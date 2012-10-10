@@ -86,22 +86,6 @@ public class TestAutoInstanceManagement
                 }
 
                 @Override
-                public void writeInstanceHeartbeat() throws Exception
-                {
-                }
-
-                @Override
-                public void clearInstanceHeartbeat() throws Exception
-                {
-                }
-
-                @Override
-                public boolean isHeartbeatAliveForInstance(String instanceHostname, int deadInstancePeriodMs) throws Exception
-                {
-                    return true;
-                }
-
-                @Override
                 public PseudoLock newPseudoLock() throws Exception
                 {
                     return new FileSystemPseudoLock(tempDirectory, "exhibitor-lock", 600000, 1000, 0)
@@ -134,12 +118,14 @@ public class TestAutoInstanceManagement
 
             final AutomaticInstanceManagement management1 = new AutomaticInstanceManagement(exhibitor)
             {
+/*  TODO
                 @Override
                 protected void doWork() throws Exception
                 {
                     management1DidWork.set(true);
                     super.doWork();
                 }
+*/
             };
             Executors.newSingleThreadExecutor().submit
             (
@@ -157,12 +143,14 @@ public class TestAutoInstanceManagement
 
             final AutomaticInstanceManagement management2 = new AutomaticInstanceManagement(exhibitor)
             {
+/*  TODO
                 @Override
                 protected void doWork() throws Exception
                 {
                     management2DidWork.set(true);
                     super.doWork();
                 }
+*/
             };
             Executors.newSingleThreadExecutor().submit
             (
@@ -223,22 +211,6 @@ public class TestAutoInstanceManagement
                 public LoadedInstanceConfig storeConfig(ConfigCollection config, long compareVersion) throws Exception
                 {
                     return new LoadedInstanceConfig(config, 0);
-                }
-
-                @Override
-                public void writeInstanceHeartbeat() throws Exception
-                {
-                }
-
-                @Override
-                public void clearInstanceHeartbeat() throws Exception
-                {
-                }
-
-                @Override
-                public boolean isHeartbeatAliveForInstance(String instanceHostname, int deadInstancePeriodMs) throws Exception
-                {
-                    return true;
                 }
 
                 @Override
@@ -303,22 +275,6 @@ public class TestAutoInstanceManagement
                 }
 
                 @Override
-                public void writeInstanceHeartbeat() throws Exception
-                {
-                }
-
-                @Override
-                public void clearInstanceHeartbeat() throws Exception
-                {
-                }
-
-                @Override
-                public boolean isHeartbeatAliveForInstance(String instanceHostname, int deadInstancePeriodMs) throws Exception
-                {
-                    return !instanceHostname.equals("dead");
-                }
-
-                @Override
                 public PseudoLock newPseudoLock() throws Exception
                 {
                     return new FileSystemPseudoLock(tempDirectory, "exhibitor-lock", 600000, 1000, 0);
@@ -332,7 +288,7 @@ public class TestAutoInstanceManagement
             Mockito.when(monitorRunningInstance.getCurrentInstanceState()).thenReturn(InstanceStateTypes.NOT_SERVING);
             Mockito.when(exhibitor.getMonitorRunningInstance()).thenReturn(monitorRunningInstance);
 
-            AutomaticInstanceManagement management = new AutomaticInstanceManagement(exhibitor, 1);
+            AutomaticInstanceManagement management = new AutomaticInstanceManagement(exhibitor);
             management.call();
         }
         finally

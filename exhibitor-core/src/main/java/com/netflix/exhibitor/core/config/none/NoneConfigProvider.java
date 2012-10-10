@@ -101,24 +101,6 @@ public class NoneConfigProvider implements ConfigProvider
     }
 
     @Override
-    public void writeInstanceHeartbeat() throws Exception
-    {
-        // NOP
-    }
-
-    @Override
-    public boolean isHeartbeatAliveForInstance(String instanceHostname, int deadInstancePeriodMs) throws Exception
-    {
-        return true;
-    }
-
-    @Override
-    public void clearInstanceHeartbeat() throws Exception
-    {
-        // NOP
-    }
-
-    @Override
     public PseudoLock newPseudoLock() throws Exception
     {
         return new PseudoLock()

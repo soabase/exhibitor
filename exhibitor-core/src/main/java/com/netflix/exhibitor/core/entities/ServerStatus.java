@@ -78,4 +78,49 @@ public class ServerStatus
     {
         isLeader = leader;
     }
+
+    @SuppressWarnings("RedundantIfStatement")
+    @Override
+    public boolean equals(Object o)
+    {
+        if ( this == o )
+        {
+            return true;
+        }
+        if ( o == null || getClass() != o.getClass() )
+        {
+            return false;
+        }
+
+        ServerStatus that = (ServerStatus)o;
+
+        if ( code != that.code )
+        {
+            return false;
+        }
+        if ( isLeader != that.isLeader )
+        {
+            return false;
+        }
+        if ( !description.equals(that.description) )
+        {
+            return false;
+        }
+        if ( !hostname.equals(that.hostname) )
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = hostname.hashCode();
+        result = 31 * result + code;
+        result = 31 * result + description.hashCode();
+        result = 31 * result + (isLeader ? 1 : 0);
+        return result;
+    }
 }

@@ -84,22 +84,6 @@ class MockExhibitorInstance implements Closeable
             }
 
             @Override
-            public void writeInstanceHeartbeat() throws Exception
-            {
-            }
-
-            @Override
-            public void clearInstanceHeartbeat() throws Exception
-            {
-            }
-
-            @Override
-            public boolean isHeartbeatAliveForInstance(String instanceHostname, int deadInstancePeriodMs) throws Exception
-            {
-                return false;
-            }
-
-            @Override
             public PseudoLock newPseudoLock() throws Exception
             {
                 return null;

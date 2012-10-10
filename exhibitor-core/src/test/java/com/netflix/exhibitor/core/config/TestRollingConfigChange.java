@@ -129,7 +129,7 @@ public class TestRollingConfigChange
             Properties                      properties = new Properties();
             properties.setProperty(PropertyBasedInstanceConfig.toName(StringConfigs.SERVERS_SPEC, PropertyBasedInstanceConfig.ROOT_PROPERTY_PREFIX), serverList.toSpecString());
             PropertyBasedInstanceConfig     config = new PropertyBasedInstanceConfig(properties, DefaultProperties.get(null));
-            manager.startRollingConfig(config.getRootConfig());
+            manager.startRollingConfig(config.getRootConfig(), null);
 
             Assert.assertFalse(manager.isRolling());
         }
@@ -182,7 +182,7 @@ public class TestRollingConfigChange
             Properties                      properties = new Properties();
             properties.setProperty(PropertyBasedInstanceConfig.toName(StringConfigs.SERVERS_SPEC, PropertyBasedInstanceConfig.ROOT_PROPERTY_PREFIX), serverList.toSpecString());
             PropertyBasedInstanceConfig     config = new PropertyBasedInstanceConfig(properties, DefaultProperties.get(null));
-            manager.startRollingConfig(config.getRootConfig());
+            manager.startRollingConfig(config.getRootConfig(), null);
 
             for ( String hostname : manager.getRollingConfigState().getRollingHostNames() )
             {
@@ -277,22 +277,6 @@ public class TestRollingConfigChange
             }
 
             @Override
-            public void writeInstanceHeartbeat() throws Exception
-            {
-            }
-
-            @Override
-            public void clearInstanceHeartbeat() throws Exception
-            {
-            }
-
-            @Override
-            public boolean isHeartbeatAliveForInstance(String instanceHostname, int deadInstancePeriodMs) throws Exception
-            {
-                return false;
-            }
-
-            @Override
             public PseudoLock newPseudoLock() throws Exception
             {
                 return null;
@@ -316,7 +300,7 @@ public class TestRollingConfigChange
             Properties                      properties = new Properties();
             properties.setProperty(PropertyBasedInstanceConfig.toName(StringConfigs.SERVERS_SPEC, PropertyBasedInstanceConfig.ROOT_PROPERTY_PREFIX), serverList.toSpecString());
             PropertyBasedInstanceConfig     config = new PropertyBasedInstanceConfig(properties, DefaultProperties.get(null));
-            manager.startRollingConfig(config.getRootConfig());
+            manager.startRollingConfig(config.getRootConfig(), null);
 
             for ( String hostname : manager.getRollingConfigState().getRollingHostNames() )
             {
@@ -408,22 +392,6 @@ public class TestRollingConfigChange
             }
 
             @Override
-            public void writeInstanceHeartbeat() throws Exception
-            {
-            }
-
-            @Override
-            public void clearInstanceHeartbeat() throws Exception
-            {
-            }
-
-            @Override
-            public boolean isHeartbeatAliveForInstance(String instanceHostname, int deadInstancePeriodMs) throws Exception
-            {
-                return false;
-            }
-
-            @Override
             public PseudoLock newPseudoLock() throws Exception
             {
                 return null;
@@ -447,7 +415,7 @@ public class TestRollingConfigChange
             Properties                      properties = new Properties();
             properties.setProperty(PropertyBasedInstanceConfig.toName(StringConfigs.SERVERS_SPEC, PropertyBasedInstanceConfig.ROOT_PROPERTY_PREFIX), serverList.toSpecString());
             PropertyBasedInstanceConfig     config = new PropertyBasedInstanceConfig(properties, DefaultProperties.get(null));
-            manager.startRollingConfig(config.getRootConfig());
+            manager.startRollingConfig(config.getRootConfig(), null);
 
             for ( String hostname : manager.getRollingConfigState().getRollingHostNames() )
             {
@@ -497,22 +465,6 @@ public class TestRollingConfigChange
         public LoadedInstanceConfig loadConfig() throws Exception
         {
             return new LoadedInstanceConfig(config, modified.get());
-        }
-
-        @Override
-        public void writeInstanceHeartbeat() throws Exception
-        {
-        }
-
-        @Override
-        public boolean isHeartbeatAliveForInstance(String instanceHostname, int deadInstancePeriodMs) throws Exception
-        {
-            return false;
-        }
-
-        @Override
-        public void clearInstanceHeartbeat() throws Exception
-        {
         }
 
         @Override
