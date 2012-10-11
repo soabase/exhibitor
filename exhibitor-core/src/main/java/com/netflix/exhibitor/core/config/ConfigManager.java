@@ -190,7 +190,7 @@ public class ConfigManager implements Closeable
         }
 
         InstanceConfig          currentConfig = getCollection().getRootConfig();
-        RollingHostNamesBuilder builder = new RollingHostNamesBuilder(currentConfig, newConfig, exhibitor.getLog(), leaderHostname);
+        RollingHostNamesBuilder builder = new RollingHostNamesBuilder(currentConfig, newConfig, leaderHostname);
 
         clearAttempts();
 

@@ -16,6 +16,7 @@
 
 package com.netflix.exhibitor.core.automanage;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.netflix.exhibitor.core.Exhibitor;
@@ -96,10 +97,16 @@ public class AutomaticInstanceManagement implements Activity
         {
             if ( lock.lock(exhibitor.getLog(), Exhibitor.AUTO_INSTANCE_MANAGEMENT_PERIOD_MS / 2, TimeUnit.MILLISECONDS) )
             {
-                ServerList      potentialServerList = createPotentialServerList(serverList, statuses, usState.getUs() == null);
-
-                exhibitor.getLog().add(ActivityLog.Type.INFO, "Automatic Instance Management will change the server list: " + serverList + " ==> " + potentialServerList);
-                adjustConfig(potentialServerList.toSpecString(), clusterState.getLeaderHostname());
+                ServerList      potentialServerList = createPotentialServerList(serverList, clusterState.getLiveInstances(), usState.getUs() == null);
+                if ( potentialServerList.getSpecs().size() == 0 )
+                {
+                    exhibitor.getLog().add(ActivityLog.Type.INFO, "Automatic Instance Management skipped because new potential server list is empty");
+                }
+                else
+                {
+                    exhibitor.getLog().add(ActivityLog.Type.INFO, "Automatic Instance Management will change the server list: " + serverList + " ==> " + potentialServerList);
+                    adjustConfig(potentialServerList.toSpecString(), clusterState.getLeaderHostname());
+                }
             }
         }
         finally
@@ -108,6 +115,38 @@ public class AutomaticInstanceManagement implements Activity
         }
 
         return true;
+    }
+
+    @VisibleForTesting
+    void adjustConfig(final String newSpec, String leaderHostname) throws Exception
+    {
+        final InstanceConfig    currentConfig = exhibitor.getConfigManager().getConfig();
+        InstanceConfig          newConfig = new InstanceConfig()
+        {
+            @Override
+            public String getString(StringConfigs config)
+            {
+                if ( config == StringConfigs.SERVERS_SPEC )
+                {
+                    return newSpec;
+                }
+                return currentConfig.getString(config);
+            }
+
+            @Override
+            public int getInt(IntConfigs config)
+            {
+                return currentConfig.getInt(config);
+            }
+        };
+        if ( exhibitor.getConfigManager().startRollingConfig(newConfig, leaderHostname) )
+        {
+            clusterState.clear();
+        }
+        else
+        {
+            exhibitor.getLog().add(ActivityLog.Type.INFO, "Could not initiate Automatic Instance Management config change. Another process is already making a config change.");
+        }
     }
 
     private ServerList  createPotentialServerList(ServerList existingList, List<ServerStatus> statuses, boolean addUsIn)
@@ -174,36 +213,5 @@ public class AutomaticInstanceManagement implements Activity
         exhibitor.getLog().add(ActivityLog.Type.DEBUG, "Instance statuses query done.");
 
         return statuses;
-    }
-
-    private void adjustConfig(final String newSpec, String leaderHostname) throws Exception
-    {
-        final InstanceConfig    currentConfig = exhibitor.getConfigManager().getConfig();
-        InstanceConfig          newConfig = new InstanceConfig()
-        {
-            @Override
-            public String getString(StringConfigs config)
-            {
-                if ( config == StringConfigs.SERVERS_SPEC )
-                {
-                    return newSpec;
-                }
-                return currentConfig.getString(config);
-            }
-
-            @Override
-            public int getInt(IntConfigs config)
-            {
-                return currentConfig.getInt(config);
-            }
-        };
-        if ( exhibitor.getConfigManager().startRollingConfig(newConfig, leaderHostname) )
-        {
-            clusterState.clear();
-        }
-        else
-        {
-            exhibitor.getLog().add(ActivityLog.Type.INFO, "Could not initiate Automatic Instance Management config change. Another process is already making a config change.");
-        }
     }
 }

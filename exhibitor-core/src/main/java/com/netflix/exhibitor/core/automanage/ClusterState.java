@@ -55,6 +55,22 @@ class ClusterState
         return (getLeaderHostname() != null);
     }
 
+    List<ServerStatus>  getLiveInstances()
+    {
+        List<ServerStatus>      live = Lists.newArrayList();
+        List<ServerStatus>      currentStatuses = statuses.get();
+        for ( ServerStatus status : currentStatuses )
+        {
+            InstanceStateTypes  type = InstanceStateTypes.fromCode(status.getCode());
+            if ( type != InstanceStateTypes.DOWN )
+            {
+                live.add(status);
+            }
+        }
+
+        return live;
+    }
+
     boolean     hasDeadInstances()
     {
         List<ServerStatus>      currentStatuses = statuses.get();

@@ -14,36 +14,46 @@
  *    limitations under the License.
  */
 
-package com.netflix.exhibitor.core.config;
+package com.netflix.exhibitor.core.automanage;
 
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.ActivityQueue;
+import com.netflix.exhibitor.core.config.ConfigManager;
+import com.netflix.exhibitor.core.state.InstanceStateTypes;
+import com.netflix.exhibitor.core.state.MonitorRunningInstance;
+import jsr166y.ForkJoinPool;
 import org.mockito.Mockito;
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.Properties;
-import java.util.concurrent.atomic.AtomicLong;
 
 class MockExhibitorInstance implements Closeable
 {
     private final Exhibitor mockExhibitor;
+    private final ForkJoinPool mockForkJoinPool;
+    private final MockConfigProvider mockConfigProvider;
 
     MockExhibitorInstance(String hostname) throws Exception
     {
-        this(hostname, getConfigProvider());
-    }
-
-    MockExhibitorInstance(String hostname, ConfigProvider provider) throws Exception
-    {
         ActivityLog log = new ActivityLog(100);
         ActivityQueue activityQueue = new ActivityQueue();
+
+        MonitorRunningInstance      monitorRunningInstance = Mockito.mock(MonitorRunningInstance.class);
+        Mockito.when(monitorRunningInstance.getCurrentInstanceState()).thenReturn(InstanceStateTypes.SERVING);
+
+
         mockExhibitor = Mockito.mock(Exhibitor.class);
         Mockito.when(mockExhibitor.getLog()).thenReturn(log);
         Mockito.when(mockExhibitor.getActivityQueue()).thenReturn(activityQueue);
         Mockito.when(mockExhibitor.getThisJVMHostname()).thenReturn(hostname);
+        Mockito.when(mockExhibitor.getMonitorRunningInstance()).thenReturn(monitorRunningInstance);
 
-        ConfigManager       manager = new ConfigManager(mockExhibitor, provider, 10);
+        mockForkJoinPool = Mockito.mock(ForkJoinPool.class);
+        Mockito.when(mockExhibitor.getForkJoinPool()).thenReturn(mockForkJoinPool);
+
+        mockConfigProvider = new MockConfigProvider();
+
+        ConfigManager manager = new ConfigManager(mockExhibitor, mockConfigProvider, 10);
         manager.start();
 
         Mockito.when(mockExhibitor.getConfigManager()).thenReturn(manager);
@@ -60,42 +70,13 @@ class MockExhibitorInstance implements Closeable
         return mockExhibitor;
     }
 
-    private static ConfigProvider getConfigProvider()
+    ForkJoinPool getMockForkJoinPool()
     {
-        return new ConfigProvider()
-        {
-            private volatile ConfigCollection       config = new PropertyBasedInstanceConfig(new Properties(), new Properties());
-            private final AtomicLong                modified = new AtomicLong(1);
+        return mockForkJoinPool;
+    }
 
-            @Override
-            public void start() throws Exception
-            {
-            }
-
-            @Override
-            public void close() throws IOException
-            {
-            }
-
-            @Override
-            public LoadedInstanceConfig loadConfig() throws Exception
-            {
-                return new LoadedInstanceConfig(config, modified.get());
-            }
-
-            @Override
-            public PseudoLock newPseudoLock() throws Exception
-            {
-                return null;
-            }
-
-            @Override
-            public LoadedInstanceConfig storeConfig(ConfigCollection config, long compareVersion) throws Exception
-            {
-                this.config = config;
-                modified.incrementAndGet();
-                return loadConfig();
-            }
-        };
+    MockConfigProvider getMockConfigProvider()
+    {
+        return mockConfigProvider;
     }
 }

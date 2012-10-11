@@ -18,7 +18,6 @@ package com.netflix.exhibitor.core.config;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
-import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.state.ServerList;
 import java.util.List;
 import java.util.Set;
@@ -27,10 +26,8 @@ class RollingHostNamesBuilder
 {
     private final List<String>      rollingHostNames;
 
-    RollingHostNamesBuilder(InstanceConfig rootConfig, InstanceConfig rollingConfig, ActivityLog log, String leaderHostname)
+    RollingHostNamesBuilder(InstanceConfig rootConfig, InstanceConfig rollingConfig, String leaderHostname)
     {
-        // TODO leaderHostname
-
         ServerList  rootServers = new ServerList(rootConfig.getString(StringConfigs.SERVERS_SPEC));
         ServerList  rollingServers = new ServerList(rollingConfig.getString(StringConfigs.SERVERS_SPEC));
 
@@ -39,11 +36,11 @@ class RollingHostNamesBuilder
 
         ImmutableList.Builder<String> builder = ImmutableList.builder();
         builder.addAll(newServers); // new servers need to be started first as the others will try to communicate with them. You may have issues if there is more than 1 new server
-        if ( unchangedServers.contains(leaderHostname) )
+        if ( (leaderHostname != null) && unchangedServers.contains(leaderHostname) )
         {
-            unchangedServers.remove(leaderHostname);
-            builder.addAll(unchangedServers);           // the servers that are staying in the cluster can be restarted next.
-            builder.add(leaderHostname);                // restart the leader last in the hopes of keeping quorum as long as possible
+            Set<String>     allButLeader = Sets.difference(unchangedServers, Sets.newHashSet(leaderHostname));
+            builder.addAll(allButLeader);           // the servers that are staying in the cluster can be restarted next.
+            builder.add(leaderHostname);            // restart the leader last in the hopes of keeping quorum as long as possible
         }
         else
         {

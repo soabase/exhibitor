@@ -79,6 +79,17 @@ public class ServerStatus
         isLeader = leader;
     }
 
+    @Override
+    public String toString()
+    {
+        return "ServerStatus{" +
+            "hostname='" + hostname + '\'' +
+            ", code=" + code +
+            ", description='" + description + '\'' +
+            ", isLeader=" + isLeader +
+            '}';
+    }
+
     @SuppressWarnings("RedundantIfStatement")
     @Override
     public boolean equals(Object o)
