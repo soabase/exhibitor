@@ -30,6 +30,63 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class TestAutoInstanceManagement
 {
     @Test
+    public void     testUnstable() throws Exception
+    {
+        MockExhibitorInstance       mockExhibitorInstance = new MockExhibitorInstance("new");
+        mockExhibitorInstance.getMockConfigProvider().setConfig(StringConfigs.SERVERS_SPEC, "1:a,2:b,3:c");
+        mockExhibitorInstance.getMockConfigProvider().setConfig(IntConfigs.AUTO_MANAGE_INSTANCES, 1);
+        mockExhibitorInstance.getMockConfigProvider().setConfig(IntConfigs.AUTO_MANAGE_INSTANCES_SETTLING_PERIOD_MS, 100000);
+
+        List<ServerStatus>          statuses = Lists.newArrayList();
+        statuses.add(new ServerStatus("a", InstanceStateTypes.SERVING.getCode(), "", true));
+        statuses.add(new ServerStatus("b", InstanceStateTypes.SERVING.getCode(), "", false));
+        statuses.add(new ServerStatus("c", InstanceStateTypes.SERVING.getCode(), "", false));
+        Mockito.when(mockExhibitorInstance.getMockForkJoinPool().invoke(Mockito.isA(ClusterStatusTask.class))).thenReturn(statuses);
+
+        final AtomicBoolean         configWasChanged = new AtomicBoolean(false);
+        AutomaticInstanceManagement management = new AutomaticInstanceManagement(mockExhibitorInstance.getMockExhibitor())
+        {
+            @Override
+            void adjustConfig(String newSpec, String leaderHostname) throws Exception
+            {
+                super.adjustConfig(newSpec, leaderHostname);
+                configWasChanged.set(true);
+            }
+        };
+        management.call();
+
+        Assert.assertFalse(configWasChanged.get()); // hasn't settled yet
+
+        statuses = Lists.newArrayList();
+        statuses.add(new ServerStatus("a", InstanceStateTypes.DOWN.getCode(), "", false));
+        statuses.add(new ServerStatus("b", InstanceStateTypes.SERVING.getCode(), "", false));
+        statuses.add(new ServerStatus("c", InstanceStateTypes.SERVING.getCode(), "", false));
+        Mockito.when(mockExhibitorInstance.getMockForkJoinPool().invoke(Mockito.isA(ClusterStatusTask.class))).thenReturn(statuses);
+        mockExhibitorInstance.getMockConfigProvider().setConfig(IntConfigs.AUTO_MANAGE_INSTANCES_SETTLING_PERIOD_MS, 0);
+
+        management.call();
+
+        Assert.assertFalse(configWasChanged.get());
+
+        statuses = Lists.newArrayList();
+        statuses.add(new ServerStatus("a", InstanceStateTypes.SERVING.getCode(), "", true));
+        statuses.add(new ServerStatus("b", InstanceStateTypes.SERVING.getCode(), "", false));
+        statuses.add(new ServerStatus("c", InstanceStateTypes.SERVING.getCode(), "", false));
+        Mockito.when(mockExhibitorInstance.getMockForkJoinPool().invoke(Mockito.isA(ClusterStatusTask.class))).thenReturn(statuses);
+        mockExhibitorInstance.getMockConfigProvider().setConfig(IntConfigs.AUTO_MANAGE_INSTANCES_SETTLING_PERIOD_MS, 2000);
+
+        management.call();
+
+        Assert.assertFalse(configWasChanged.get());
+
+        Thread.sleep(3000);
+
+        management.call();
+
+        Assert.assertTrue(configWasChanged.get());
+    }
+
+    @Test
     public void     testNoServers() throws Exception
     {
         MockExhibitorInstance       mockExhibitorInstance = new MockExhibitorInstance("a");
