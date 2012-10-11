@@ -146,7 +146,7 @@ public class DefaultProperties
 
                     case AUTO_MANAGE_INSTANCES_SETTLING_PERIOD_MS:
                     {
-                        return (int)TimeUnit.MILLISECONDS.convert(2, TimeUnit.MINUTES);
+                        return (int)TimeUnit.MILLISECONDS.convert(3, TimeUnit.MINUTES);
                     }
 
                     case OBSERVER_THRESHOLD:
