@@ -77,7 +77,7 @@ class ClusterState
         for ( ServerStatus status : currentStatuses )
         {
             InstanceStateTypes  type = InstanceStateTypes.fromCode(status.getCode());
-            if ( (type != InstanceStateTypes.SERVING) && (type != InstanceStateTypes.LATENT) )
+            if ( type == InstanceStateTypes.DOWN )
             {
                 return true;
             }

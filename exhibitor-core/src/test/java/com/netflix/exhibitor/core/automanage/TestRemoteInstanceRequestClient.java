@@ -41,7 +41,11 @@ public class TestRemoteInstanceRequestClient
         catch ( Exception e )
         {
             Throwable cause = e.getCause();
-            Assert.assertTrue(cause instanceof ConnectException);
+            if ( cause == null )
+            {
+                cause = e;
+            }
+            Assert.assertTrue(cause instanceof ConnectException, cause.getClass().getName());
         }
         finally
         {
