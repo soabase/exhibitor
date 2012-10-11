@@ -24,6 +24,10 @@ subprojects {
     apply plugin: 'java'
 
     group = "com.netflix.${githubProjectName}" // TEMPLATE: Set to organization of project
+
+    dependencies {
+        testCompile 'org.testng:testng:6.1.1'
+    }
 }
 
 project(':exhibitor-core') {
