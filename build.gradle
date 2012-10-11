@@ -1,47 +1,29 @@
-// Establish version and status
-ext.releaseVersion = '1.2.5'
-ext.githubProjectName = rootProject.name
+ext.githubProjectName = rootProject.name // Change if github project name is not the same as the root project's name
 
 buildscript {
     repositories { mavenCentral() }
+    apply from: file('gradle/buildscript.gradle'), to: buildscript 
 }
 
 allprojects {
     repositories { mavenCentral() }
 }
 
-//apply from: file('gradle/release.gradle') // Not fully tested
 apply from: file('gradle/convention.gradle')
 apply from: file('gradle/maven.gradle')
 //apply from: file('gradle/check.gradle')
 //apply from: file('gradle/license.gradle') // Waiting for re-release
+apply from: file('gradle/release.gradle')
 
 apply plugin: 'idea'
+apply plugin: 'eclipse'
 
 subprojects {
     apply plugin: 'idea'
-
-    // Closure to configure all the POM with extra info, common to all projects
-    pom {
-        project {
-            url "https://github.com/Netflix/${rootProject.githubProjectName}"
-            scm {
-                connection "scm:git:git@github.com:Netflix/${rootProject.githubProjectName}.git"
-                url "scm:git:git@github.com:Netflix/${rootProject.githubProjectName}.git"
-                developerConnection "scm:git:git@github.com:Netflix/${rootProject.githubProjectName}.git"
-            }
-            issueManagement {
-                system 'github'
-                url "https://github.com/Netflix/${rootProject.githubProjectName}/issues"
-            }
-        }
-    }
+    apply plugin: 'eclipse'
+    apply plugin: 'java'
 
     group = "com.netflix.${githubProjectName}" // TEMPLATE: Set to organization of project
-
-    dependencies {
-        testCompile 'org.testng:testng:6.1.1'
-    }
 }
 
 project(':exhibitor-core') {
