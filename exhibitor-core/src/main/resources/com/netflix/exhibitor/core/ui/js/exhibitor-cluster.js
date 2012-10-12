@@ -177,9 +177,15 @@ function logDialog(hostname)
     return function() {
         $('#log-text').text("Loading...");
 
-        makeRemoteCall(URL_CLUSTER_LOG_BASE, hostname, function(text){
-            $('#log-text').text(text);
-        });
+        function getLog() {
+            makeRemoteCall(URL_CLUSTER_LOG_BASE, hostname, function(text){
+                $('#log-text').text(text);
+            });
+        }
+        getLog();
+
+        $('#log-refresh-button').unbind("click");
+        $('#log-refresh-button').click(getLog);
 
         $('#log-dialog').dialog("option", "title", hostname);
         $('#log-dialog').dialog("open");
@@ -190,6 +196,7 @@ function word4ltrDialog(hostname)
 {
     return function() {
         $('#word-4ltr-button').unbind("click");
+
         $('#word-4ltr-button').click(function(){
             $('#word-4ltr-text').text("Loading...");
             makeRemoteCall(URL_CLUSTER_4LTR_BASE + $('#word-4ltr').val() + "/", hostname, function(text){
