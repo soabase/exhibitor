@@ -28,6 +28,15 @@ subprojects {
     dependencies {
         testCompile 'org.testng:testng:6.1.1'
     }
+
+    jar {
+        from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+        manifest {
+            attributes (
+                'Implementation-Version': project.version
+            )
+        }
+    }
 }
 
 project(':exhibitor-core') {
