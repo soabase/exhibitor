@@ -55,8 +55,28 @@ function buildServerItems()
     updateServerState(serversList);
 }
 
+function destroyOldServerItems()
+{
+    for ( var i = 0; i < currentServersList.length; ++i )
+    {
+        var domId = '#cp-' + i;
+        $(domId + '-power-button').button("destroy");
+        $(domId + '-4ltr-button').button("destroy");
+        $(domId + '-log-button').button("destroy");
+
+        $(domId + '-power-button').unbind("click");
+        $(domId + '-4ltr-button').unbind("click");
+        $(domId + '-log-button').unbind("click");
+    }
+}
+
 function internalBuildServerItems(serversList)
 {
+    if ( currentServersList != null )
+    {
+        destroyOldServerItems();
+    }
+
     currentServersSpec = systemConfig.serversSpec;
     currentHostname = systemConfig.hostname;
     currentServersList = serversList;
@@ -169,6 +189,7 @@ function logDialog(hostname)
 function word4ltrDialog(hostname)
 {
     return function() {
+        $('#word-4ltr-button').unbind("click");
         $('#word-4ltr-button').click(function(){
             $('#word-4ltr-text').text("Loading...");
             makeRemoteCall(URL_CLUSTER_4LTR_BASE + $('#word-4ltr').val() + "/", hostname, function(text){
