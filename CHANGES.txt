@@ -1,5 +1,5 @@
-1.4.0 - xxxxxxxxxxxxxx
-======================
+1.4.0 - October 13, 2012
+========================
 * When shutting down ZooKeeper, attempt a simple kill first before trying kill -9.
 
 * Issue 51: Include log4j in standalone version
