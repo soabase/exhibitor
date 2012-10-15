@@ -14,8 +14,12 @@
  *    limitations under the License.
  */
 
-package com.netflix.exhibitor.application;
+package com.netflix.exhibitor.standalone;
 
-public class ExhibitorCreatorExit extends Exception
+public class MissingConfigurationTypeException extends ExhibitorCreatorExit
 {
+    public MissingConfigurationTypeException(String error, ExhibitorCLI cli)
+    {
+        super(error, cli);
+    }
 }

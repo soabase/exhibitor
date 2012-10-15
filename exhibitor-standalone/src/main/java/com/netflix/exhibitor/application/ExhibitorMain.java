@@ -19,6 +19,8 @@
 package com.netflix.exhibitor.application;
 
 import com.google.common.io.Closeables;
+import com.netflix.exhibitor.standalone.ExhibitorCreator;
+import com.netflix.exhibitor.standalone.ExhibitorCreatorExit;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.ExhibitorArguments;
 import com.netflix.exhibitor.core.backup.BackupProvider;
@@ -47,13 +49,19 @@ public class ExhibitorMain implements Closeable
 
     public static void main(String[] args) throws Exception
     {
-        ExhibitorCreator        creator;
+        ExhibitorCreator creator;
         try
         {
             creator = new ExhibitorCreator(args);
         }
-        catch ( ExhibitorCreatorExit ignore )
+        catch ( ExhibitorCreatorExit exit )
         {
+            if ( exit.getError() != null )
+            {
+                System.err.println(exit.getError());
+            }
+
+            exit.getCli().printHelp();
             return;
         }
 
