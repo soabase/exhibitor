@@ -4,13 +4,6 @@
            xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
 		  http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
            version="2.5">
-<!--
-    <context-param>
-        <param-name>exhibitor-c</param-name>
-        <param-value>file</param-value>
-    </context-param>
--->
-
     <listener>
         <listener-class>com.netflix.exhibitor.servlet.ExhibitorServletContextListener</listener-class>
     </listener>

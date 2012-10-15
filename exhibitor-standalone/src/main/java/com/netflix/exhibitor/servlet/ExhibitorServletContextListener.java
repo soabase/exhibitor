@@ -19,6 +19,7 @@ package com.netflix.exhibitor.servlet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.io.Closeables;
+import com.google.common.io.Resources;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.standalone.ExhibitorCLI;
 import com.netflix.exhibitor.standalone.ExhibitorCreator;
@@ -28,6 +29,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -40,11 +44,12 @@ public class ExhibitorServletContextListener implements ServletContextListener
     private volatile Exhibitor  exhibitor;
 
     private static final String OUR_PREFIX = "exhibitor-";
+    private static final String EXHIBITOR_PROPERTIES = "exhibitor.properties";
 
     @Override
     public void contextInitialized(ServletContextEvent event)
     {
-        Map<String, String> argsBuilder = makeArgsBuilder(event);
+        Map<String, String> argsBuilder = makeArgsBuilder();
 
         try
         {
@@ -96,34 +101,51 @@ public class ExhibitorServletContextListener implements ServletContextListener
         return args.toArray(new String[args.size()]);
     }
 
-    private Map<String, String> makeArgsBuilder(ServletContextEvent event)
+    private Map<String, String> makeArgsBuilder()
     {
         Map<String, String>     argsBuilder = Maps.newHashMap();
-        Enumeration             parameterNames = event.getServletContext().getInitParameterNames();
-        while ( parameterNames.hasMoreElements() )
+
+        try
         {
-            String  name = String.valueOf(parameterNames.nextElement());
-            if ( name.startsWith(OUR_PREFIX) )
+            URL         resource = Resources.getResource(EXHIBITOR_PROPERTIES);
+            InputStream stream = resource.openStream();
+            try
             {
-                String      value = event.getServletContext().getInitParameter(name);
-                String      argName = name.substring(OUR_PREFIX.length());
-                argsBuilder.put("-" + argName, value);
+                Properties  properties = new Properties();
+                properties.load(stream);
+                applyProperties(argsBuilder, properties);
             }
+            finally
+            {
+                Closeables.closeQuietly(stream);
+            }
+        }
+        catch ( IllegalArgumentException e )
+        {
+            log.warn("Could not find " + EXHIBITOR_PROPERTIES);
+        }
+        catch ( IOException e )
+        {
+            log.error("Could not load " + EXHIBITOR_PROPERTIES, e);
         }
 
-        Properties      systemProperties = System.getProperties();
-        parameterNames = systemProperties.propertyNames();
-        while ( parameterNames.hasMoreElements() )
-        {
-            String  name = String.valueOf(parameterNames.nextElement());
-            if ( name.startsWith(OUR_PREFIX) )
-            {
-                String      value = systemProperties.getProperty(name);
-                String      argName = name.substring(OUR_PREFIX.length());
-                argsBuilder.put("-" + argName, value);
-            }
-        }
+        applyProperties(argsBuilder, System.getProperties());
 
         return argsBuilder;
+    }
+
+    private void applyProperties(Map<String, String> argsBuilder, Properties properties)
+    {
+        Enumeration parameterNames = properties.propertyNames();
+        while ( parameterNames.hasMoreElements() )
+        {
+            String  name = String.valueOf(parameterNames.nextElement());
+            if ( name.startsWith(OUR_PREFIX) )
+            {
+                String      value = properties.getProperty(name);
+                String      argName = name.substring(OUR_PREFIX.length());
+                argsBuilder.put("-" + argName, value);
+            }
+        }
     }
 }
