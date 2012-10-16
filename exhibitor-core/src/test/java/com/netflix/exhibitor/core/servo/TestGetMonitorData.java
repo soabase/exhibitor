@@ -47,19 +47,27 @@ public class TestGetMonitorData
             "zk_max_file_descriptor_count	10240"
         };
 
-        ServoMonitor        servoMonitor = new ServoMonitor();
-        Assert.assertEquals(servoMonitor.zk_ephemerals_count.get(), 0);
-        Assert.assertEquals(servoMonitor.zk_approximate_data_size.get(), 0);
-        servoMonitor.zk_packets_sent.set(10101);
+        ZookeeperMonitoredData zookeeperMonitoredData = new ZookeeperMonitoredData();
+        Assert.assertEquals(zookeeperMonitoredData.zk_ephemerals_count.get(), 0);
+        Assert.assertEquals(zookeeperMonitoredData.zk_approximate_data_size.get(), 0);
+        zookeeperMonitoredData.zk_packets_sent.set(10101);
 
         List<String>        linesList = Arrays.asList(lines);
-        GetMonitorData      getMonitorData = new GetMonitorData(Mockito.mock(Exhibitor.class), servoMonitor);
+        GetMonitorData      getMonitorData = new GetMonitorData(Mockito.mock(Exhibitor.class), zookeeperMonitoredData);
         getMonitorData.doUpdate(linesList);
 
-        Assert.assertEquals(servoMonitor.zk_ephemerals_count.get(), 0);
-        Assert.assertEquals(servoMonitor.zk_packets_received.get(), 1);
-        Assert.assertEquals(servoMonitor.zk_approximate_data_size.get(), 34);
-        Assert.assertEquals(servoMonitor.zk_max_file_descriptor_count.get(), 10240);
-        Assert.assertEquals(servoMonitor.zk_packets_sent.get(), 10101); // assert that it hasn't changed
+        Assert.assertEquals(zookeeperMonitoredData.zk_ephemerals_count.get(), 0);
+        Assert.assertEquals(zookeeperMonitoredData.zk_packets_received.get(), 1);
+        Assert.assertEquals(zookeeperMonitoredData.zk_approximate_data_size.get(), 34);
+        Assert.assertEquals(zookeeperMonitoredData.zk_max_file_descriptor_count.get(), 10240);
+        Assert.assertEquals(zookeeperMonitoredData.zk_packets_sent.get(), 10101); // assert that it hasn't changed
     }
+/*
+
+    @Test
+    public void testAnnotations()
+    {
+        AnnotationUtils.validate(new ZookeeperMonitoredData());
+    }
+*/
 }

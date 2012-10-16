@@ -20,15 +20,16 @@ import com.google.common.collect.Maps;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.activity.Activity;
 import com.netflix.exhibitor.core.state.FourLetterWord;
+import com.netflix.servo.monitor.BasicCounter;
 import java.util.List;
 import java.util.Map;
 
 public class GetMonitorData implements Activity
 {
     private final Exhibitor exhibitor;
-    private final ServoMonitor monitor;
+    private final ZookeeperMonitoredData monitor;
 
-    public GetMonitorData(Exhibitor exhibitor, ServoMonitor monitor)
+    public GetMonitorData(Exhibitor exhibitor, ZookeeperMonitoredData monitor)
     {
         this.exhibitor = exhibitor;
         this.monitor = monitor;

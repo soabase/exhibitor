@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.netflix.servo.annotations.DataSourceType.*;
 
-public class ServoMonitor
+public class ZookeeperMonitoredData
 {
     private final Map<String, AtomicInteger>        fieldMap;
 
@@ -76,7 +76,7 @@ public class ServoMonitor
     @Monitor(name="zk_max_file_descriptor_count", type=COUNTER)
     public final AtomicInteger     zk_max_file_descriptor_count = new AtomicInteger(0);
 
-    public ServoMonitor()
+    public ZookeeperMonitoredData()
     {
         ImmutableMap.Builder<String, AtomicInteger>         builder = ImmutableMap.builder();
         try
