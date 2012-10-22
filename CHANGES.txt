@@ -8,6 +8,9 @@ here: https://github.com/Netflix/exhibitor/wiki/Building-A-WAR-File
 
 * Added support for JMX monitoring via Servo. Doc will be added on the Github wiki.
 
+* Issue 58: When using ZooKeeper as a configuration source, the internal Curator connection
+was not being started and thus the connection was failing.
+
 1.4.0 - October 13, 2012
 ========================
 * When shutting down ZooKeeper, attempt a simple kill first before trying kill -9.
