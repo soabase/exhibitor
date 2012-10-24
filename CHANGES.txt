@@ -3,6 +3,8 @@
 * There was no way to specify Exhibitor port (and REST path) values when using ZooKeeper
 as a config provider.
 
+* Added UI widget to open a view on a given instance.
+
 1.4.2 - October 22, 2012
 ========================
 * The retry policy used internally for connections was configured badly. It could result
