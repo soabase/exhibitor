@@ -1,5 +1,5 @@
-1.4.3 - xxxxxxxxxxxxxxxx
-========================
+1.4.3 - November 26, 2012
+=========================
 * There was no way to specify Exhibitor port (and REST path) values when using ZooKeeper
 as a config provider.
 
