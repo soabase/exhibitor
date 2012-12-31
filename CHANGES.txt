@@ -3,6 +3,10 @@
 * Issue 94: The standalone version now has a CLI option to load default ZK/Exhibitor config
 values. Details here (see --defaultconfig): https://github.com/Netflix/exhibitor/wiki/Running-Exhibitor
 
+* Issue 97: There appear to be some bugs in the JDK with the Preferences API which Exhibitor uses
+for Control Panel values, etc. There is now an option to provide an alternate file path to use so
+as to work around this. For the standalone version use "--prefspath".
+
 1.4.3 - November 26, 2012
 =========================
 * There was no way to specify Exhibitor port (and REST path) values when using ZooKeeper
