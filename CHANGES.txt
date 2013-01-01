@@ -7,6 +7,8 @@ values. Details here (see --defaultconfig): https://github.com/Netflix/exhibitor
 for Control Panel values, etc. There is now an option to provide an alternate file path to use so
 as to work around this. For the standalone version use "--prefspath".
 
+* Issue 98: IE 8 and below don't support Date.now().
+
 1.4.3 - November 26, 2012
 =========================
 * There was no way to specify Exhibitor port (and REST path) values when using ZooKeeper
