@@ -1,5 +1,5 @@
-1.4.4 - xxxxxxxxxxxxxxxxx
-=========================
+1.4.4 - January 2, 2013
+=======================
 * Issue 94: The standalone version now has a CLI option to load default ZK/Exhibitor config
 values. Details here (see --defaultconfig): https://github.com/Netflix/exhibitor/wiki/Running-Exhibitor
 
