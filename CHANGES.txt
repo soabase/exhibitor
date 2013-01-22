@@ -1,3 +1,7 @@
+1.4.6 - xxxxxxxxxxxxxxx
+=======================
+* Issue 106: Disable Chrome textarea resizing in the modify node dialog.
+
 1.4.5 - January 9, 2013
 =======================
 * Issue 103: S3 buckets outside of us-east-1 now require an "endpoint" to be set. For the standalone
