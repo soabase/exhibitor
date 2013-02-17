@@ -18,15 +18,22 @@
 
 package com.netflix.exhibitor.application;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
 import com.google.common.io.Closeables;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.ExhibitorArguments;
+import com.netflix.exhibitor.core.RemoteConnectionConfiguration;
 import com.netflix.exhibitor.core.backup.BackupProvider;
 import com.netflix.exhibitor.core.config.ConfigProvider;
 import com.netflix.exhibitor.core.rest.UIContext;
 import com.netflix.exhibitor.core.rest.jersey.JerseySupport;
 import com.netflix.exhibitor.standalone.ExhibitorCreator;
 import com.netflix.exhibitor.standalone.ExhibitorCreatorExit;
+import com.netflix.exhibitor.standalone.SecurityArguments;
+import com.sun.jersey.api.client.filter.ClientFilter;
+import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
+import com.sun.jersey.api.client.filter.HTTPDigestAuthFilter;
 import com.sun.jersey.api.core.DefaultResourceConfig;
 import com.sun.jersey.spi.container.servlet.ServletContainer;
 import org.mortbay.jetty.Server;
@@ -42,6 +49,8 @@ import org.slf4j.LoggerFactory;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ExhibitorMain implements Closeable
@@ -51,6 +60,7 @@ public class ExhibitorMain implements Closeable
     private final AtomicBoolean isClosed = new AtomicBoolean(false);
     private final Exhibitor exhibitor;
     private final AtomicBoolean shutdownSignaled = new AtomicBoolean(false);
+    private final Map<String, String> users = Maps.newHashMap();
 
     public static void main(String[] args) throws Exception
     {
@@ -70,6 +80,7 @@ public class ExhibitorMain implements Closeable
             return;
         }
 
+        SecurityArguments securityArguments = new SecurityArguments(creator.getSecurityFile(), creator.getRealmSpec(), creator.getRemoteAuthSpec());
         ExhibitorMain exhibitorMain = new ExhibitorMain
         (
             creator.getBackupProvider(),
@@ -77,8 +88,7 @@ public class ExhibitorMain implements Closeable
             creator.getBuilder(),
             creator.getHttpPort(),
             creator.getSecurityHandler(),
-            creator.getSecurityFile(),
-            creator.getRealmSpec()
+            securityArguments
         );
         setShutdown(exhibitorMain);
 
@@ -98,8 +108,14 @@ public class ExhibitorMain implements Closeable
         }
     }
 
-    public ExhibitorMain(BackupProvider backupProvider, ConfigProvider configProvider, ExhibitorArguments.Builder builder, int httpPort, SecurityHandler security, String securityFile, String realmSpec) throws Exception
+    public ExhibitorMain(BackupProvider backupProvider, ConfigProvider configProvider, ExhibitorArguments.Builder builder, int httpPort, SecurityHandler security, SecurityArguments securityArguments) throws Exception
     {
+        HashUserRealm realm = makeRealm(securityArguments);
+        if ( securityArguments.getRemoteAuthSpec() != null )
+        {
+            addRemoteAuth(builder, securityArguments.getRemoteAuthSpec());
+        }
+
         builder.shutdownProc(makeShutdownProc(this));
         exhibitor = new Exhibitor(configProvider, null, backupProvider, builder.build());
         exhibitor.start();
@@ -113,10 +129,37 @@ public class ExhibitorMain implements Closeable
         {
             root.setSecurityHandler(security);
         }
-        else if ( securityFile != null )
+        else if ( securityArguments.getSecurityFile() != null )
         {
-            addSecurityFile(securityFile, realmSpec, root);
+            addSecurityFile(realm, securityArguments.getSecurityFile(), root);
         }
+    }
+
+    private void addRemoteAuth(ExhibitorArguments.Builder builder, String remoteAuthSpec)
+    {
+        String[] parts = remoteAuthSpec.split(":");
+        Preconditions.checkArgument(parts.length == 2, "Badly formed remote client authorization: " + remoteAuthSpec);
+
+        String type = parts[0].trim();
+        String userName = parts[1].trim();
+
+        String password = Preconditions.checkNotNull(users.get(userName), "Realm user not found: " + userName);
+
+        ClientFilter filter;
+        if ( type.equals("basic") )
+        {
+            filter = new HTTPBasicAuthFilter(userName, password);
+        }
+        else if ( type.equals("digest") )
+        {
+            filter = new HTTPDigestAuthFilter(userName, password);
+        }
+        else
+        {
+            throw new IllegalStateException("Unknown remote client authorization type: " + type);
+        }
+
+        builder.remoteConnectionConfiguration(new RemoteConnectionConfiguration(Arrays.asList(filter)));
     }
 
     public void start() throws Exception
@@ -182,7 +225,7 @@ public class ExhibitorMain implements Closeable
         };
     }
 
-    private void addSecurityFile(String securityFile, String realmSpec, Context root) throws Exception
+    private void addSecurityFile(HashUserRealm realm, String securityFile, Context root) throws Exception
     {
         // create a temp Jetty context to parse the security portion of the web.xml file
 
@@ -213,9 +256,9 @@ public class ExhibitorMain implements Closeable
         {
             SecurityHandler securityHandler = webXmlConfiguration.getWebAppContext().getSecurityHandler();
 
-            if ( realmSpec != null )
+            if ( realm != null )
             {
-                addRealm(securityHandler, realmSpec);
+                securityHandler.setUserRealm(realm);
             }
 
             root.setSecurityHandler(securityHandler);
@@ -226,15 +269,28 @@ public class ExhibitorMain implements Closeable
         }
     }
 
-    private void addRealm(SecurityHandler securityHandler, String realmSpec) throws Exception
+    private HashUserRealm makeRealm(SecurityArguments securityArguments) throws Exception
     {
-        String[] parts = realmSpec.split(":");
-        if ( parts.length != 2 )
+        if ( securityArguments.getRealmSpec() == null )
         {
-            throw new Exception("Bad realm spec: " + realmSpec);
+            return null;
         }
 
-        HashUserRealm realm = new HashUserRealm(parts[0].trim(), parts[1].trim());
-        securityHandler.setUserRealm(realm);
+        String[] parts = securityArguments.getRealmSpec().split(":");
+        if ( parts.length != 2 )
+        {
+            throw new Exception("Bad realm spec: " + securityArguments.getRealmSpec());
+        }
+
+        return new HashUserRealm(parts[0].trim(), parts[1].trim())
+        {
+            @Override
+            public Object put(Object name, Object credentials)
+            {
+                users.put(String.valueOf(name), String.valueOf(credentials));
+
+                return super.put(name, credentials);
+            }
+        };
     }
 }

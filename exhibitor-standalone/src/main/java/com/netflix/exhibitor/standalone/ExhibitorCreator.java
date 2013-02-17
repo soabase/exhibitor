@@ -90,6 +90,7 @@ public class ExhibitorCreator
     private final List<Closeable> closeables = Lists.newArrayList();
     private final String securityFile;
     private final String realmSpec;
+    private final String remoteAuthSpec;
 
     public ExhibitorCreator(String[] args) throws Exception
     {
@@ -170,6 +171,7 @@ public class ExhibitorCreator
 
         securityFile = commandLine.getOptionValue(SECURITY_FILE);
         realmSpec = commandLine.getOptionValue(REALM);
+        remoteAuthSpec = commandLine.getOptionValue(REMOTE_CLIENT_AUTHORIZATION);
 
         String realm = commandLine.getOptionValue(BASIC_AUTH_REALM);
         String user = commandLine.getOptionValue(CONSOLE_USER);
@@ -262,6 +264,11 @@ public class ExhibitorCreator
     public String getRealmSpec()
     {
         return realmSpec;
+    }
+
+    public String getRemoteAuthSpec()
+    {
+        return remoteAuthSpec;
     }
 
     private ConfigProvider makeConfigProvider(String configType, ExhibitorCLI cli, CommandLine commandLine, PropertyBasedS3Credential awsCredentials, BackupProvider backupProvider, String useHostname, String s3Region) throws Exception

@@ -96,6 +96,7 @@ public class ExhibitorCLI
 
     public static final String SECURITY_FILE = "security";
     public static final String REALM = "realm";
+    public static final String REMOTE_CLIENT_AUTHORIZATION = "remoteauth";
 
     public static final String BASIC_AUTH_REALM = "basicauthrealm";
     public static final String CONSOLE_USER = "consoleuser";
@@ -124,6 +125,7 @@ public class ExhibitorCLI
         Options authOptions = new Options();
         authOptions.addOption(null, SECURITY_FILE, true, "Path to a web.xml file with security information (all other tags are ignored). See http://docs.oracle.com/javaee/6/tutorial/doc/gkbaa.html.");
         authOptions.addOption(null, REALM, true, "Specifies the security of realm as [realm name]:[path/url]. The path/url must point to a realm properties file as described here (see HashUserRealm): http://docs.codehaus.org/display/JETTY/Realms");
+        authOptions.addOption(null, REMOTE_CLIENT_AUTHORIZATION, true, "Exhibitor uses the Jersey Client to remotely connect to each Exhibitor instance in the ensemble. If you have security enabled for Exhibitor you also need to specify authorization for the remote client. The argument for " + REMOTE_CLIENT_AUTHORIZATION + " is: <type>:<realm-user>. \"type\" must be either \"basic\" or \"digest\". \"realm-user\" is the user to use from the realm file.");
 
         Options fileConfigOptions = new Options();
         fileConfigOptions.addOption(null, FILESYSTEM_CONFIG_DIRECTORY, true, "Directory to store Exhibitor properties (cannot be used with s3config). Exhibitor uses file system locks so you can specify a shared location so as to enable complete ensemble management. Default location is " + System.getProperty("user.dir"));
