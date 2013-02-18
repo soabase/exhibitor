@@ -13,6 +13,8 @@ main page. Also, System properties can now be set in addition to the properties 
 
 * Issue 116: Added a note in the UI that Exhibitor stays latent until the ZK paths are set.
 
+* Issue 115: Fixed an incorrect error message when configtype is zookeeper.
+
 1.4.5 - January 9, 2013
 =======================
 * Issue 103: S3 buckets outside of us-east-1 now require an "endpoint" to be set. For the standalone

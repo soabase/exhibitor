@@ -363,7 +363,7 @@ public class ExhibitorCreator
         String      retrySpec = commandLine.getOptionValue(ZOOKEEPER_CONFIG_RETRY, DEFAULT_ZOOKEEPER_CONFIG_RETRY);
         if ( (path == null) || (connectString == null) )
         {
-            log.error("Both " + ZOOKEEPER_CONFIG_INITIAL_CONNECT_STRING + " and " + ZOOKEEPER_CONFIG_INITIAL_CONNECT_STRING + " are required when the configtype is zookeeper");
+            log.error("Both " + ZOOKEEPER_CONFIG_INITIAL_CONNECT_STRING + " and " + ZOOKEEPER_CONFIG_BASE_PATH + " are required when the configtype is zookeeper");
             return null;
         }
 
