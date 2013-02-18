@@ -124,7 +124,7 @@ public class ExhibitorCLI
 
         Options authOptions = new Options();
         authOptions.addOption(null, SECURITY_FILE, true, "Path to a web.xml file with security information (all other tags are ignored). See http://docs.oracle.com/javaee/6/tutorial/doc/gkbaa.html.");
-        authOptions.addOption(null, REALM, true, "Specifies the security of realm as [realm name]:[path/url]. The path/url must point to a realm properties file as described here (see HashUserRealm): http://docs.codehaus.org/display/JETTY/Realms");
+        authOptions.addOption(null, REALM, true, "Specifies the realm as [realm name]:[path/url]. The path/url must point to a realm properties file as described here (see HashUserRealm): http://docs.codehaus.org/display/JETTY/Realms");
         authOptions.addOption(null, REMOTE_CLIENT_AUTHORIZATION, true, "Exhibitor uses the Jersey Client to remotely connect to each Exhibitor instance in the ensemble. If you have security enabled for Exhibitor you also need to specify authorization for the remote client. The argument for " + REMOTE_CLIENT_AUTHORIZATION + " is: <type>:<realm-user>. \"type\" must be either \"basic\" or \"digest\". \"realm-user\" is the user to use from the realm file.");
 
         Options fileConfigOptions = new Options();
