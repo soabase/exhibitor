@@ -1,5 +1,5 @@
-1.4.6 - xxxxxxxxxxxxxxx
-=======================
+1.4.6 - February 18, 2013
+=========================
 * Issue 106: Disable Chrome textarea resizing in the modify node dialog.
 
 * Issue 105: Exhibitor did not prevent users from setting 0 (or a negative number) for config values
