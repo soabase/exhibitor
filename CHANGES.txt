@@ -1,3 +1,12 @@
+1.4.8 - xxxxxxxxxxxxxx
+======================
+* Pull 126: Check for configured index directory
+
+* Move to Apache Curator
+
+* Issue 122: Using the Modify Dialog in the Explorer to add data that
+contained CR/LF would cause data corruption.
+
 1.4.7 - March 13, 2013
 ======================
 * Issue 120: Fixed possible NPE during indexing.
