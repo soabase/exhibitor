@@ -217,7 +217,7 @@ public class BackupManager implements Closeable
 
     private void doBackup() throws Exception
     {
--A        if ( !exhibitor.getControlPanelValues().isSet(ControlPanelTypes.BACKUPS) )
+        if ( !exhibitor.getControlPanelValues().isSet(ControlPanelTypes.BACKUPS) )
         {
             return;
         }
