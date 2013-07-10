@@ -188,12 +188,7 @@ public class ActivityLog
         String          queueMessage = message;
         if ( (type == Type.ERROR) && (exception != null) )
         {
-            String  exceptionMessage = exception.getMessage();
-            if ( exceptionMessage == null )
-            {
-                exceptionMessage = getExceptionMessage(exception);
-            }
-            queueMessage += " (" + exceptionMessage + ")";
+            queueMessage += " (" + getExceptionMessage(exception) + ")";
         }
 
         if ( type.addToUI() )
