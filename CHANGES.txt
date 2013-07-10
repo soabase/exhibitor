@@ -1,5 +1,5 @@
-1.4.9 - xxxxxxxxxxxx
-====================
+1.4.9 - July 10, 2013
+=====================
 * Added more/better logging during indexing
 
 * Issue 129: data mutation is FALSE by default. This is un-intuitive. I'm changing it
