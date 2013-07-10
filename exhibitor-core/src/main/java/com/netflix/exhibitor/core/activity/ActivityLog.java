@@ -207,7 +207,13 @@ public class ActivityLog
         type.log(message, exception);
     }
 
-    private String getExceptionMessage(Throwable exception)
+    /**
+     * Convert an exception into a log message
+     *
+     * @param exception the exception
+     * @return message
+     */
+    public static String getExceptionMessage(Throwable exception)
     {
         StringWriter        out = new StringWriter();
         exception.printStackTrace(new PrintWriter(out));
