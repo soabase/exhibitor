@@ -63,8 +63,20 @@ class FixedEnsembleBuilder implements EnsembleBuilder
             return configuredServerList;    // no room for us
         }
 
+        int                 standardTypeCount = 0;
+        for ( ServerSpec spec : newList )
+        {
+            if ( spec.getServerType() == ServerType.STANDARD )
+            {
+                ++standardTypeCount;
+            }
+        }
+
+        int observerThreshold = exhibitor.getConfigManager().getConfig().getInt(IntConfigs.OBSERVER_THRESHOLD);
+        ServerType serverType = ((observerThreshold > 0) && (standardTypeCount >= observerThreshold)) ? ServerType.OBSERVER : ServerType.STANDARD;
+
         int existingMaxId = FlexibleEnsembleBuilder.getExistingMaxId(configuredServerList);
-        ServerSpec us = new ServerSpec(exhibitor.getThisJVMHostname(), existingMaxId + 1, ServerType.STANDARD);
+        ServerSpec us = new ServerSpec(exhibitor.getThisJVMHostname(), existingMaxId + 1, serverType);
         newList.add(us);
 
         return new ServerList(newList);

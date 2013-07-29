@@ -72,13 +72,16 @@ class FlexibleEnsembleBuilder implements EnsembleBuilder
         }
 
         int         observerThreshold = exhibitor.getConfigManager().getConfig().getInt(IntConfigs.OBSERVER_THRESHOLD);
-        for ( int i = 0; (standardTypeCount >= observerThreshold) && (i < newList.size()); ++i )
+        if ( observerThreshold > 0 )
         {
-            ServerSpec      spec = newList.get(i);
-            if ( addedHostnames.contains(spec.getHostname()) )  // i.e. don't change existing instances to observer
+            for ( int i = 0; (standardTypeCount >= observerThreshold) && (i < newList.size()); ++i )
             {
-                newList.set(i, new ServerSpec(spec.getHostname(), spec.getServerId(), ServerType.OBSERVER));
-                --standardTypeCount;
+                ServerSpec      spec = newList.get(i);
+                if ( addedHostnames.contains(spec.getHostname()) )  // i.e. don't change existing instances to observer
+                {
+                    newList.set(i, new ServerSpec(spec.getHostname(), spec.getServerId(), ServerType.OBSERVER));
+                    --standardTypeCount;
+                }
             }
         }
 
