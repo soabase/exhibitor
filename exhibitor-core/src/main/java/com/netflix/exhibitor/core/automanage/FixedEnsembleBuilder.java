@@ -2,6 +2,7 @@ package com.netflix.exhibitor.core.automanage;
 
 import com.google.common.collect.Lists;
 import com.netflix.exhibitor.core.Exhibitor;
+import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.config.IntConfigs;
 import com.netflix.exhibitor.core.state.InstanceStateTypes;
 import com.netflix.exhibitor.core.state.ServerList;
@@ -41,7 +42,13 @@ class FixedEnsembleBuilder implements EnsembleBuilder
             return true;    // there's room, we can add ourselves in
         }
 
-        return clusterState.hasDeadInstances();
+        if ( !clusterState.hasDeadInstances() )
+        {
+            exhibitor.getLog().add(ActivityLog.Type.INFO, "Cannot add this instance to the ensemble as the ensemble is at the configured fixed ensemble size.");
+            return false;
+        }
+
+        return true;
     }
 
     @Override
