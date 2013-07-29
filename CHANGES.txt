@@ -1,5 +1,5 @@
-1.5.0 - xxxxxxxxxxxxxx
-======================
+1.5.0 - July 29, 2013
+=====================
 * Switching to correct semantic versioning.
 
 * Issue 143: Bundle mimetypes.default to work around Java 7 bug (it's missing)
