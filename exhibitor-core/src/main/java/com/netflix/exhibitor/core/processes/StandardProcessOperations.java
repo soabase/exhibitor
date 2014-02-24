@@ -90,6 +90,14 @@ public class StandardProcessOperations implements ProcessOperations
         }
     }
 
+    private ProcessBuilder buildZkServerScript(String operation) throws IOException
+    {
+        Details         details = new Details(exhibitor);
+        File            binDirectory = new File(details.zooKeeperDirectory, "bin");
+        File            zkServerScript = new File(binDirectory, "zkServer.sh");
+        return new ProcessBuilder(zkServerScript.getPath(), operation).directory(binDirectory.getParentFile());
+    }
+
     @Override
     public void startInstance() throws Exception
     {
@@ -110,13 +118,12 @@ public class StandardProcessOperations implements ProcessOperations
             Files.write(log4jProperties, log4jFile, Charset.defaultCharset());
         }
 
-        File            binDirectory = new File(details.zooKeeperDirectory, "bin");
-        File            startScript = new File(binDirectory, "zkServer.sh");
-        ProcessBuilder  builder = new ProcessBuilder(startScript.getPath(), "start").directory(binDirectory.getParentFile());
+
+        ProcessBuilder  builder = buildZkServerScript("start");
 
         exhibitor.getProcessMonitor().monitor(ProcessTypes.ZOOKEEPER, builder.start(), null, ProcessMonitor.Mode.LEAVE_RUNNING_ON_INTERRUPT, ProcessMonitor.Streams.BOTH);
 
-        exhibitor.getLog().add(ActivityLog.Type.INFO, "Process started via: " + startScript.getPath());
+        exhibitor.getLog().add(ActivityLog.Type.INFO, "Process started via: " + builder.command().get(0));
     }
 
     private void prepConfigFile(Details details) throws IOException
@@ -218,8 +225,12 @@ public class StandardProcessOperations implements ProcessOperations
 
     private void internalKill(String pid, boolean force) throws IOException, InterruptedException
     {
+        Details         details = new Details(exhibitor);
+        File            binDirectory = new File(details.zooKeeperDirectory, "bin");
+        File            zkServerScript = new File(binDirectory, "zkServer.sh");
         ProcessBuilder builder;
-        builder = force ? new ProcessBuilder("kill", "-9", pid) : new ProcessBuilder("kill", pid);
+        buildZkServerScript("start");
+        builder = force ? new ProcessBuilder("kill", "-9", pid) : buildZkServerScript("stop");
         try
         {
             int     result = builder.start().waitFor();
