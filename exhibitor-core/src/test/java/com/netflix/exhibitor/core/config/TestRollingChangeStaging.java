@@ -35,8 +35,8 @@ import org.testng.annotations.Test;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.Queue;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -44,8 +44,21 @@ import java.util.concurrent.atomic.AtomicReference;
 public class TestRollingChangeStaging
 {
     @Test
+    public void testMultiple() throws Exception
+    {
+        internalTest(3);
+    }
+
+    @Test
     public void testBasic() throws Exception
     {
+        internalTest(1);
+    }
+
+    private void internalTest(final int attempts) throws Exception
+    {
+        final Semaphore restartLatch = new Semaphore(0);
+
         TestProcessOperations mockOperations1 = new TestProcessOperations();
         TestProcessOperations mockOperations2 = new TestProcessOperations();
         TestProcessOperations mockOperations3 = new TestProcessOperations();
@@ -77,25 +90,6 @@ public class TestRollingChangeStaging
                     return 1;
                 }
                 return defaultInstanceConfig.getInt(config);
-            }
-        };
-
-        InstanceConfig changedInstanceConfig = new InstanceConfig()
-        {
-            @Override
-            public String getString(StringConfigs config)
-            {
-                if ( config == StringConfigs.LOG4J_PROPERTIES )
-                {
-                    return "something different";
-                }
-                return instanceConfig.getString(config);
-            }
-
-            @Override
-            public int getInt(IntConfigs config)
-            {
-                return instanceConfig.getInt(config);
             }
         };
 
@@ -150,8 +144,6 @@ public class TestRollingChangeStaging
             }
         };
 
-        final CountDownLatch restartLatch = new CountDownLatch(3);
-
         ControlPanelValues mockControlPanelValues = Mockito.mock(ControlPanelValues.class);
         Mockito.when(mockControlPanelValues.isSet(Mockito.any(ControlPanelTypes.class))).thenReturn(true);
 
@@ -203,17 +195,41 @@ public class TestRollingChangeStaging
 
             Thread.sleep(1000);
 
-            configManager1.startRollingConfig(changedInstanceConfig, "one");
-
-            Assert.assertTrue(restartLatch.await(10, TimeUnit.SECONDS));
-
-            if ( exceptions.size() > 0 )
+            for ( int i = 0; i < attempts; ++i )
             {
-                for ( AssertionError assertionError : exceptions )
+                Assert.assertEquals(restartLatch.availablePermits(), 0);
+
+                final int index = i;
+                InstanceConfig changedInstanceConfig = new InstanceConfig()
                 {
-                    assertionError.printStackTrace();
+                    @Override
+                    public String getString(StringConfigs config)
+                    {
+                        if ( config == StringConfigs.LOG4J_PROPERTIES )
+                        {
+                            return "something different " + index;
+                        }
+                        return instanceConfig.getString(config);
+                    }
+
+                    @Override
+                    public int getInt(IntConfigs config)
+                    {
+                        return instanceConfig.getInt(config);
+                    }
+                };
+                configManager1.startRollingConfig(changedInstanceConfig, "one");
+
+                Assert.assertTrue(restartLatch.tryAcquire(1, 10, TimeUnit.SECONDS));
+
+                if ( exceptions.size() > 0 )
+                {
+                    for ( AssertionError assertionError : exceptions )
+                    {
+                        assertionError.printStackTrace();
+                    }
+                    Assert.fail("Failed restart assertions");
                 }
-                Assert.fail("Failed restart assertions");
             }
         }
         finally
@@ -268,11 +284,11 @@ public class TestRollingChangeStaging
     {
         private final AtomicReference<LoadedInstanceConfig> providerConfig;
         private final String hostname;
-        private final CountDownLatch restartLatch;
+        private final Semaphore restartLatch;
         private final Queue<AssertionError> exceptions;
         private volatile StateAndLeader stateAndLeader;
 
-        public MockMonitorRunningInstance(Exhibitor mockExhibitor, AtomicReference<LoadedInstanceConfig> providerConfig, String hostname, CountDownLatch restartLatch, Queue<AssertionError> exceptions)
+        public MockMonitorRunningInstance(Exhibitor mockExhibitor, AtomicReference<LoadedInstanceConfig> providerConfig, String hostname, Semaphore restartLatch, Queue<AssertionError> exceptions)
         {
             super(mockExhibitor);
             this.providerConfig = providerConfig;
@@ -319,7 +335,7 @@ public class TestRollingChangeStaging
             }
             finally
             {
-                restartLatch.countDown();
+                restartLatch.release();
             }
         }
     }

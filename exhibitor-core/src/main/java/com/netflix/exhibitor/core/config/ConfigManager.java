@@ -200,7 +200,6 @@ public class ConfigManager implements Closeable
         RollingHostNamesBuilder builder = new RollingHostNamesBuilder(currentConfig, newConfig, leaderHostname);
 
         clearAttempts();
-        rollingConfigChangeRestartCount.set(exhibitor.getMonitorRunningInstance().getRestartCount());
 
         ConfigCollection        newCollection = new ConfigCollectionImpl(currentConfig, newConfig, builder.getRollingHostNames(), 0);
         return advanceOrStartRollingConfig(newCollection, -1);
