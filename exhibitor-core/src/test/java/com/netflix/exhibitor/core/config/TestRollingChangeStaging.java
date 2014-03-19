@@ -157,7 +157,7 @@ public class TestRollingChangeStaging
 
         ActivityQueue activityQueue = new ActivityQueue();
 
-        final Queue<Error> exceptions = Queues.newConcurrentLinkedQueue();
+        final Queue<AssertionError> exceptions = Queues.newConcurrentLinkedQueue();
 
         Exhibitor mockExhibitor1 = Mockito.mock(Exhibitor.class, Mockito.RETURNS_MOCKS);
         Mockito.when(mockExhibitor1.getActivityQueue()).thenReturn(activityQueue);
@@ -207,9 +207,13 @@ public class TestRollingChangeStaging
 
             Assert.assertTrue(restartLatch.await(10, TimeUnit.SECONDS));
 
-            for ( Error e : exceptions )
+            if ( exceptions.size() > 0 )
             {
-                throw e;
+                for ( AssertionError assertionError : exceptions )
+                {
+                    assertionError.printStackTrace();
+                }
+                Assert.fail("Failed restart assertions");
             }
         }
         finally
@@ -265,10 +269,10 @@ public class TestRollingChangeStaging
         private final AtomicReference<LoadedInstanceConfig> providerConfig;
         private final String hostname;
         private final CountDownLatch restartLatch;
-        private final Queue<Error> exceptions;
+        private final Queue<AssertionError> exceptions;
         private volatile StateAndLeader stateAndLeader;
 
-        public MockMonitorRunningInstance(Exhibitor mockExhibitor, AtomicReference<LoadedInstanceConfig> providerConfig, String hostname, CountDownLatch restartLatch, Queue<Error> exceptions)
+        public MockMonitorRunningInstance(Exhibitor mockExhibitor, AtomicReference<LoadedInstanceConfig> providerConfig, String hostname, CountDownLatch restartLatch, Queue<AssertionError> exceptions)
         {
             super(mockExhibitor);
             this.providerConfig = providerConfig;
