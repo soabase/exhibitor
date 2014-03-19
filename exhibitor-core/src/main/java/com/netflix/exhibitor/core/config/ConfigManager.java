@@ -27,10 +27,10 @@ import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.QueueGroups;
 import com.netflix.exhibitor.core.activity.RepeatingActivity;
 import com.netflix.exhibitor.core.activity.RepeatingActivityImpl;
+import com.netflix.exhibitor.core.automanage.RemoteInstanceRequest;
 import com.netflix.exhibitor.core.config.none.NoneConfigProvider;
 import com.netflix.exhibitor.core.state.InstanceState;
 import com.netflix.exhibitor.core.state.InstanceStateTypes;
-import com.netflix.exhibitor.core.automanage.RemoteInstanceRequest;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Collections;
@@ -49,6 +49,7 @@ public class ConfigManager implements Closeable
     private final Set<ConfigListener> configListeners = Sets.newSetFromMap(Maps.<ConfigListener, Boolean>newConcurrentMap());
     private final AtomicReference<RollingConfigAdvanceAttempt> rollingConfigAdvanceAttempt = new AtomicReference<RollingConfigAdvanceAttempt>(null);
     private final AtomicInteger waitingForQuorumAttempts = new AtomicInteger(0);
+    private final AtomicInteger rollingConfigChangeRestartCount = new AtomicInteger(0);
 
     @VisibleForTesting
     final static int DEFAULT_MAX_ATTEMPTS = 4;
@@ -94,7 +95,7 @@ public class ConfigManager implements Closeable
     public void close() throws IOException
     {
         repeatingActivity.close();
-        Closeables.closeQuietly(provider);
+        Closeables.close(provider, true);
     }
 
     public InstanceConfig getConfig()
@@ -159,7 +160,7 @@ public class ConfigManager implements Closeable
             RollingReleaseState     state = new RollingReleaseState(instanceState, localConfig);
             if ( state.getCurrentRollingHostname().equals(exhibitor.getThisJVMHostname()) )
             {
-                if ( state.serverListHasSynced() )
+                if ( state.serverListHasSynced() && ourInstanceHasBeenRestarted() )
                 {
                     if ( instanceState.getState() == InstanceStateTypes.SERVING )
                     {
@@ -194,6 +195,7 @@ public class ConfigManager implements Closeable
         RollingHostNamesBuilder builder = new RollingHostNamesBuilder(currentConfig, newConfig, leaderHostname);
 
         clearAttempts();
+        rollingConfigChangeRestartCount.set(exhibitor.getMonitorRunningInstance().getRestartCount());
 
         ConfigCollection        newCollection = new ConfigCollectionImpl(currentConfig, newConfig, builder.getRollingHostNames(), 0);
         return advanceOrStartRollingConfig(newCollection, -1);
@@ -240,6 +242,17 @@ public class ConfigManager implements Closeable
     RollingConfigAdvanceAttempt getRollingConfigAdvanceAttempt()
     {
         return rollingConfigAdvanceAttempt.get();
+    }
+
+    @VisibleForTesting
+    protected RemoteInstanceRequest.Result callRemoteInstanceRequest(RemoteInstanceRequest remoteInstanceRequest)
+    {
+        return remoteInstanceRequest.makeRequest(exhibitor.getRemoteInstanceRequestClient(), "getStatus");
+    }
+
+    private boolean ourInstanceHasBeenRestarted()
+    {
+        return rollingConfigChangeRestartCount.get() != exhibitor.getMonitorRunningInstance().getRestartCount();
     }
 
     private void advanceRollingConfig(ConfigCollection config) throws Exception
@@ -307,7 +320,7 @@ public class ConfigManager implements Closeable
         if ( (activeAttempt == null) || !activeAttempt.getHostname().equals(state.getCurrentRollingHostname()) || (activeAttempt.getAttemptCount() < maxAttempts) )
         {
             RemoteInstanceRequest           remoteInstanceRequest = new RemoteInstanceRequest(exhibitor, state.getCurrentRollingHostname());
-            result = remoteInstanceRequest.makeRequest(exhibitor.getRemoteInstanceRequestClient(), "getStatus");
+            result = callRemoteInstanceRequest(remoteInstanceRequest);
 
             if ( activeAttempt == null )
             {

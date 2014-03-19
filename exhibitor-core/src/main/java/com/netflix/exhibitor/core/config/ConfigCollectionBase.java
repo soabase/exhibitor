@@ -23,7 +23,14 @@ abstract class ConfigCollectionBase implements ConfigCollection, RollingConfigSt
     @Override
     public final InstanceConfig getConfigForThisInstance(String hostname)
     {
-        return (isRolling() && getRollingHostNames().contains(hostname)) ? getRollingConfig() : getRootConfig();
+        if ( isRolling() )
+        {
+            if ( getRollingHostNames().subList(0, getRollingHostNamesIndex() + 1).contains(hostname) )
+            {
+                return getRollingConfig();
+            }
+        }
+        return getRootConfig();
     }
 
     @Override
