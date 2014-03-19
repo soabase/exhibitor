@@ -20,9 +20,9 @@ import com.google.common.io.Closeables;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.ActivityQueue;
+import com.netflix.exhibitor.core.automanage.RemoteInstanceRequestClient;
 import com.netflix.exhibitor.core.state.InstanceState;
 import com.netflix.exhibitor.core.state.InstanceStateTypes;
-import com.netflix.exhibitor.core.automanage.RemoteInstanceRequestClient;
 import com.netflix.exhibitor.core.state.MonitorRunningInstance;
 import com.netflix.exhibitor.core.state.RestartSignificantConfig;
 import com.netflix.exhibitor.core.state.ServerList;
@@ -570,7 +570,7 @@ public class TestRollingConfigChange
 
     private MonitorRunningInstance makeMockMonitorRunningInstance()
     {
-        final AtomicInteger restartCounter = new AtomicInteger(0);
+        final AtomicInteger restartCounter = new AtomicInteger(1);
         MonitorRunningInstance mockMonitorRunningInstance = Mockito.mock(MonitorRunningInstance.class);
         Mockito.when(mockMonitorRunningInstance.getRestartCount()).thenAnswer
             (

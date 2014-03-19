@@ -49,7 +49,7 @@ public class ConfigManager implements Closeable
     private final Set<ConfigListener> configListeners = Sets.newSetFromMap(Maps.<ConfigListener, Boolean>newConcurrentMap());
     private final AtomicReference<RollingConfigAdvanceAttempt> rollingConfigAdvanceAttempt = new AtomicReference<RollingConfigAdvanceAttempt>(null);
     private final AtomicInteger waitingForQuorumAttempts = new AtomicInteger(0);
-    private final AtomicInteger rollingConfigChangeRestartCount = new AtomicInteger(0);
+    private final AtomicInteger rollingConfigChangeRestartCount = new AtomicInteger(-1);
 
     @VisibleForTesting
     final static int DEFAULT_MAX_ATTEMPTS = 4;
@@ -160,6 +160,11 @@ public class ConfigManager implements Closeable
             RollingReleaseState     state = new RollingReleaseState(instanceState, localConfig);
             if ( state.getCurrentRollingHostname().equals(exhibitor.getThisJVMHostname()) )
             {
+                if ( rollingConfigChangeRestartCount.get() < 0 )
+                {
+                    rollingConfigChangeRestartCount.set(exhibitor.getMonitorRunningInstance().getRestartCount());
+                }
+
                 if ( state.serverListHasSynced() && ourInstanceHasBeenRestarted() )
                 {
                     if ( instanceState.getState() == InstanceStateTypes.SERVING )
@@ -297,6 +302,7 @@ public class ConfigManager implements Closeable
     {
         rollingConfigAdvanceAttempt.set(null);
         waitingForQuorumAttempts.set(0);
+        rollingConfigChangeRestartCount.set(-1);
     }
 
     private ConfigCollection checkNextInstanceState(ConfigCollection config, List<String> rollingHostNames, int rollingHostNamesIndex)

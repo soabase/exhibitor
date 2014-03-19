@@ -41,7 +41,7 @@ public class MonitorRunningInstance implements Closeable
     private final AtomicReference<InstanceState>    currentInstanceState = new AtomicReference<InstanceState>();
     private final AtomicBoolean                     currentIsLeader = new AtomicBoolean(false);
     private final RepeatingActivity                 repeatingActivity;
-    private final AtomicInteger                     restartCount = new AtomicInteger(0);
+    private final AtomicInteger                     restartCount = new AtomicInteger(1);
 
     private static final int    DOWN_RECHECK_FACTOR = 10;
 
