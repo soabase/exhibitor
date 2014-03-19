@@ -46,35 +46,38 @@ public class ZookeeperMonitoredData
     @Monitor(name="zk_packets_sent", type=COUNTER)
     public final AtomicInteger     zk_packets_sent = new AtomicInteger(0);
 
-    @Monitor(name="zk_outstanding_requests", type=COUNTER)
+    @Monitor(name="zk_outstanding_requests", type=GAUGE)
     public final AtomicInteger     zk_outstanding_requests = new AtomicInteger(0);
 
-    @Monitor(name="zk_znode_count", type=COUNTER)
+    @Monitor(name="zk_znode_count", type=GAUGE)
     public final AtomicInteger     zk_znode_count = new AtomicInteger(0);
 
-    @Monitor(name="zk_watch_count", type=COUNTER)
+    @Monitor(name="zk_watch_count", type=GAUGE)
     public final AtomicInteger     zk_watch_count = new AtomicInteger(0);
 
-    @Monitor(name="zk_ephemerals_count", type=COUNTER)
+    @Monitor(name="zk_ephemerals_count", type=GAUGE)
     public final AtomicInteger     zk_ephemerals_count = new AtomicInteger(0);
 
-    @Monitor(name="zk_approximate_data_size", type=COUNTER)
+    @Monitor(name="zk_approximate_data_size", type=GAUGE)
     public final AtomicInteger     zk_approximate_data_size = new AtomicInteger(0);
 
-    @Monitor(name="zk_followers", type=COUNTER)
+    @Monitor(name="zk_followers", type=GAUGE)
     public final AtomicInteger     zk_followers = new AtomicInteger(0);
 
-    @Monitor(name="zk_synced_followers", type=COUNTER)
+    @Monitor(name="zk_synced_followers", type=GAUGE)
     public final AtomicInteger     zk_synced_followers = new AtomicInteger(0);
 
-    @Monitor(name="zk_pending_syncs", type=COUNTER)
+    @Monitor(name="zk_pending_syncs", type=GAUGE)
     public final AtomicInteger     zk_pending_syncs = new AtomicInteger(0);
 
-    @Monitor(name="zk_open_file_descriptor_count", type=COUNTER)
+    @Monitor(name="zk_open_file_descriptor_count", type=GAUGE)
     public final AtomicInteger     zk_open_file_descriptor_count = new AtomicInteger(0);
 
-    @Monitor(name="zk_max_file_descriptor_count", type=COUNTER)
+    @Monitor(name="zk_max_file_descriptor_count", type=GAUGE)
     public final AtomicInteger     zk_max_file_descriptor_count = new AtomicInteger(0);
+
+    @Monitor(name="zk_num_alive_connections", type=GAUGE)
+    public final AtomicInteger     zk_num_alive_connections = new AtomicInteger(0);
 
     public ZookeeperMonitoredData()
     {
