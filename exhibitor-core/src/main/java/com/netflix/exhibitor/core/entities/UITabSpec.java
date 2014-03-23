@@ -16,6 +16,7 @@
 
 package com.netflix.exhibitor.core.entities;
 
+import com.netflix.exhibitor.core.rest.UITabType;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
@@ -25,12 +26,14 @@ public class UITabSpec
     private String      name;
     private String      url;
     private boolean     html;
+    private UITabType   type;
 
     public UITabSpec()
     {
+        this("", "", false, UITabType.SIMPLE);
     }
 
-    public UITabSpec(String name, String url, boolean isHtml)
+    public UITabSpec(String name, String url, boolean isHtml, UITabType type)
     {
         this.name = name;
         this.url = url;
@@ -65,5 +68,15 @@ public class UITabSpec
     public void setHtml(boolean html)
     {
         this.html = html;
+    }
+
+    public UITabType getType()
+    {
+        return type;
+    }
+
+    public void setType(UITabType type)
+    {
+        this.type = type;
     }
 }

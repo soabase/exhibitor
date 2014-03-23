@@ -70,4 +70,10 @@ public class UITabImpl implements UITab
     {
         return false;
     }
+
+    @Override
+    public UITabType getUITabType()
+    {
+        return UITabType.SIMPLE;
+    }
 }
