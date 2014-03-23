@@ -1,7 +1,10 @@
 1.5.2 - xxxxxxxxxxxxxxx
 =======================
-Pull 175: Use zkServer.sh to stop zookeeper to ensure that zookeeper_server.pid. Thank you to user
+* Pull 175: Use zkServer.sh to stop zookeeper to ensure that zookeeper_server.pid. Thank you to user
 ahanwadi.
+
+* Make it easier to add interactive tabs to the Exhibitor UI. This adds an option to custom tabs to 
+not get rebuilt on each poll. i.e. the tab is built once and left alone.
 
 1.5.1 - October 1, 2013
 =======================
