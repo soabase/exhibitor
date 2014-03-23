@@ -458,7 +458,10 @@ function refreshCurrentTab()
     else if ( selected >= BUILTIN_TAB_QTY )
     {
         var index = selected - BUILTIN_TAB_QTY;
-        $("#" + customTabs[index].contentId).load(customTabs[index].url);
+        if ( (customTabs[index].type === "simple") || customTabs[index].firstTime ) {
+            $("#" + customTabs[index].contentId).load(customTabs[index].url);
+            customTabs[index].firstTime = false;
+        }
     }
 }
 
@@ -585,7 +588,7 @@ function getNow()
     return Date.now();
 }
 
-var customTabs = new Array();
+var customTabs = [];
 $(function ()
 {
     $.getJSON(URL_GET_TABS + '?ts=' + getNow(), function (data){
@@ -596,6 +599,8 @@ $(function ()
             tabData.id = 'tabs-custom-' + i;
             tabData.contentId = 'tabs-custom-content' + i;
             tabData.url = uiTabSpec[i].url;
+            tabData.type = uiTabSpec[i].type;
+            tabData.firstTime = true;
             customTabs[i] = tabData;
 
             var tabContentClass = uiTabSpec[i].html ? 'tab-html' : 'tab-text';

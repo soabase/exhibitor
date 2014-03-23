@@ -169,7 +169,7 @@ public class UIResource
                 public UITabSpec apply(UITab tab)
                 {
                     String base = tab.contentIsHtml() ? HTML_UI_TAB_BASE_URL : TEXT_UI_TAB_BASE_URL;
-                    return new UITabSpec(tab.getName(), base + index.getAndIncrement(), tab.contentIsHtml());
+                    return new UITabSpec(tab.getName(), base + index.getAndIncrement(), tab.contentIsHtml(), tab.getUITabType());
                 }
             }
         );
