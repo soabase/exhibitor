@@ -69,7 +69,7 @@ public class StandardProcessOperations implements ProcessOperations
             Integer.toString(exhibitor.getConfigManager().getConfig().getInt(IntConfigs.CLEANUP_MAX_FILES))
         );
 
-        exhibitor.getProcessMonitor().monitor(ProcessTypes.CLEANUP, builder.start(), "Cleanup task completed", ProcessMonitor.Mode.DESTROY_ON_INTERRUPT, ProcessMonitor.Streams.ERROR);
+        exhibitor.getProcessMonitor().monitor(ProcessTypes.CLEANUP, builder.start(), "Cleanup task completed", ProcessMonitor.Mode.DESTROY_ON_INTERRUPT, ProcessMonitor.Streams.BOTH);
     }
 
     @Override
