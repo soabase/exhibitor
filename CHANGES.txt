@@ -6,6 +6,8 @@ ahanwadi.
 * Make it easier to add interactive tabs to the Exhibitor UI. This adds an option to custom tabs to 
 not get rebuilt on each poll. i.e. the tab is built once and left alone.
 
+* Pull 180: Monitor stdout when cleaning logs. Thanks to user jorgeortiz85.
+
 1.5.1 - October 1, 2013
 =======================
 * Default properties were not getting set correctly causing a brand new install of Exhibitor
