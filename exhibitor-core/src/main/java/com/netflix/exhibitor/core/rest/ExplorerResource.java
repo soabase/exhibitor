@@ -198,10 +198,13 @@ public class ExplorerResource
             Stat stat = context.getExhibitor().getLocalConnection().checkExists().forPath(key);
             byte[]          bytes = context.getExhibitor().getLocalConnection().getData().storingStatIn(stat).forPath(key);
 
-            String          bytesStr = bytesToString(bytes);
-
-            node.put("bytes", bytesStr);
-            node.put("str", new String(bytes, "UTF-8"));
+            if (bytes != null) {
+                node.put("bytes", bytesToString(bytes));
+                node.put("str", new String(bytes, "UTF-8"));
+            } else {
+                node.put("bytes", "");
+                node.put("str", "");
+            }
             node.put("stat", reflectToString(stat));
         }
         catch ( KeeperException.NoNodeException dummy )
