@@ -20,12 +20,15 @@ import com.google.common.io.Closeables;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.ActivityQueue;
+import com.netflix.exhibitor.core.automanage.RemoteInstanceRequestClient;
 import com.netflix.exhibitor.core.state.InstanceState;
 import com.netflix.exhibitor.core.state.InstanceStateTypes;
-import com.netflix.exhibitor.core.automanage.RemoteInstanceRequestClient;
+import com.netflix.exhibitor.core.state.MonitorRunningInstance;
 import com.netflix.exhibitor.core.state.RestartSignificantConfig;
 import com.netflix.exhibitor.core.state.ServerList;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import javax.ws.rs.core.MediaType;
@@ -33,6 +36,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class TestRollingConfigChange
@@ -59,6 +63,8 @@ public class TestRollingConfigChange
         ActivityLog         log = new ActivityLog(100);
         ActivityQueue       activityQueue = new ActivityQueue();
         Exhibitor           mockExhibitor = Mockito.mock(Exhibitor.class);
+        MonitorRunningInstance mockMonitorRunningInstance = makeMockMonitorRunningInstance();
+        Mockito.when(mockExhibitor.getMonitorRunningInstance()).thenReturn(mockMonitorRunningInstance);
         Mockito.when(mockExhibitor.getLog()).thenReturn(log);
         Mockito.when(mockExhibitor.getActivityQueue()).thenReturn(activityQueue);
         Mockito.when(mockExhibitor.getThisJVMHostname()).thenReturn("one");
@@ -170,6 +176,8 @@ public class TestRollingConfigChange
         ActivityLog         log = new ActivityLog(100);
         ActivityQueue       activityQueue = new ActivityQueue();
         Exhibitor           mockExhibitor = Mockito.mock(Exhibitor.class);
+        MonitorRunningInstance mockMonitorRunningInstance = makeMockMonitorRunningInstance();
+        Mockito.when(mockExhibitor.getMonitorRunningInstance()).thenReturn(mockMonitorRunningInstance);
         Mockito.when(mockExhibitor.getLog()).thenReturn(log);
         Mockito.when(mockExhibitor.getActivityQueue()).thenReturn(activityQueue);
         Mockito.when(mockExhibitor.getThisJVMHostname()).thenReturn("one");
@@ -228,6 +236,8 @@ public class TestRollingConfigChange
         ActivityLog         log = new ActivityLog(100);
         ActivityQueue       activityQueue = new ActivityQueue();
         Exhibitor           mockExhibitor = Mockito.mock(Exhibitor.class);
+        MonitorRunningInstance mockMonitorRunningInstance = makeMockMonitorRunningInstance();
+        Mockito.when(mockExhibitor.getMonitorRunningInstance()).thenReturn(mockMonitorRunningInstance);
         Mockito.when(mockExhibitor.getLog()).thenReturn(log);
         Mockito.when(mockExhibitor.getActivityQueue()).thenReturn(activityQueue);
         Mockito.when(mockExhibitor.getThisJVMHostname()).thenReturn("_xxxx_");
@@ -277,6 +287,8 @@ public class TestRollingConfigChange
         ActivityLog         log = new ActivityLog(100);
         ActivityQueue       activityQueue = new ActivityQueue();
         Exhibitor           mockExhibitor = Mockito.mock(Exhibitor.class);
+        MonitorRunningInstance mockMonitorRunningInstance = makeMockMonitorRunningInstance();
+        Mockito.when(mockExhibitor.getMonitorRunningInstance()).thenReturn(mockMonitorRunningInstance);
         Mockito.when(mockExhibitor.getLog()).thenReturn(log);
         Mockito.when(mockExhibitor.getActivityQueue()).thenReturn(activityQueue);
         Mockito.when(mockExhibitor.getThisJVMHostname()).thenReturn("one");
@@ -362,6 +374,8 @@ public class TestRollingConfigChange
         ActivityLog         log = new ActivityLog(100);
         ActivityQueue       activityQueue = new ActivityQueue();
         Exhibitor           mockExhibitor = Mockito.mock(Exhibitor.class);
+        MonitorRunningInstance mockMonitorRunningInstance = makeMockMonitorRunningInstance();
+        Mockito.when(mockExhibitor.getMonitorRunningInstance()).thenReturn(mockMonitorRunningInstance);
         Mockito.when(mockExhibitor.getLog()).thenReturn(log);
         Mockito.when(mockExhibitor.getActivityQueue()).thenReturn(activityQueue);
         Mockito.when(mockExhibitor.getThisJVMHostname()).thenReturn("one");
@@ -477,6 +491,8 @@ public class TestRollingConfigChange
         ActivityLog         log = new ActivityLog(100);
         ActivityQueue       activityQueue = new ActivityQueue();
         Exhibitor           mockExhibitor = Mockito.mock(Exhibitor.class);
+        MonitorRunningInstance mockMonitorRunningInstance = makeMockMonitorRunningInstance();
+        Mockito.when(mockExhibitor.getMonitorRunningInstance()).thenReturn(mockMonitorRunningInstance);
         Mockito.when(mockExhibitor.getLog()).thenReturn(log);
         Mockito.when(mockExhibitor.getActivityQueue()).thenReturn(activityQueue);
         Mockito.when(mockExhibitor.getThisJVMHostname()).thenReturn("one");
@@ -550,6 +566,24 @@ public class TestRollingConfigChange
         {
             Closeables.closeQuietly(manager);
         }
+    }
+
+    private MonitorRunningInstance makeMockMonitorRunningInstance()
+    {
+        final AtomicInteger restartCounter = new AtomicInteger(1);
+        MonitorRunningInstance mockMonitorRunningInstance = Mockito.mock(MonitorRunningInstance.class);
+        Mockito.when(mockMonitorRunningInstance.getRestartCount()).thenAnswer
+            (
+                new Answer<Integer>()
+                {
+                    @Override
+                    public Integer answer(InvocationOnMock invocation) throws Throwable
+                    {
+                        return restartCounter.getAndIncrement();
+                    }
+                }
+            );
+        return mockMonitorRunningInstance;
     }
 
     private static class ConfigWrapper implements ConfigProvider

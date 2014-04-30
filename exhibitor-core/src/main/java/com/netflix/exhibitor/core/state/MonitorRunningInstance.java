@@ -32,6 +32,7 @@ import com.netflix.exhibitor.core.controlpanel.ControlPanelTypes;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class MonitorRunningInstance implements Closeable
@@ -40,6 +41,7 @@ public class MonitorRunningInstance implements Closeable
     private final AtomicReference<InstanceState>    currentInstanceState = new AtomicReference<InstanceState>();
     private final AtomicBoolean                     currentIsLeader = new AtomicBoolean(false);
     private final RepeatingActivity                 repeatingActivity;
+    private final AtomicInteger                     restartCount = new AtomicInteger(1);
 
     private static final int    DOWN_RECHECK_FACTOR = 10;
 
@@ -98,11 +100,16 @@ public class MonitorRunningInstance implements Closeable
         return currentIsLeader.get();
     }
 
+    public int getRestartCount()
+    {
+        return restartCount.get();
+    }
+
     @VisibleForTesting
     void doWork() throws Exception
     {
         InstanceConfig  config = exhibitor.getConfigManager().getConfig();
-        StateAndLeader  stateAndLeader = new Checker(exhibitor).calculateState();
+        StateAndLeader  stateAndLeader = getStateAndLeader();
         InstanceState   instanceState = new InstanceState(new ServerList(config.getString(StringConfigs.SERVERS_SPEC)), stateAndLeader.getState(), new RestartSignificantConfig(config));
 
         currentIsLeader.set(stateAndLeader.isLeader());
@@ -120,6 +127,12 @@ public class MonitorRunningInstance implements Closeable
         }
     }
 
+    @VisibleForTesting
+    protected StateAndLeader getStateAndLeader() throws Exception
+    {
+        return new Checker(exhibitor).calculateState();
+    }
+
     private void handleServerListChange(InstanceState instanceState, InstanceState localCurrentInstanceState) throws Exception
     {
         boolean         serverListChange = (localCurrentInstanceState != null) && !localCurrentInstanceState.getServerList().equals(instanceState.getServerList());
@@ -131,12 +144,12 @@ public class MonitorRunningInstance implements Closeable
         if ( serverListChange )
         {
             exhibitor.getLog().add(ActivityLog.Type.INFO, "Server list has changed");
-            restartZooKeeper(localCurrentInstanceState);
+            restartZooKeeperAndIncrementCount(localCurrentInstanceState);
         }
         else if ( configChange )
         {
             exhibitor.getLog().add(ActivityLog.Type.INFO, "ZooKeeper related configuration has changed");
-            restartZooKeeper(localCurrentInstanceState);
+            restartZooKeeperAndIncrementCount(localCurrentInstanceState);
         }
         else
         {
@@ -144,7 +157,7 @@ public class MonitorRunningInstance implements Closeable
             {
                 case DOWN:
                 {
-                    restartZooKeeper(localCurrentInstanceState);
+                    restartZooKeeperAndIncrementCount(localCurrentInstanceState);
                     break;
                 }
 
@@ -178,7 +191,7 @@ public class MonitorRunningInstance implements Closeable
             if ( elapsedMs > downInstanceRestartMs )
             {
                 exhibitor.getLog().add(ActivityLog.Type.INFO, "Restarting down/not-serving ZooKeeper after " + elapsedMs + " ms pause");
-                restartZooKeeper(localCurrentInstanceState);
+                restartZooKeeperAndIncrementCount(localCurrentInstanceState);
             }
             else
             {
@@ -201,6 +214,12 @@ public class MonitorRunningInstance implements Closeable
         }
 
         exhibitor.getActivityQueue().add(QueueGroups.MAIN, new KillRunningInstance(exhibitor, true));
+    }
+
+    private void restartZooKeeperAndIncrementCount(InstanceState currentInstanceState) throws Exception
+    {
+        restartZooKeeper(currentInstanceState);
+        restartCount.incrementAndGet();
     }
 
     private int getDownInstanceRestartMs(InstanceConfig config)
