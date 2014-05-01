@@ -6,6 +6,11 @@ ahanwadi.
 * Make it easier to add interactive tabs to the Exhibitor UI. This adds an option to custom tabs to 
 not get rebuilt on each poll. i.e. the tab is built once and left alone.
 
+* Pull 177:  Rolling config change was very broken. ConfigCollectionBase was not processing rolling 
+config correctly in getConfigForThisInstance(). Also, when a rolling config change is started, the 
+instance must wait until it restarts at least once before advancing. Lastly, a test case to validate this 
+was written.
+
 * Pull 180: Monitor stdout when cleaning logs. Thanks to user jorgeortiz85.
 
 * Pull 182: Handle null bytes from getData request. Thanks to user nekto0n.
