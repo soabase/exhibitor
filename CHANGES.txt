@@ -1,3 +1,7 @@
+1.5.3 - xxxxxxxxxxx
+===================
+* Pull 189: Need to pad converted hex bytes. Thanks to user jamesmulcahy
+
 1.5.2 - May 1, 2014
 ===================
 * Pull 175: Use zkServer.sh to stop zookeeper to ensure that zookeeper_server.pid. Thank you to user
