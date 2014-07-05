@@ -72,7 +72,8 @@ public class ExplorerResource
         StringBuilder       bytesStr = new StringBuilder();
         for ( byte b : bytes )
         {
-            bytesStr.append(Integer.toHexString(b & 0xff)).append(" ");
+            String byteAsStr = String.format("%02x", (0xFF & b));
+            bytesStr.append(byteAsStr).append(" ");
         }
         return bytesStr.toString();
     }
