@@ -20,6 +20,7 @@ import com.netflix.exhibitor.core.s3.S3Client;
 import com.netflix.exhibitor.core.s3.S3ClientFactory;
 import com.netflix.exhibitor.core.s3.S3Credential;
 import com.netflix.exhibitor.core.s3.S3CredentialsProvider;
+import com.netflix.exhibitor.core.s3.S3ClientConfig;
 
 public class MockS3ClientFactory implements S3ClientFactory
 {
@@ -37,7 +38,18 @@ public class MockS3ClientFactory implements S3ClientFactory
     }
 
     @Override
+    public S3Client makeNewClient(S3Credential credentials, S3ClientConfig clientConfig, String s3Region) throws Exception
+    {
+        return s3Client;
+    }
+
+    @Override
     public S3Client makeNewClient(S3CredentialsProvider credentialsProvider, String s3Region) throws Exception {
+        return s3Client;
+    }
+
+    @Override
+    public S3Client makeNewClient(S3CredentialsProvider credentialsProvider, S3ClientConfig clientConfig, String s3Region) throws Exception {
         return s3Client;
     }
 }

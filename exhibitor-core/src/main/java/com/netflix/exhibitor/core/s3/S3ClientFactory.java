@@ -39,6 +39,27 @@ public interface S3ClientFactory
      */
     public S3Client makeNewClient(S3CredentialsProvider credentialsProvider, String s3Region) throws Exception;
 
+    /**
+     * Create a client with the given credentials
+     *
+     * @param credentials credentials
+     * @param clientConfig s3 client configuration
+     * @param s3Region the region to use or null
+     * @return client
+     * @throws Exception errors
+     */
+    public S3Client makeNewClient(S3Credential credentials, S3ClientConfig clientConfig, String s3Region) throws Exception;
 
+
+    /**
+     * Create a client with the given credentials
+     *
+     * @param credentialsProvider credentials provider
+     * @param clientConfig s3 client configuration
+     * @param s3Region the region to use or null
+     * @return client
+     * @throws Exception errors
+     */
+    public S3Client makeNewClient(S3CredentialsProvider credentialsProvider, S3ClientConfig clientConfig, String s3Region) throws Exception;
 
 }

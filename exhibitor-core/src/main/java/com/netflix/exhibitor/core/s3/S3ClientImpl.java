@@ -40,16 +40,39 @@ public class S3ClientImpl implements S3Client
         changeCredentials(credentials);
     }
 
+    public S3ClientImpl(S3Credential credentials, S3ClientConfig clientConfig, String s3Region)
+    {
+        this.s3Region = s3Region;
+        changeCredentials(credentials, clientConfig);
+    }
+
     public S3ClientImpl(S3CredentialsProvider credentialsProvider, String s3Region)
     {
         this.s3Region = s3Region;
-        client.set(new RefCountedClient(createClient(credentialsProvider.getAWSCredentialProvider(), null)));
+        client.set(new RefCountedClient(createClient(credentialsProvider.getAWSCredentialProvider(), null, null)));
+    }
+
+    public S3ClientImpl(S3CredentialsProvider credentialsProvider, S3ClientConfig clientConfig, String s3Region)
+    {
+        this.s3Region = s3Region;
+        client.set(new RefCountedClient(createClient(credentialsProvider.getAWSCredentialProvider(), null, clientConfig)));
     }
 
     @Override
     public void changeCredentials(S3Credential credential)
     {
-        RefCountedClient   newRefCountedClient = (credential != null) ? new RefCountedClient(createClient(null, new BasicAWSCredentials(credential.getAccessKeyId(), credential.getSecretAccessKey()))) : new RefCountedClient(createClient(null, null));
+        RefCountedClient   newRefCountedClient = (credential != null) ? new RefCountedClient(createClient(null, new BasicAWSCredentials(credential.getAccessKeyId(), credential.getSecretAccessKey()), null)) : new RefCountedClient(createClient(null, null, null));
+        RefCountedClient   oldRefCountedClient = client.getAndSet(newRefCountedClient);
+        if ( oldRefCountedClient != null )
+        {
+            oldRefCountedClient.markForDelete();
+        }
+    }
+
+    @Override
+    public void changeCredentials(S3Credential credential, S3ClientConfig clientConfig)
+    {
+        RefCountedClient   newRefCountedClient = (credential != null) ? new RefCountedClient(createClient(null, new BasicAWSCredentials(credential.getAccessKeyId(), credential.getSecretAccessKey()), clientConfig)) : new RefCountedClient(createClient(null, null, clientConfig));
         RefCountedClient   oldRefCountedClient = client.getAndSet(newRefCountedClient);
         if ( oldRefCountedClient != null )
         {
@@ -62,7 +85,7 @@ public class S3ClientImpl implements S3Client
     {
         try
         {
-            changeCredentials(null);
+            changeCredentials(null, null);
         }
         catch ( Exception e )
         {
@@ -220,20 +243,41 @@ public class S3ClientImpl implements S3Client
         }
     }
 
-    private AmazonS3Client createClient(AWSCredentialsProvider awsCredentialProvider, BasicAWSCredentials basicAWSCredentials)
+    private AmazonS3Client createClient(AWSCredentialsProvider awsCredentialProvider, BasicAWSCredentials basicAWSCredentials, S3ClientConfig clientConfig)
     {
         AmazonS3Client localClient;
         if ( awsCredentialProvider != null )
         {
-            localClient = new AmazonS3Client(awsCredentialProvider);
+            if ( clientConfig != null )
+            {
+                localClient = new AmazonS3Client(awsCredentialProvider, clientConfig.getAWSClientConfig());
+            }
+            else
+            {
+                localClient = new AmazonS3Client(awsCredentialProvider);
+            }
         }
         else if ( basicAWSCredentials != null )
         {
-            localClient = new AmazonS3Client(basicAWSCredentials);
+            if ( clientConfig != null )
+            {
+                localClient = new AmazonS3Client(basicAWSCredentials, clientConfig.getAWSClientConfig());
+            }
+            else
+            {
+                localClient = new AmazonS3Client(basicAWSCredentials);
+            }
         }
         else
         {
-            localClient = new AmazonS3Client();
+            if ( clientConfig != null )
+            {
+                localClient = new AmazonS3Client(clientConfig.getAWSClientConfig());
+            }
+            else
+            {
+                localClient = new AmazonS3Client();
+            }
         }
 
         if ( s3Region != null )
