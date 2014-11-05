@@ -23,6 +23,7 @@ import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.config.IntConfigs;
 import com.netflix.exhibitor.core.config.StringConfigs;
 import com.netflix.exhibitor.core.state.ServerSpec;
+import com.netflix.exhibitor.core.state.ServerType;
 import com.netflix.exhibitor.core.state.UsState;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -155,6 +156,11 @@ public class StandardProcessOperations implements ProcessOperations
         for ( ServerSpec spec : usState.getServerList().getSpecs() )
         {
             localProperties.setProperty("server." + spec.getServerId(), spec.getHostname() + portSpec + spec.getServerType().getZookeeperConfigValue());
+        }
+
+        if ( usState.getUs().getServerType() == ServerType.OBSERVER )
+        {
+            localProperties.setProperty("peerType", "observer");
         }
 
         File            configFile = new File(details.configDirectory, "zoo.cfg");
