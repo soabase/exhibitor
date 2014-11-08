@@ -4,6 +4,9 @@
 
 * Issue 201: Need to set peerType=observer for Observers
 
+* Issue 191: S3ClientImpl does not pass internet proxy server configuration to AmazonS3Client. 
+Thank you to user boldfield.
+
 1.5.2 - May 1, 2014
 ===================
 * Pull 175: Use zkServer.sh to stop zookeeper to ensure that zookeeper_server.pid. Thank you to user
