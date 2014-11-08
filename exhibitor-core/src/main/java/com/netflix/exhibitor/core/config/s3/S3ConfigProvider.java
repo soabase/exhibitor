@@ -85,6 +85,55 @@ public class S3ConfigProvider implements ConfigProvider
         s3Client = factory.makeNewClient(credentialsProvider, s3Region);
     }
 
+    /**
+     * @param factory the factory
+     * @param credential credentials
+     * @param clientConfig s3 client configuration
+     * @param arguments args
+     * @param hostname this VM's hostname
+     * @param s3Region optional region or null
+     * @throws Exception errors
+     */
+    public S3ConfigProvider(S3ClientFactory factory, S3Credential credential, S3ClientConfig clientConfig, S3ConfigArguments arguments, String hostname, String s3Region) throws Exception
+    {
+        this(factory, credential, clientConfig, arguments, hostname, new Properties(), s3Region);
+    }
+
+    /**
+     * @param factory the factory
+     * @param credential credentials
+     * @param clientConfig s3 client configuration
+     * @param arguments args
+     * @param hostname this VM's hostname
+     * @param defaults default props
+     * @param s3Region optional region or null
+     * @throws Exception errors
+     */
+    public S3ConfigProvider(S3ClientFactory factory, S3Credential credential, S3ClientConfig clientConfig, S3ConfigArguments arguments, String hostname, Properties defaults, String s3Region) throws Exception
+    {
+        this.arguments = arguments;
+        this.hostname = hostname;
+        this.defaults = defaults;
+        s3Client = factory.makeNewClient(credential, clientConfig, s3Region);
+    }
+
+    /**
+     * @param factory the factory
+     * @param credentialsProvider credentials
+     * @param clientConfig s3 client configuration
+     * @param arguments args
+     * @param hostname this VM's hostname
+     * @param s3Region optional region or null
+     * @throws Exception errors
+     */
+    public S3ConfigProvider(S3ClientFactory factory, S3CredentialsProvider credentialsProvider, S3ClientConfig clientConfig, S3ConfigArguments arguments, String hostname, Properties defaults, String s3Region) throws Exception
+    {
+        this.arguments = arguments;
+        this.hostname = hostname;
+        this.defaults = defaults;
+        s3Client = factory.makeNewClient(credentialsProvider, clientConfig, s3Region);
+    }
+
     public S3Client getS3Client()
     {
         return s3Client;

@@ -57,7 +57,7 @@ project(':exhibitor-core') {
         // if you are using Java 7 you can remove this and switch to the JDK version
         compile 'org.codehaus.jsr166-mirror:jsr166y:1.7.0'
 
-        compile 'com.amazonaws:aws-java-sdk:1.3.22'   // should be provided - gradle doesn't support
+        compile 'com.amazonaws:aws-java-sdk:1.9.3'   // should be provided - gradle doesn't support
         compile 'com.sun.jersey:jersey-bundle:1.9.1'  // should be provided - gradle doesn't support
         compile 'com.sun.xml.bind:jaxb-impl:2.2.4'   // should be provided - gradle doesn't support
 
@@ -87,7 +87,7 @@ project(':exhibitor-standalone') {
         compile 'org.mortbay.jetty:jetty:6.1.22'
         compile 'com.google.guava:guava:11.0.1'
         compile 'commons-cli:commons-cli:1.2'
-        compile 'com.amazonaws:aws-java-sdk:1.3.22'
+        compile 'com.amazonaws:aws-java-sdk:1.9.3'
         compile 'org.slf4j:slf4j-log4j12:1.7.0'
     }
 }

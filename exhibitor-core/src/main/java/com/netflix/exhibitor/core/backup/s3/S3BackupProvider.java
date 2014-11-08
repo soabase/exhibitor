@@ -35,6 +35,7 @@ import com.netflix.exhibitor.core.s3.S3Client;
 import com.netflix.exhibitor.core.s3.S3ClientFactory;
 import com.netflix.exhibitor.core.s3.S3Credential;
 import com.netflix.exhibitor.core.s3.S3CredentialsProvider;
+import com.netflix.exhibitor.core.s3.S3ClientConfig;
 import com.netflix.exhibitor.core.s3.S3Utils;
 import org.apache.curator.RetryLoop;
 import org.apache.curator.RetryPolicy;
@@ -91,6 +92,30 @@ public class S3BackupProvider implements BackupProvider
     public S3BackupProvider(S3ClientFactory factory, S3CredentialsProvider credentialsProvider, String s3Region) throws Exception
     {
         s3Client = factory.makeNewClient(credentialsProvider, s3Region);
+    }
+
+    /**
+     * @param factory the factory
+     * @param credential credentials
+     * @param clientConfig s3 client configuration
+     * @param s3Region optional region or null
+     * @throws Exception errors
+     */
+    public S3BackupProvider(S3ClientFactory factory, S3Credential credential, S3ClientConfig clientConfig, String s3Region) throws Exception
+    {
+        s3Client = factory.makeNewClient(credential, clientConfig, s3Region);
+    }
+
+    /**
+     * @param factory the factory
+     * @param credentialsProvider credentials
+     * @param clientConfig s3 client configuration
+     * @param s3Region optional region or null
+     * @throws Exception errors
+     */
+    public S3BackupProvider(S3ClientFactory factory, S3CredentialsProvider credentialsProvider, S3ClientConfig clientConfig, String s3Region) throws Exception
+    {
+        s3Client = factory.makeNewClient(credentialsProvider, clientConfig, s3Region);
     }
 
     public S3Client getS3Client()

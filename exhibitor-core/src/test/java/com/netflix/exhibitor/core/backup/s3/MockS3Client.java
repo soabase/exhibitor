@@ -23,6 +23,7 @@ import com.google.common.io.ByteStreams;
 import com.netflix.exhibitor.core.s3.S3Client;
 import com.netflix.exhibitor.core.s3.S3Credential;
 import com.netflix.exhibitor.core.s3.S3Utils;
+import com.netflix.exhibitor.core.s3.S3ClientConfig;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -55,9 +56,14 @@ public class MockS3Client implements S3Client
         }
         this.listing = listing;
     }
-
     @Override
     public void changeCredentials(S3Credential credential) throws Exception
+    {
+        // NOP
+    }
+
+    @Override
+    public void changeCredentials(S3Credential credential, S3ClientConfig clientConfig) throws Exception
     {
         // NOP
     }

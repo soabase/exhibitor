@@ -23,6 +23,8 @@ public interface S3Client extends Closeable
 {
     public void changeCredentials(S3Credential credential) throws Exception;
 
+    public void changeCredentials(S3Credential credential, S3ClientConfig clientConfig) throws Exception;
+
     public InitiateMultipartUploadResult initiateMultipartUpload(InitiateMultipartUploadRequest request) throws Exception;
 
     public S3Object getObject(String bucket, String key) throws Exception;

@@ -25,9 +25,21 @@ public class S3ClientFactoryImpl implements S3ClientFactory
     }
 
     @Override
+    public S3Client makeNewClient(final S3Credential credentials, final S3ClientConfig clientConfig, String s3Region) throws Exception
+    {
+        return new S3ClientImpl(credentials, clientConfig, s3Region);
+    }
+
+    @Override
     public S3Client makeNewClient(S3CredentialsProvider credentialsProvider, String s3Region) throws Exception
     {
         return new S3ClientImpl(credentialsProvider, s3Region);
+    }
+
+    @Override
+    public S3Client makeNewClient(S3CredentialsProvider credentialsProvider, final S3ClientConfig clientConfig, String s3Region) throws Exception
+    {
+        return new S3ClientImpl(credentialsProvider, clientConfig, s3Region);
     }
 
 }

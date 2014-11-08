@@ -26,6 +26,7 @@ import com.netflix.exhibitor.core.config.JQueryStyle;
 import com.netflix.exhibitor.core.config.PropertyBasedInstanceConfig;
 import com.netflix.exhibitor.core.config.StringConfigs;
 import com.netflix.exhibitor.core.s3.PropertyBasedS3Credential;
+import com.netflix.exhibitor.core.s3.PropertyBasedS3ClientConfig;
 import com.netflix.exhibitor.core.state.ManifestVersion;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
@@ -65,6 +66,7 @@ public class ExhibitorCLI
     public static final String FILESYSTEM_CONFIG_NAME = "fsconfigname";
     public static final String FILESYSTEM_CONFIG_LOCK_PREFIX = "fsconfiglockprefix";
     public static final String S3_CREDENTIALS = "s3credentials";
+    public static final String S3_PROXY = "s3proxy";
     public static final String S3_BACKUP = "s3backup";
     public static final String S3_CONFIG = "s3config";
     public static final String S3_CONFIG_PREFIX = "s3configprefix";
@@ -154,6 +156,7 @@ public class ExhibitorCLI
         Options s3Options = new Options();
         s3Options.addOption(null, S3_CREDENTIALS, true, "Optional credentials to use for s3backup or s3config. Argument is the path to an AWS credential properties file with two properties: " + PropertyBasedS3Credential.PROPERTY_S3_KEY_ID + " and " + PropertyBasedS3Credential.PROPERTY_S3_SECRET_KEY);
         s3Options.addOption(null, S3_REGION, true, "Optional region for S3 calls (e.g. \"eu-west-1\"). Will be used to set the S3 client's endpoint.");
+        s3Options.addOption(null, S3_PROXY, true, "Optional configuration used when when connecting to S3 via a proxy. Argument is the path to an AWS credential properties file with four properties (only host, port and protocol are required if using a proxy): " + PropertyBasedS3ClientConfig.PROPERTY_S3_PROXY_HOST + ", " + PropertyBasedS3ClientConfig.PROPERTY_S3_PROXY_PORT + ", " + PropertyBasedS3ClientConfig.PROPERTY_S3_PROXY_USERNAME + ", " + PropertyBasedS3ClientConfig.PROPERTY_S3_PROXY_PASSWORD);
 
         generalOptions = new Options();
         generalOptions.addOption(null, TIMEOUT, true, "Connection timeout (ms) for ZK connections. Default is 30000.");
