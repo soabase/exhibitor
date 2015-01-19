@@ -128,14 +128,35 @@ public class MonitorRunningInstance implements Closeable
     }
 
     @VisibleForTesting
-    protected StateAndLeader getStateAndLeader() throws Exception
+    StateAndLeader getStateAndLeader() throws Exception
     {
         return new Checker(exhibitor).calculateState();
     }
 
+    @VisibleForTesting
+    boolean serverListHasChanged(InstanceState instanceState, InstanceState localCurrentInstanceState)
+    {
+        if ( localCurrentInstanceState == null )
+        {
+            return false;
+        }
+
+        ServerList serverList = instanceState.getServerList().filterOutObservers();
+        ServerList localServerList = localCurrentInstanceState.getServerList().filterOutObservers();
+        if ( !serverList.equals(localServerList) )
+        {
+            return true;
+        }
+
+        ServerSpec us = UsState.findUs(exhibitor, instanceState.getServerList().getSpecs());
+        ServerSpec localUs = UsState.findUs(exhibitor, localCurrentInstanceState.getServerList().getSpecs());
+
+        return (us == null) || !us.equals(localUs);
+    }
+
     private void handleServerListChange(InstanceState instanceState, InstanceState localCurrentInstanceState) throws Exception
     {
-        boolean         serverListChange = (localCurrentInstanceState != null) && !localCurrentInstanceState.getServerList().equals(instanceState.getServerList());
+        boolean         serverListChange = serverListHasChanged(instanceState, localCurrentInstanceState);
         boolean         configChange = (localCurrentInstanceState != null) && !localCurrentInstanceState.getCurrentConfig().equals(instanceState.getCurrentConfig());
         currentInstanceState.set(instanceState);
 

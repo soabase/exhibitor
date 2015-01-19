@@ -34,10 +34,9 @@ import java.util.prefs.Preferences;
 public class TestMonitorRunningInstance
 {
     @Test
-    public void testTempDownInstance() throws Exception
+    public void testServerListHasChanged() throws Exception
     {
-        final AtomicInteger         checkMs = new AtomicInteger(10000);
-        InstanceConfig              config = new InstanceConfig()
+        InstanceConfig config = new InstanceConfig()
         {
             @Override
             public String getString(StringConfigs config)
@@ -46,14 +45,141 @@ public class TestMonitorRunningInstance
                 {
                     case SERVERS_SPEC:
                     {
-                        return "1:foo,2:bar";
+                        return "S:1:foo,S:2:bar";
                     }
+                }
+                return null;
+            }
 
-                    case ZOOKEEPER_DATA_DIRECTORY:
-                    case ZOOKEEPER_INSTALL_DIRECTORY:
+            @Override
+            public int getInt(IntConfigs config)
+            {
+                return 0;
+            }
+        };
+        Exhibitor mockExhibitor = makeMockExhibitor(config, "foo");
+        MonitorRunningInstance monitor = new MonitorRunningInstance(mockExhibitor);
+        StateAndLeader stateAndLeader = monitor.getStateAndLeader();
+        InstanceState localCurrentInstanceState = new InstanceState(new ServerList(config.getString(StringConfigs.SERVERS_SPEC)), stateAndLeader.getState(), new RestartSignificantConfig(config));
+
+        InstanceConfig newConfig = new InstanceConfig()
+        {
+            @Override
+            public String getString(StringConfigs config)
+            {
+                switch ( config )
+                {
+                    case SERVERS_SPEC:
                     {
-                        return "/";
+                        return "S:1:foo,S:2:bar,O:3:snafu"; // observer added
                     }
+                }
+                return null;
+            }
+
+            @Override
+            public int getInt(IntConfigs config)
+            {
+                return 0;
+            }
+        };
+        InstanceState instanceState = new InstanceState(new ServerList(newConfig.getString(StringConfigs.SERVERS_SPEC)), stateAndLeader.getState(), new RestartSignificantConfig(newConfig));
+        Assert.assertFalse(monitor.serverListHasChanged(instanceState, localCurrentInstanceState));
+
+        newConfig = new InstanceConfig()
+        {
+            @Override
+            public String getString(StringConfigs config)
+            {
+                switch ( config )
+                {
+                    case SERVERS_SPEC:
+                    {
+                        return "S:1:foo,S:2:bar,S:3:snafu"; // standard added
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            public int getInt(IntConfigs config)
+            {
+                return 0;
+            }
+        };
+        instanceState = new InstanceState(new ServerList(newConfig.getString(StringConfigs.SERVERS_SPEC)), stateAndLeader.getState(), new RestartSignificantConfig(newConfig));
+        Assert.assertTrue(monitor.serverListHasChanged(instanceState, localCurrentInstanceState));
+
+        newConfig = new InstanceConfig()
+        {
+            @Override
+            public String getString(StringConfigs config)
+            {
+                switch ( config )
+                {
+                    case SERVERS_SPEC:
+                    {
+                        return "O:1:foo,S:2:bar"; // "us" changed to observer
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            public int getInt(IntConfigs config)
+            {
+                return 0;
+            }
+        };
+        instanceState = new InstanceState(new ServerList(newConfig.getString(StringConfigs.SERVERS_SPEC)), stateAndLeader.getState(), new RestartSignificantConfig(newConfig));
+        Assert.assertTrue(monitor.serverListHasChanged(instanceState, localCurrentInstanceState));
+
+        newConfig = new InstanceConfig()
+        {
+            @Override
+            public String getString(StringConfigs config)
+            {
+                switch ( config )
+                {
+                    case SERVERS_SPEC:
+                    {
+                        return "S:1:foo,O:2:bar"; // not-us changed to observer
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            public int getInt(IntConfigs config)
+            {
+                return 0;
+            }
+        };
+        instanceState = new InstanceState(new ServerList(newConfig.getString(StringConfigs.SERVERS_SPEC)), stateAndLeader.getState(), new RestartSignificantConfig(newConfig));
+        Assert.assertTrue(monitor.serverListHasChanged(instanceState, localCurrentInstanceState));
+    }
+
+    @Test
+    public void testTempDownInstance() throws Exception
+    {
+        final AtomicInteger checkMs = new AtomicInteger(10000);
+        InstanceConfig config = new InstanceConfig()
+        {
+            @Override
+            public String getString(StringConfigs config)
+            {
+                switch ( config )
+                {
+                case SERVERS_SPEC:
+                {
+                    return "1:foo,2:bar";
+                }
+
+                case ZOOKEEPER_DATA_DIRECTORY:
+                case ZOOKEEPER_INSTALL_DIRECTORY:
+                {
+                    return "/";
+                }
                 }
                 return null;
             }
@@ -63,35 +189,19 @@ public class TestMonitorRunningInstance
             {
                 switch ( config )
                 {
-                    case CHECK_MS:
-                    {
-                        return checkMs.get();
-                    }
+                case CHECK_MS:
+                {
+                    return checkMs.get();
+                }
                 }
                 return 0;
             }
         };
 
-        Preferences                 preferences = Mockito.mock(Preferences.class);
-        ControlPanelValues          controlPanelValues = new ControlPanelValues(preferences)
-        {
-            @Override
-            public boolean isSet(ControlPanelTypes type) throws Exception
-            {
-                return true;
-            }
-        };
+        Exhibitor mockExhibitor = makeMockExhibitor(config, "foo");
 
-        ConfigManager               configManager = Mockito.mock(ConfigManager.class);
-        Mockito.when(configManager.getConfig()).thenReturn(config);
-
-        Exhibitor                   mockExhibitor = Mockito.mock(Exhibitor.class, Mockito.RETURNS_MOCKS);
-        Mockito.when(mockExhibitor.getConfigManager()).thenReturn(configManager);
-        Mockito.when(mockExhibitor.getThisJVMHostname()).thenReturn("foo");
-        Mockito.when(mockExhibitor.getControlPanelValues()).thenReturn(controlPanelValues);
-
-        final Semaphore             semaphore = new Semaphore(0);
-        MonitorRunningInstance      monitor = new MonitorRunningInstance(mockExhibitor)
+        final Semaphore semaphore = new Semaphore(0);
+        MonitorRunningInstance monitor = new MonitorRunningInstance(mockExhibitor)
         {
             @Override
             protected void restartZooKeeper(InstanceState currentInstanceState) throws Exception
@@ -109,5 +219,27 @@ public class TestMonitorRunningInstance
         checkMs.set(1);
         monitor.doWork();   // should do restart now as 10 times checkMs has elapsed
         Assert.assertTrue(semaphore.tryAcquire(10, TimeUnit.SECONDS));
+    }
+
+    private Exhibitor makeMockExhibitor(InstanceConfig config, String us)
+    {
+        Preferences preferences = Mockito.mock(Preferences.class);
+        ControlPanelValues controlPanelValues = new ControlPanelValues(preferences)
+        {
+            @Override
+            public boolean isSet(ControlPanelTypes type) throws Exception
+            {
+                return true;
+            }
+        };
+
+        ConfigManager configManager = Mockito.mock(ConfigManager.class);
+        Mockito.when(configManager.getConfig()).thenReturn(config);
+
+        Exhibitor mockExhibitor = Mockito.mock(Exhibitor.class, Mockito.RETURNS_MOCKS);
+        Mockito.when(mockExhibitor.getConfigManager()).thenReturn(configManager);
+        Mockito.when(mockExhibitor.getThisJVMHostname()).thenReturn(us);
+        Mockito.when(mockExhibitor.getControlPanelValues()).thenReturn(controlPanelValues);
+        return mockExhibitor;
     }
 }

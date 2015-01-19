@@ -185,4 +185,26 @@ public class ServerList
     {
         return specs.hashCode();
     }
+
+    /**
+     * Return this server list with any observers removed
+     *
+     * @return filtered list
+     */
+    public ServerList filterOutObservers()
+    {
+        Iterable<ServerSpec> filtered = Iterables.filter
+        (
+            specs,
+            new Predicate<ServerSpec>()
+            {
+                @Override
+                public boolean apply(ServerSpec spec)
+                {
+                    return spec.getServerType() != ServerType.OBSERVER;
+                }
+            }
+        );
+        return new ServerList(Lists.newArrayList(filtered));
+    }
 }
