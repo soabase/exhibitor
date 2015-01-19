@@ -128,7 +128,7 @@ public class MonitorRunningInstance implements Closeable
     }
 
     @VisibleForTesting
-    StateAndLeader getStateAndLeader() throws Exception
+    protected StateAndLeader getStateAndLeader() throws Exception
     {
         return new Checker(exhibitor).calculateState();
     }
