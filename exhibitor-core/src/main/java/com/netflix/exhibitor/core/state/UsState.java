@@ -18,8 +18,10 @@ package com.netflix.exhibitor.core.state;
 
 import com.google.common.collect.Iterables;
 import com.netflix.exhibitor.core.Exhibitor;
+import com.netflix.exhibitor.core.automanage.ClusterStatusTask;
 import com.netflix.exhibitor.core.config.InstanceConfig;
 import com.netflix.exhibitor.core.config.StringConfigs;
+import java.util.List;
 
 public class UsState
 {
@@ -31,7 +33,12 @@ public class UsState
     {
         config = exhibitor.getConfigManager().getConfig();
         serverList = new ServerList(config.getString(StringConfigs.SERVERS_SPEC));
-        us = Iterables.find(serverList.getSpecs(), ServerList.isUs(exhibitor.getThisJVMHostname()), null);
+        us = findUs(exhibitor, serverList.getSpecs());
+    }
+
+    public static ServerSpec findUs(Exhibitor exhibitor, List<ServerSpec> specs)
+    {
+        return Iterables.find(specs, ServerList.isUs(exhibitor.getThisJVMHostname()), null);
     }
 
     public InstanceConfig getConfig()

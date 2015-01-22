@@ -17,13 +17,12 @@
 package com.netflix.exhibitor.core.automanage;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.entities.ServerStatus;
 import com.netflix.exhibitor.core.state.InstanceStateTypes;
-import com.netflix.exhibitor.core.state.ServerList;
 import com.netflix.exhibitor.core.state.ServerSpec;
+import com.netflix.exhibitor.core.state.UsState;
 import jsr166y.RecursiveTask;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -43,7 +42,7 @@ public class ClusterStatusTask extends RecursiveTask<List<ServerStatus>>
     {
         this.exhibitor = exhibitor;
         this.specs = ImmutableList.copyOf(specs);
-        us = Iterables.find(specs, ServerList.isUs(exhibitor.getThisJVMHostname()), null);
+        us = UsState.findUs(exhibitor, specs);
     }
 
     @Override

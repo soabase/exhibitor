@@ -16,7 +16,6 @@
 
 package com.netflix.exhibitor.core.rest;
 
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.hash.Hashing;
 import com.netflix.exhibitor.core.backup.BackupConfigSpec;
@@ -30,6 +29,7 @@ import com.netflix.exhibitor.core.entities.Result;
 import com.netflix.exhibitor.core.state.FourLetterWord;
 import com.netflix.exhibitor.core.state.ServerList;
 import com.netflix.exhibitor.core.state.ServerSpec;
+import com.netflix.exhibitor.core.state.UsState;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.JsonNodeFactory;
@@ -70,7 +70,7 @@ public class ConfigResource
 
         String                      response = new FourLetterWord(FourLetterWord.Word.RUOK, config, context.getExhibitor().getConnectionTimeOutMs()).getResponse();
         ServerList                  serverList = new ServerList(config.getString(StringConfigs.SERVERS_SPEC));
-        ServerSpec                  us = Iterables.find(serverList.getSpecs(), ServerList.isUs(context.getExhibitor().getThisJVMHostname()), null);
+        ServerSpec                  us = UsState.findUs(context.getExhibitor(), serverList.getSpecs());
 
         ObjectNode                  mainNode = JsonNodeFactory.instance.objectNode();
         ObjectNode                  configNode = JsonNodeFactory.instance.objectNode();
