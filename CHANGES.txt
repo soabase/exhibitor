@@ -7,6 +7,8 @@
 * Issue 191: S3ClientImpl does not pass internet proxy server configuration to AmazonS3Client. 
 Thank you to user boldfield.
 
+* Pull 216: Change restart behavior. An addition of an observer no longer causes all instances to restart.
+
 1.5.2 - May 1, 2014
 ===================
 * Pull 175: Use zkServer.sh to stop zookeeper to ensure that zookeeper_server.pid. Thank you to user
