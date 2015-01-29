@@ -1,0 +1,14 @@
+apply plugin: 'nebula.provided-base'
+
+dependencies {
+    compile (project(":exhibitor-core")) {
+        exclude group: 'com.sun.jersey', module: 'jersey-client'
+    }
+    compile 'com.sun.jersey:jersey-core:1.9.1'
+    compile 'com.sun.jersey:jersey-client:1.9.1'
+    compile 'com.sun.jersey:jersey-server:1.9.1'
+    compile 'org.mortbay.jetty:jetty:6.1.22'
+    compile 'commons-cli:commons-cli:1.2'
+
+    provided 'javax.servlet:servlet-api:2.5'
+}
