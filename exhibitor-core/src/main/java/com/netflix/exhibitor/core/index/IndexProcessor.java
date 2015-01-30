@@ -17,11 +17,11 @@
 package com.netflix.exhibitor.core.index;
 
 import com.google.common.collect.Lists;
-import com.google.common.io.Closeables;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.backup.BackupMetaData;
 import com.netflix.exhibitor.core.backup.BackupStream;
+import org.apache.curator.utils.CloseableUtils;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -115,7 +115,7 @@ public class IndexProcessor
                 }
                 finally
                 {
-                    Closeables.closeQuietly(in);
+                    CloseableUtils.closeQuietly(in);
                 }
             }
         }
@@ -154,7 +154,7 @@ public class IndexProcessor
                 }
                 finally
                 {
-                    Closeables.closeQuietly(backupStream);
+                    CloseableUtils.closeQuietly(backupStream);
                 }
             }
         }

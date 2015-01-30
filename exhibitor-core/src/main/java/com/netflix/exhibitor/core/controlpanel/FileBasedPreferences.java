@@ -16,7 +16,7 @@
 
 package com.netflix.exhibitor.core.controlpanel;
 
-import com.google.common.io.Closeables;
+import org.apache.curator.utils.CloseableUtils;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -55,7 +55,7 @@ public class FileBasedPreferences extends AbstractPreferences
             }
             finally
             {
-                Closeables.closeQuietly(in);
+                CloseableUtils.closeQuietly(in);
             }
         }
     }
@@ -127,7 +127,7 @@ public class FileBasedPreferences extends AbstractPreferences
         }
         finally
         {
-            Closeables.closeQuietly(out);
+            CloseableUtils.closeQuietly(out);
         }
     }
 }

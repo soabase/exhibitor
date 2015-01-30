@@ -20,7 +20,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
-import com.google.common.io.Closeables;
 import com.netflix.exhibitor.core.config.ConfigCollection;
 import com.netflix.exhibitor.core.config.ConfigProvider;
 import com.netflix.exhibitor.core.config.LoadedInstanceConfig;
@@ -30,6 +29,7 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.framework.recipes.locks.InterProcessMutex;
+import org.apache.curator.utils.CloseableUtils;
 import org.apache.curator.utils.ZKPaths;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.data.Stat;
@@ -90,7 +90,7 @@ public class ZookeeperConfigProvider implements ConfigProvider
     {
         state.set(State.CLOSED);
 
-        Closeables.closeQuietly(cache);
+        CloseableUtils.closeQuietly(cache);
     }
 
     @Override

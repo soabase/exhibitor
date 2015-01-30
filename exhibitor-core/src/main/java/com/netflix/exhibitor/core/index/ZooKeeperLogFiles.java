@@ -21,6 +21,7 @@ import com.google.common.collect.Lists;
 import com.google.common.io.Closeables;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.config.StringConfigs;
+import org.apache.curator.utils.CloseableUtils;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -86,7 +87,7 @@ public class ZooKeeperLogFiles
         }
         finally
         {
-            Closeables.closeQuietly(log);
+            CloseableUtils.closeQuietly(log);
         }
     }
 }

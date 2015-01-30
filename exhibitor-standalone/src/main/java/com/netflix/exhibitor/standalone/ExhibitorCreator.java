@@ -19,7 +19,6 @@ package com.netflix.exhibitor.standalone;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.common.io.Closeables;
 import com.netflix.exhibitor.core.ExhibitorArguments;
 import com.netflix.exhibitor.core.backup.BackupProvider;
 import com.netflix.exhibitor.core.backup.filesystem.FileSystemBackupProvider;
@@ -37,8 +36,8 @@ import com.netflix.exhibitor.core.config.s3.S3ConfigArguments;
 import com.netflix.exhibitor.core.config.s3.S3ConfigAutoManageLockArguments;
 import com.netflix.exhibitor.core.config.s3.S3ConfigProvider;
 import com.netflix.exhibitor.core.config.zookeeper.ZookeeperConfigProvider;
-import com.netflix.exhibitor.core.s3.PropertyBasedS3Credential;
 import com.netflix.exhibitor.core.s3.PropertyBasedS3ClientConfig;
+import com.netflix.exhibitor.core.s3.PropertyBasedS3Credential;
 import com.netflix.exhibitor.core.s3.S3ClientFactoryImpl;
 import com.netflix.exhibitor.core.servo.ServoRegistration;
 import com.netflix.servo.jmx.JmxMonitorRegistry;
@@ -54,6 +53,7 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.api.ACLProvider;
 import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.apache.curator.utils.CloseableUtils;
 import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.common.PathUtils;
 import org.apache.zookeeper.data.ACL;
@@ -334,7 +334,7 @@ public class ExhibitorCreator
         }
         finally
         {
-            Closeables.closeQuietly(in);
+            CloseableUtils.closeQuietly(in);
         }
 
         Set<String> propertyNames = Sets.newHashSet();

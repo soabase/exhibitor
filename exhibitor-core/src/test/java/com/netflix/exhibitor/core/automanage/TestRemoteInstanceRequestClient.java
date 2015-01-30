@@ -16,9 +16,9 @@
 
 package com.netflix.exhibitor.core.automanage;
 
-import com.google.common.io.Closeables;
 import com.netflix.exhibitor.core.RemoteConnectionConfiguration;
 import org.apache.curator.test.InstanceSpec;
+import org.apache.curator.utils.CloseableUtils;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import javax.ws.rs.core.MediaType;
@@ -50,7 +50,7 @@ public class TestRemoteInstanceRequestClient
         }
         finally
         {
-            Closeables.closeQuietly(client);
+            CloseableUtils.closeQuietly(client);
         }
     }
 
@@ -73,7 +73,7 @@ public class TestRemoteInstanceRequestClient
         }
         finally
         {
-            Closeables.closeQuietly(client);
+            CloseableUtils.closeQuietly(client);
             server.close();
         }
     }

@@ -16,13 +16,13 @@
 
 package com.netflix.exhibitor.core.config.none;
 
-import com.google.common.io.Closeables;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.config.ConfigCollection;
 import com.netflix.exhibitor.core.config.ConfigProvider;
 import com.netflix.exhibitor.core.config.LoadedInstanceConfig;
 import com.netflix.exhibitor.core.config.PropertyBasedInstanceConfig;
 import com.netflix.exhibitor.core.config.PseudoLock;
+import org.apache.curator.utils.CloseableUtils;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -79,7 +79,7 @@ public class NoneConfigProvider implements ConfigProvider
             }
             finally
             {
-                Closeables.closeQuietly(in);
+                CloseableUtils.closeQuietly(in);
             }
         }
         PropertyBasedInstanceConfig config = new PropertyBasedInstanceConfig(properties, defaultProperties);
@@ -101,7 +101,7 @@ public class NoneConfigProvider implements ConfigProvider
         }
         finally
         {
-            Closeables.closeQuietly(out);
+            CloseableUtils.closeQuietly(out);
         }
 
         return new LoadedInstanceConfig(propertyBasedInstanceConfig, lastModified);

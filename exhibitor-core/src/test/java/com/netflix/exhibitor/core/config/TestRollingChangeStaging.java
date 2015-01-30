@@ -17,7 +17,6 @@
 package com.netflix.exhibitor.core.config;
 
 import com.google.common.collect.Queues;
-import com.google.common.io.Closeables;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.ActivityQueue;
@@ -29,6 +28,7 @@ import com.netflix.exhibitor.core.state.InstanceState;
 import com.netflix.exhibitor.core.state.InstanceStateTypes;
 import com.netflix.exhibitor.core.state.MonitorRunningInstance;
 import com.netflix.exhibitor.core.state.StateAndLeader;
+import org.apache.curator.utils.CloseableUtils;
 import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -234,13 +234,13 @@ public class TestRollingChangeStaging
         }
         finally
         {
-            Closeables.closeQuietly(monitorRunningInstance3);
-            Closeables.closeQuietly(monitorRunningInstance2);
-            Closeables.closeQuietly(monitorRunningInstance1);
-            Closeables.closeQuietly(configManager3);
-            Closeables.closeQuietly(configManager2);
-            Closeables.closeQuietly(configManager1);
-            Closeables.closeQuietly(activityQueue);
+            CloseableUtils.closeQuietly(monitorRunningInstance3);
+            CloseableUtils.closeQuietly(monitorRunningInstance2);
+            CloseableUtils.closeQuietly(monitorRunningInstance1);
+            CloseableUtils.closeQuietly(configManager3);
+            CloseableUtils.closeQuietly(configManager2);
+            CloseableUtils.closeQuietly(configManager1);
+            CloseableUtils.closeQuietly(activityQueue);
         }
     }
 

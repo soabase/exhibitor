@@ -16,7 +16,7 @@
 
 package com.netflix.exhibitor.core.index;
 
-import com.google.common.io.Closeables;
+import org.apache.curator.utils.CloseableUtils;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -70,7 +70,7 @@ public class IndexMetaData
         }
         finally
         {
-            Closeables.closeQuietly(out);
+            CloseableUtils.closeQuietly(out);
         }
     }
 
@@ -86,7 +86,7 @@ public class IndexMetaData
         }
         finally
         {
-            Closeables.closeQuietly(in);
+            CloseableUtils.closeQuietly(in);
         }
 
         String version = properties.getProperty(PROPERTY_VERSION, "0");

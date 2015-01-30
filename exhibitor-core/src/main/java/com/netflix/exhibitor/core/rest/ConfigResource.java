@@ -16,6 +16,7 @@
 
 package com.netflix.exhibitor.core.rest;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.hash.Hashing;
 import com.netflix.exhibitor.core.backup.BackupConfigSpec;
@@ -126,7 +127,7 @@ public class ConfigResource
         mainNode.put("config", configNode);
 
         String      json = JsonUtil.writeValueAsString(mainNode);
-        EntityTag   tag = new EntityTag(Hashing.sha1().hashString(json).toString());
+        EntityTag   tag = new EntityTag(Hashing.sha1().hashString(json, Charsets.UTF_8).toString());
 
         Response.ResponseBuilder    builder = request.evaluatePreconditions(tag);
         if ( builder == null )

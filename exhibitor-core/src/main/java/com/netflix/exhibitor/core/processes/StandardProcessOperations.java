@@ -16,7 +16,6 @@
 
 package com.netflix.exhibitor.core.processes;
 
-import com.google.common.io.Closeables;
 import com.google.common.io.Files;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.activity.ActivityLog;
@@ -25,6 +24,7 @@ import com.netflix.exhibitor.core.config.StringConfigs;
 import com.netflix.exhibitor.core.state.ServerSpec;
 import com.netflix.exhibitor.core.state.ServerType;
 import com.netflix.exhibitor.core.state.UsState;
+import org.apache.curator.utils.CloseableUtils;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -171,7 +171,7 @@ public class StandardProcessOperations implements ProcessOperations
         }
         finally
         {
-            Closeables.closeQuietly(out);
+            CloseableUtils.closeQuietly(out);
         }
     }
 
@@ -200,9 +200,9 @@ public class StandardProcessOperations implements ProcessOperations
         }
         finally
         {
-            Closeables.closeQuietly(jpsProcess.getErrorStream());
-            Closeables.closeQuietly(jpsProcess.getInputStream());
-            Closeables.closeQuietly(jpsProcess.getOutputStream());
+            CloseableUtils.closeQuietly(jpsProcess.getErrorStream());
+            CloseableUtils.closeQuietly(jpsProcess.getInputStream());
+            CloseableUtils.closeQuietly(jpsProcess.getOutputStream());
 
             jpsProcess.destroy();
         }

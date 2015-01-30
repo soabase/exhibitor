@@ -20,7 +20,7 @@ package com.netflix.exhibitor.application;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
-import com.google.common.io.Closeables;
+import com.sun.jersey.spi.container.servlet.ServletContainer;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.ExhibitorArguments;
 import com.netflix.exhibitor.core.RemoteConnectionConfiguration;
@@ -35,7 +35,7 @@ import com.sun.jersey.api.client.filter.ClientFilter;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.api.client.filter.HTTPDigestAuthFilter;
 import com.sun.jersey.api.core.DefaultResourceConfig;
-import com.sun.jersey.spi.container.servlet.ServletContainer;
+import org.apache.curator.utils.CloseableUtils;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.handler.ContextHandler;
 import org.mortbay.jetty.security.HashUserRealm;
@@ -103,7 +103,7 @@ public class ExhibitorMain implements Closeable
 
             for ( Closeable closeable : creator.getCloseables() )
             {
-                Closeables.closeQuietly(closeable);
+                CloseableUtils.closeQuietly(closeable);
             }
         }
     }
@@ -189,7 +189,7 @@ public class ExhibitorMain implements Closeable
         {
             log.info("Shutting down");
 
-            Closeables.closeQuietly(exhibitor);
+            CloseableUtils.closeQuietly(exhibitor);
             try
             {
                 server.stop();

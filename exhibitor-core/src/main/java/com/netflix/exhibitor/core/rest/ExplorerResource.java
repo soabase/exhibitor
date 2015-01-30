@@ -19,8 +19,6 @@ package com.netflix.exhibitor.core.rest;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.io.Closeables;
-import org.apache.curator.utils.ZKPaths;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.analyze.Analysis;
 import com.netflix.exhibitor.core.analyze.PathAnalyzer;
@@ -33,6 +31,8 @@ import com.netflix.exhibitor.core.entities.PathAnalysisNode;
 import com.netflix.exhibitor.core.entities.PathAnalysisRequest;
 import com.netflix.exhibitor.core.entities.Result;
 import com.netflix.exhibitor.core.entities.UsageListingRequest;
+import org.apache.curator.utils.CloseableUtils;
+import org.apache.curator.utils.ZKPaths;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.data.Stat;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -307,7 +307,7 @@ public class ExplorerResource
                     }
                     finally
                     {
-                        Closeables.closeQuietly(out);
+                        CloseableUtils.closeQuietly(out);
                     }
                 }
             }

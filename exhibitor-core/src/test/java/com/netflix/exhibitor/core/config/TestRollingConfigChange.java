@@ -16,7 +16,6 @@
 
 package com.netflix.exhibitor.core.config;
 
-import com.google.common.io.Closeables;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.ActivityQueue;
@@ -26,6 +25,7 @@ import com.netflix.exhibitor.core.state.InstanceStateTypes;
 import com.netflix.exhibitor.core.state.MonitorRunningInstance;
 import com.netflix.exhibitor.core.state.RestartSignificantConfig;
 import com.netflix.exhibitor.core.state.ServerList;
+import org.apache.curator.utils.CloseableUtils;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -150,7 +150,7 @@ public class TestRollingConfigChange
         }
         finally
         {
-            Closeables.closeQuietly(manager);
+            CloseableUtils.closeQuietly(manager);
         }
     }
 
@@ -210,7 +210,7 @@ public class TestRollingConfigChange
         }
         finally
         {
-            Closeables.closeQuietly(manager);
+            CloseableUtils.closeQuietly(manager);
         }
     }
 
@@ -257,7 +257,7 @@ public class TestRollingConfigChange
         }
         finally
         {
-            Closeables.closeQuietly(manager);
+            CloseableUtils.closeQuietly(manager);
         }
     }
 
@@ -344,7 +344,7 @@ public class TestRollingConfigChange
         }
         finally
         {
-            Closeables.closeQuietly(manager);
+            CloseableUtils.closeQuietly(manager);
         }
     }
 
@@ -465,7 +465,7 @@ public class TestRollingConfigChange
         }
         finally
         {
-            Closeables.closeQuietly(manager);
+            CloseableUtils.closeQuietly(manager);
         }
     }
 
@@ -564,7 +564,7 @@ public class TestRollingConfigChange
         }
         finally
         {
-            Closeables.closeQuietly(manager);
+            CloseableUtils.closeQuietly(manager);
         }
     }
 
