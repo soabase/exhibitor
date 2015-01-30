@@ -11,6 +11,8 @@ Thank you to user boldfield.
 
 * Pull 221: Updated Gradle build
 
+* Updated all dependencies, etc. to reasonbly recent versions.
+
 1.5.2 - May 1, 2014
 ===================
 * Pull 175: Use zkServer.sh to stop zookeeper to ensure that zookeeper_server.pid. Thank you to user
