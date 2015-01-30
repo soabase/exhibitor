@@ -9,6 +9,8 @@ Thank you to user boldfield.
 
 * Pull 216: Change restart behavior. An addition of an observer no longer causes all instances to restart.
 
+* Pull 221: Updated Gradle build
+
 1.5.2 - May 1, 2014
 ===================
 * Pull 175: Use zkServer.sh to stop zookeeper to ensure that zookeeper_server.pid. Thank you to user
