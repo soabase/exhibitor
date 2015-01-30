@@ -19,14 +19,18 @@ package com.netflix.exhibitor.core.config.s3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
-import com.google.common.io.Closeables;
 import com.netflix.exhibitor.core.config.ConfigCollection;
 import com.netflix.exhibitor.core.config.ConfigProvider;
 import com.netflix.exhibitor.core.config.LoadedInstanceConfig;
 import com.netflix.exhibitor.core.config.PropertyBasedInstanceConfig;
 import com.netflix.exhibitor.core.config.PseudoLock;
-import com.netflix.exhibitor.core.s3.*;
-
+import com.netflix.exhibitor.core.s3.S3Client;
+import com.netflix.exhibitor.core.s3.S3ClientConfig;
+import com.netflix.exhibitor.core.s3.S3ClientFactory;
+import com.netflix.exhibitor.core.s3.S3Credential;
+import com.netflix.exhibitor.core.s3.S3CredentialsProvider;
+import com.netflix.exhibitor.core.s3.S3Utils;
+import org.apache.curator.utils.CloseableUtils;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Date;
@@ -180,7 +184,7 @@ public class S3ConfigProvider implements ConfigProvider
             }
             finally
             {
-                Closeables.closeQuietly(object.getObjectContent());
+                CloseableUtils.closeQuietly(object.getObjectContent());
             }
         }
         else

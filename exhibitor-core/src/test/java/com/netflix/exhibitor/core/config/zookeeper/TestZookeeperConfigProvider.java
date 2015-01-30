@@ -16,7 +16,6 @@
 
 package com.netflix.exhibitor.core.config.zookeeper;
 
-import com.google.common.io.Closeables;
 import com.netflix.exhibitor.core.config.LoadedInstanceConfig;
 import com.netflix.exhibitor.core.config.PropertyBasedInstanceConfig;
 import com.netflix.exhibitor.core.config.StringConfigs;
@@ -27,6 +26,7 @@ import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.apache.curator.retry.RetryOneTime;
 import org.apache.curator.test.TestingCluster;
 import org.apache.curator.test.Timing;
+import org.apache.curator.utils.CloseableUtils;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -54,8 +54,8 @@ public class TestZookeeperConfigProvider
     @AfterMethod
     public void tearDown()
     {
-        Closeables.closeQuietly(client);
-        Closeables.closeQuietly(cluster);
+        CloseableUtils.closeQuietly(client);
+        CloseableUtils.closeQuietly(cluster);
     }
 
     @Test
@@ -101,8 +101,8 @@ public class TestZookeeperConfigProvider
         }
         finally
         {
-            Closeables.closeQuietly(config2);
-            Closeables.closeQuietly(config1);
+            CloseableUtils.closeQuietly(config2);
+            CloseableUtils.closeQuietly(config1);
         }
     }
 
@@ -127,7 +127,7 @@ public class TestZookeeperConfigProvider
         }
         finally
         {
-            Closeables.closeQuietly(config);
+            CloseableUtils.closeQuietly(config);
         }
     }
 }

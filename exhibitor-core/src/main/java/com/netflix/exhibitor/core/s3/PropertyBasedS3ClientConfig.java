@@ -16,14 +16,14 @@
 
 package com.netflix.exhibitor.core.s3;
 
-import com.google.common.io.Closeables;
+import com.amazonaws.ClientConfiguration;
+import org.apache.curator.utils.CloseableUtils;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-import com.amazonaws.ClientConfiguration;
 
 public class PropertyBasedS3ClientConfig implements S3ClientConfig
 {
@@ -79,7 +79,7 @@ public class PropertyBasedS3ClientConfig implements S3ClientConfig
         }
         finally
         {
-            Closeables.closeQuietly(in);
+            CloseableUtils.closeQuietly(in);
         }
         return properties;
     }

@@ -16,8 +16,8 @@
 
 package com.netflix.exhibitor.core.backup.s3;
 
-import com.google.common.io.Closeables;
 import com.google.common.io.Files;
+import org.apache.curator.utils.CloseableUtils;
 import org.testng.annotations.AfterClass;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -47,7 +47,7 @@ public class TestS3BackupBigFile extends TestS3BackupProviderBase
         }
         finally
         {
-            Closeables.closeQuietly(out);
+            CloseableUtils.closeQuietly(out);
         }
 
         return tempFile;

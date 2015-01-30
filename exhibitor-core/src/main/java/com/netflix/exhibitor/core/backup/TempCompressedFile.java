@@ -16,7 +16,7 @@
 
 package com.netflix.exhibitor.core.backup;
 
-import com.google.common.io.Closeables;
+import org.apache.curator.utils.CloseableUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -61,8 +61,8 @@ class TempCompressedFile
         }
         finally
         {
-            Closeables.closeQuietly(in);
-            Closeables.closeQuietly(out);
+            CloseableUtils.closeQuietly(in);
+            CloseableUtils.closeQuietly(out);
         }
     }
 

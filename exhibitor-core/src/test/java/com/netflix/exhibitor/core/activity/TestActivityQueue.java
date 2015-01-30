@@ -17,7 +17,7 @@
 package com.netflix.exhibitor.core.activity;
 
 import com.google.common.collect.Lists;
-import com.google.common.io.Closeables;
+import org.apache.curator.utils.CloseableUtils;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import java.util.List;
@@ -134,7 +134,7 @@ public class TestActivityQueue
         }
         finally
         {
-            Closeables.closeQuietly(queue);
+            CloseableUtils.closeQuietly(queue);
         }
     }
 
@@ -170,7 +170,7 @@ public class TestActivityQueue
         }
         finally
         {
-            Closeables.closeQuietly(queue);
+            CloseableUtils.closeQuietly(queue);
         }
     }
 
@@ -221,8 +221,8 @@ public class TestActivityQueue
         }
         finally
         {
-            Closeables.closeQuietly(repeating);
-            Closeables.closeQuietly(queue);
+            CloseableUtils.closeQuietly(repeating);
+            CloseableUtils.closeQuietly(queue);
         }
     }
     
@@ -258,7 +258,7 @@ public class TestActivityQueue
         }
         finally
         {
-            Closeables.closeQuietly(queue);
+            CloseableUtils.closeQuietly(queue);
         }
     }
 
@@ -291,7 +291,7 @@ public class TestActivityQueue
         }
         finally
         {
-            Closeables.closeQuietly(queue);
+            CloseableUtils.closeQuietly(queue);
         }
     }
 }

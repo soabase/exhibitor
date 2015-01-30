@@ -18,10 +18,6 @@ package com.netflix.exhibitor.core;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.io.Closeables;
-import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.retry.ExponentialBackoffRetry;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.activity.ActivityQueue;
 import com.netflix.exhibitor.core.activity.QueueGroups;
@@ -52,13 +48,16 @@ import com.netflix.exhibitor.core.state.MonitorRunningInstance;
 import com.netflix.servo.monitor.CompositeMonitor;
 import com.netflix.servo.monitor.Monitors;
 import jsr166y.ForkJoinPool;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.apache.curator.utils.CloseableUtils;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.prefs.Preferences;
 
@@ -223,16 +222,16 @@ public class Exhibitor implements Closeable
             arguments.servoRegistration.getMonitorRegistry().unregister(servoCompositeMonitor);
         }
 
-        Closeables.closeQuietly(servoMonitoring);
-        Closeables.closeQuietly(autoInstanceManagement);
-        Closeables.closeQuietly(processMonitor);
-        Closeables.closeQuietly(indexCache);
-        Closeables.closeQuietly(backupManager);
-        Closeables.closeQuietly(cleanupManager);
-        Closeables.closeQuietly(monitorRunningInstance);
-        Closeables.closeQuietly(configManager);
-        Closeables.closeQuietly(activityQueue);
-        Closeables.closeQuietly(remoteInstanceRequestClient);
+        CloseableUtils.closeQuietly(servoMonitoring);
+        CloseableUtils.closeQuietly(autoInstanceManagement);
+        CloseableUtils.closeQuietly(processMonitor);
+        CloseableUtils.closeQuietly(indexCache);
+        CloseableUtils.closeQuietly(backupManager);
+        CloseableUtils.closeQuietly(cleanupManager);
+        CloseableUtils.closeQuietly(monitorRunningInstance);
+        CloseableUtils.closeQuietly(configManager);
+        CloseableUtils.closeQuietly(activityQueue);
+        CloseableUtils.closeQuietly(remoteInstanceRequestClient);
         closeLocalConnection();
     }
 
@@ -387,7 +386,7 @@ public class Exhibitor implements Closeable
 
     private synchronized void closeLocalConnection()
     {
-        Closeables.closeQuietly(localConnection);
+        CloseableUtils.closeQuietly(localConnection);
         localConnection = null;
     }
 

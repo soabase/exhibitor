@@ -17,9 +17,9 @@
 package com.netflix.exhibitor.core.processes;
 
 import com.google.common.collect.Maps;
-import com.google.common.io.Closeables;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.activity.ActivityLog;
+import org.apache.curator.utils.CloseableUtils;
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.IOException;
@@ -115,9 +115,9 @@ public class ProcessMonitor implements Closeable
         {
             previousHolder.isBeingClosed.set(true);
 
-            Closeables.closeQuietly(previousHolder.process.getErrorStream());
-            Closeables.closeQuietly(previousHolder.process.getInputStream());
-            Closeables.closeQuietly(previousHolder.process.getOutputStream());
+            CloseableUtils.closeQuietly(previousHolder.process.getErrorStream());
+            CloseableUtils.closeQuietly(previousHolder.process.getInputStream());
+            CloseableUtils.closeQuietly(previousHolder.process.getOutputStream());
 
             previousHolder.process.destroy();
         }
@@ -139,9 +139,9 @@ public class ProcessMonitor implements Closeable
                     Thread.currentThread().interrupt();
                     if ( mode == Mode.DESTROY_ON_INTERRUPT )
                     {
-                        Closeables.closeQuietly(process.getErrorStream());
-                        Closeables.closeQuietly(process.getInputStream());
-                        Closeables.closeQuietly(process.getOutputStream());
+                        CloseableUtils.closeQuietly(process.getErrorStream());
+                        CloseableUtils.closeQuietly(process.getInputStream());
+                        CloseableUtils.closeQuietly(process.getOutputStream());
 
                         process.destroy();
                     }

@@ -18,13 +18,13 @@ package com.netflix.exhibitor.servlet;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.io.Closeables;
 import com.google.common.io.Resources;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.standalone.ExhibitorCLI;
 import com.netflix.exhibitor.standalone.ExhibitorCreator;
 import com.netflix.exhibitor.standalone.ExhibitorCreatorExit;
 import com.netflix.exhibitor.standalone.MissingConfigurationTypeException;
+import org.apache.curator.utils.CloseableUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javax.servlet.ServletContextEvent;
@@ -89,7 +89,7 @@ public class ExhibitorServletContextListener implements ServletContextListener
     {
         if ( exhibitor != null )
         {
-            Closeables.closeQuietly(exhibitor);
+            CloseableUtils.closeQuietly(exhibitor);
             exhibitor = null;
         }
 
@@ -97,7 +97,7 @@ public class ExhibitorServletContextListener implements ServletContextListener
         {
             for ( Closeable closeable : exhibitorCreator.getCloseables() )
             {
-                Closeables.closeQuietly(closeable);
+                CloseableUtils.closeQuietly(closeable);
             }
         }
     }
@@ -130,7 +130,7 @@ public class ExhibitorServletContextListener implements ServletContextListener
             }
             finally
             {
-                Closeables.closeQuietly(stream);
+                CloseableUtils.closeQuietly(stream);
             }
         }
         catch ( IllegalArgumentException e )

@@ -18,7 +18,7 @@ package com.netflix.exhibitor.core.index;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.io.Closeables;
+import org.apache.curator.utils.CloseableUtils;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.document.NumericField;
@@ -127,8 +127,8 @@ public class LogSearch implements Closeable
     @Override
     public void close()
     {
-        Closeables.closeQuietly(searcher);
-        Closeables.closeQuietly(reader);
-        Closeables.closeQuietly(directory);
+        CloseableUtils.closeQuietly(searcher);
+        CloseableUtils.closeQuietly(reader);
+        CloseableUtils.closeQuietly(directory);
     }
 }

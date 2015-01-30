@@ -16,7 +16,7 @@
 
 package com.netflix.exhibitor.core.index;
 
-import com.google.common.io.Closeables;
+import org.apache.curator.utils.CloseableUtils;
 import org.apache.jute.Record;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
@@ -95,8 +95,8 @@ public class IndexBuilder implements Closeable
     @Override
     public void close() throws IOException
     {
-        Closeables.closeQuietly(writer);
-        Closeables.closeQuietly(niofsDirectory);
+        CloseableUtils.closeQuietly(writer);
+        CloseableUtils.closeQuietly(niofsDirectory);
     }
 
     public int  getCurrentCount()

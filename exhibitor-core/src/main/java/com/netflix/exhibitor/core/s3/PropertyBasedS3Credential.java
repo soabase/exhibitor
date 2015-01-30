@@ -16,7 +16,7 @@
 
 package com.netflix.exhibitor.core.s3;
 
-import com.google.common.io.Closeables;
+import org.apache.curator.utils.CloseableUtils;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -65,7 +65,7 @@ public class PropertyBasedS3Credential implements S3Credential
         }
         finally
         {
-            Closeables.closeQuietly(in);
+            CloseableUtils.closeQuietly(in);
         }
         return properties;
     }

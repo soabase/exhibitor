@@ -23,7 +23,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.io.Closeables;
 import com.google.common.io.Files;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.activity.ActivityLog;
@@ -32,22 +31,21 @@ import com.netflix.exhibitor.core.backup.BackupMetaData;
 import com.netflix.exhibitor.core.backup.BackupProvider;
 import com.netflix.exhibitor.core.backup.BackupStream;
 import com.netflix.exhibitor.core.s3.S3Client;
+import com.netflix.exhibitor.core.s3.S3ClientConfig;
 import com.netflix.exhibitor.core.s3.S3ClientFactory;
 import com.netflix.exhibitor.core.s3.S3Credential;
 import com.netflix.exhibitor.core.s3.S3CredentialsProvider;
-import com.netflix.exhibitor.core.s3.S3ClientConfig;
 import com.netflix.exhibitor.core.s3.S3Utils;
 import org.apache.curator.RetryLoop;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.apache.curator.utils.CloseableUtils;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -207,7 +205,7 @@ public class S3BackupProvider implements BackupProvider
         }
         finally
         {
-            Closeables.closeQuietly(in);
+            CloseableUtils.closeQuietly(in);
         }
     }
 
@@ -338,7 +336,7 @@ public class S3BackupProvider implements BackupProvider
             }
             finally
             {
-                Closeables.closeQuietly(in);
+                CloseableUtils.closeQuietly(in);
             }
         }
     }

@@ -16,19 +16,25 @@
 
 package com.netflix.exhibitor.core.backup.s3;
 
-import com.amazonaws.services.s3.model.*;
+import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.io.Closeables;
 import com.google.common.io.Files;
 import com.netflix.exhibitor.core.backup.BackupMetaData;
-import com.netflix.exhibitor.core.s3.PropertyBasedS3Credential;
 import com.netflix.exhibitor.core.s3.PropertyBasedS3ClientConfig;
+import com.netflix.exhibitor.core.s3.PropertyBasedS3Credential;
+import org.apache.curator.utils.CloseableUtils;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -75,8 +81,8 @@ public abstract class TestS3BackupProviderBase
         }
         finally
         {
-            Closeables.closeQuietly(in);
-            Closeables.closeQuietly(out);
+            CloseableUtils.closeQuietly(in);
+            CloseableUtils.closeQuietly(out);
             
             //noinspection ResultOfMethodCallIgnored
             tempFile.delete();

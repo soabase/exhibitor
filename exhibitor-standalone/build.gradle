@@ -4,11 +4,13 @@ dependencies {
     compile (project(":exhibitor-core")) {
         exclude group: 'com.sun.jersey', module: 'jersey-client'
     }
-    compile 'com.sun.jersey:jersey-core:1.9.1'
-    compile 'com.sun.jersey:jersey-client:1.9.1'
-    compile 'com.sun.jersey:jersey-server:1.9.1'
-    compile 'org.mortbay.jetty:jetty:6.1.22'
-    compile 'commons-cli:commons-cli:1.2'
+    compile 'com.sun.jersey:jersey-core:' + jerseyVersion
+    compile 'com.sun.jersey:jersey-client:' + jerseyVersion
+    compile 'com.sun.jersey:jersey-server:' + jerseyVersion
+    compile 'com.sun.jersey:jersey-servlet:' + jerseyVersion
+    compile 'com.sun.jersey:jersey-json:' + jerseyVersion
+    compile 'org.mortbay.jetty:jetty:' + jettyVersion
+    compile 'commons-cli:commons-cli:' + commonsCliVersion
 
-    provided 'javax.servlet:servlet-api:2.5'
+    provided 'javax.servlet:servlet-api:' + servletVersion
 }

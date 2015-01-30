@@ -18,7 +18,6 @@ package com.netflix.exhibitor.core.backup;
 
 import com.google.common.base.Optional;
 import com.google.common.io.ByteStreams;
-import com.google.common.io.Closeables;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.activity.Activity;
 import com.netflix.exhibitor.core.activity.ActivityLog;
@@ -33,6 +32,7 @@ import com.netflix.exhibitor.core.config.IntConfigs;
 import com.netflix.exhibitor.core.config.StringConfigs;
 import com.netflix.exhibitor.core.controlpanel.ControlPanelTypes;
 import com.netflix.exhibitor.core.index.ZooKeeperLogFiles;
+import org.apache.curator.utils.CloseableUtils;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
@@ -196,7 +196,7 @@ public class BackupManager implements Closeable
         try
         {
             backupProvider.get().downloadBackup(exhibitor, backup, out, getBackupConfig());
-            Closeables.closeQuietly(out);
+            CloseableUtils.closeQuietly(out);
             out = null;
 
             out = new FileOutputStream(destinationFile);
@@ -206,8 +206,8 @@ public class BackupManager implements Closeable
         }
         finally
         {
-            Closeables.closeQuietly(in);
-            Closeables.closeQuietly(out);
+            CloseableUtils.closeQuietly(in);
+            CloseableUtils.closeQuietly(out);
             if ( !tempFile.delete() )
             {
                 exhibitor.getLog().add(ActivityLog.Type.ERROR, "Could not delete temp file (for restore): " + tempFile);

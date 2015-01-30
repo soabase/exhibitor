@@ -16,7 +16,7 @@
 
 package com.netflix.exhibitor.core.state;
 
-import com.google.common.io.Closeables;
+import org.apache.curator.utils.CloseableUtils;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Collections;
@@ -41,7 +41,7 @@ public class ManifestVersion
             {
                 if ( stream != null )
                 {
-                    Closeables.closeQuietly(stream);
+                    CloseableUtils.closeQuietly(stream);
                 }
                 stream = manifestUrl.openStream();
                 Manifest        manifest = new Manifest(stream);
@@ -68,7 +68,7 @@ public class ManifestVersion
         }
         finally
         {
-            Closeables.closeQuietly(stream);
+            CloseableUtils.closeQuietly(stream);
         }
 
         version = (localVersion != null) ? localVersion : "dev";
