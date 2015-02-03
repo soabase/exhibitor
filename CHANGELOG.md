@@ -1,5 +1,8 @@
-1.5.3 - xxxxxxxxxxx
-===================
+1.5.4 - xxxxxxxxxxxxxxxx
+========================
+
+1.5.3 - February 2, 2015
+========================
 * Pull 189: Need to pad converted hex bytes. Thanks to user jamesmulcahy
 
 * Issue 201: Need to set peerType=observer for Observers
