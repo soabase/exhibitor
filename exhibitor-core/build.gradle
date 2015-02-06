@@ -22,10 +22,10 @@ dependencies {
     // if you are using Java 7 you can remove this and switch to the JDK version
     compile 'org.codehaus.jsr166-mirror:jsr166y:1.7.0'
 
-    provided 'com.amazonaws:aws-java-sdk:' + awsVersion
-    provided 'com.sun.jersey:jersey-core:' + jerseyVersion
-    provided 'com.sun.jersey:jersey-server:' + jerseyVersion
-    provided 'com.sun.jersey:jersey-json:' + jerseyVersion
+    compile 'com.amazonaws:aws-java-sdk:' + awsVersion
+    compile 'com.sun.jersey:jersey-core:' + jerseyVersion
+    compile 'com.sun.jersey:jersey-server:' + jerseyVersion
+    compile 'com.sun.jersey:jersey-json:' + jerseyVersion
 
     testCompile 'org.apache.curator:curator-test:' + curatorVersion
     testCompile 'org.mockito:mockito-core:' + mockitoVersion
