@@ -9,24 +9,24 @@ dependencies {
         // JLine pulls this in as a compile dependency, they have fixed it in future versions
         exclude group: 'junit', module: 'junit'
     }
-    compile 'org.apache.curator:curator-framework:' + curatorVersion
-    compile 'org.apache.curator:curator-recipes:' + curatorVersion
-    compile 'com.netflix.servo:servo-core:' + servoVersion
-    compile 'com.google.guava:guava:' + guavaVersion
-    compile 'javax.ws.rs:jsr311-api:' + jaxRsVersion
-    compile 'org.codehaus.jackson:jackson-mapper-asl:' + jacksonVersion
-    compile 'org.apache.lucene:lucene-core:' + luceneVersion
+    compile "org.apache.curator:curator-framework:${curatorVersion}"
+    compile "org.apache.curator:curator-recipes:${curatorVersion}"
+    compile "com.netflix.servo:servo-core:${servoVersion}"
+    compile "com.google.guava:guava:${guavaVersion}"
+    compile "javax.ws.rs:jsr311-api:${jaxRsVersion}"
+    compile "org.codehaus.jackson:jackson-mapper-asl:${jacksonVersion}"
+    compile "org.apache.lucene:lucene-core:${luceneVersion}"
     
-    compile 'com.sun.jersey:jersey-client:' + jerseyVersion
+    compile "com.sun.jersey:jersey-client:${jerseyVersion}"
 
     // if you are using Java 7 you can remove this and switch to the JDK version
     compile 'org.codehaus.jsr166-mirror:jsr166y:1.7.0'
 
-    compile 'com.amazonaws:aws-java-sdk:' + awsVersion
-    compile 'com.sun.jersey:jersey-core:' + jerseyVersion
-    compile 'com.sun.jersey:jersey-server:' + jerseyVersion
-    compile 'com.sun.jersey:jersey-json:' + jerseyVersion
+    compile "com.amazonaws:aws-java-sdk:${awsVersion}"
+    compile "com.sun.jersey:jersey-core:${jerseyVersion}"
+    compile "com.sun.jersey:jersey-server:${jerseyVersion}"
+    compile "com.sun.jersey:jersey-json:${jerseyVersion}"
 
-    testCompile 'org.apache.curator:curator-test:' + curatorVersion
-    testCompile 'org.mockito:mockito-core:' + mockitoVersion
+    testCompile "org.apache.curator:curator-test:${curatorVersion}"
+    testCompile "org.mockito:mockito-core:${mockitoVersion}"
 }
