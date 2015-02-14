@@ -158,7 +158,7 @@ public class StandardProcessOperations implements ProcessOperations
             localProperties.setProperty("server." + spec.getServerId(), spec.getHostname() + portSpec + spec.getServerType().getZookeeperConfigValue());
         }
 
-        if ( usState.getUs().getServerType() == ServerType.OBSERVER )
+        if ( (usState.getUs() != null) && (usState.getUs().getServerType() == ServerType.OBSERVER) )
         {
             localProperties.setProperty("peerType", "observer");
         }
