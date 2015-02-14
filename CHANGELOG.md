@@ -1,5 +1,7 @@
-1.5.4 - xxxxxxxxxxxxxxxx
-========================
+1.5.4 - February 14, 2015
+=========================
+
+* 1.5.3 dependencies were fubar. New build fixes this.
 
 1.5.3 - February 2, 2015
 ========================
