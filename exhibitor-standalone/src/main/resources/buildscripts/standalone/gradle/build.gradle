@@ -1,9 +1,22 @@
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+    dependencies {
+      classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.1'
+    }
+}
+
 apply plugin: 'java'
-apply plugin: 'maven'
+apply plugin: 'com.github.johnrengelman.shadow'
+
 group = 'exhibitor'
+archivesBaseName = 'exhibitor'
 version = '1.5.4'
 
 repositories {
+    jcenter()
     mavenCentral()
     maven {
         url "https://repository.jboss.org/nexus/content/groups/public/"
@@ -15,7 +28,6 @@ dependencies {
 }
 
 jar {
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     manifest {
         attributes (
             'Main-Class': 'com.netflix.exhibitor.application.ExhibitorMain',
@@ -23,3 +35,9 @@ jar {
         )
     }
 }
+
+shadowJar {
+    mergeServiceFiles()
+}
+
+assemble.dependsOn shadowJar
