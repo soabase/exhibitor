@@ -2,6 +2,7 @@
 =========================
 
 * Issue 231: Possible NPE due to not checking for null from usState.getUs()
+* Pull 239: Fixed Gradle uber JAR build
 
 1.5.4 - February 14, 2015
 =========================
