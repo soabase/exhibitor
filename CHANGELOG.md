@@ -2,7 +2,11 @@
 =========================
 
 * Issue 231: Possible NPE due to not checking for null from usState.getUs()
+
 * Pull 239: Fixed Gradle uber JAR build
+
+* Pull 234: Fixed redirect in non-ROOT WARs. Also, FINALLY!, fix root redirect for standalone version.
+i.e. http://localhost:8080 will now redirect to http://localhost:8080/exhibitor/v1/ui/index.html
 
 1.5.4 - February 14, 2015
 =========================
