@@ -20,6 +20,7 @@ package com.netflix.exhibitor.application;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
+import com.netflix.exhibitor.servlet.ExhibitorServletFilter;
 import com.sun.jersey.spi.container.servlet.ServletContainer;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.ExhibitorArguments;
@@ -36,6 +37,7 @@ import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.api.client.filter.HTTPDigestAuthFilter;
 import com.sun.jersey.api.core.DefaultResourceConfig;
 import org.apache.curator.utils.CloseableUtils;
+import org.mortbay.jetty.Handler;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.handler.ContextHandler;
 import org.mortbay.jetty.security.HashUserRealm;
@@ -124,6 +126,7 @@ public class ExhibitorMain implements Closeable
         ServletContainer        container = new ServletContainer(application);
         server = new Server(httpPort);
         Context root = new Context(server, "/", Context.SESSIONS);
+        root.addFilter(ExhibitorServletFilter.class, "/", Handler.ALL);
         root.addServlet(new ServletHolder(container), "/*");
         if ( security != null )
         {
