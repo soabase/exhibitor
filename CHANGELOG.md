@@ -1,5 +1,5 @@
-1.5.5 - xxxxxxxxxxxxxxxxx
-=========================
+1.5.5 - March 4, 2015
+=====================
 
 * Issue 231: Possible NPE due to not checking for null from usState.getUs()
 
