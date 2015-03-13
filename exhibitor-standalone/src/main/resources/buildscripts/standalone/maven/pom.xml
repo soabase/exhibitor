@@ -3,13 +3,13 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>exhibitor</groupId>
     <artifactId>exhibitor</artifactId>
-    <version>1.0</version>
+    <version>1.5.4</version>
 
     <dependencies>
         <dependency>
             <groupId>com.netflix.exhibitor</groupId>
             <artifactId>exhibitor-standalone</artifactId>
-            <version>1.5.4</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 
@@ -33,7 +33,10 @@
                     <transformers>
                         <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                         <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                            <mainClass>com.netflix.exhibitor.application.ExhibitorMain</mainClass>
+                            <manifestEntries>
+                              <Main-Class>com.netflix.exhibitor.application.ExhibitorMain</Main-Class>
+                              <Implementation-Version>${project.version}</Implementation-Version>
+                            </manifestEntries>
                         </transformer>
                     </transformers>
                 </configuration>
