@@ -35,8 +35,15 @@ public class S3ConfigAutoManageLockArguments extends AutoManageLockArguments
         this.settlingMs = settlingMs;
     }
 
+    public S3ConfigAutoManageLockArguments(String prefix, int timeoutMs, int pollingMs, int settlingMs, String separator)
+    {
+        super(prefix, timeoutMs, pollingMs, separator);
+        this.settlingMs = settlingMs;
+    }
+
     public int getSettlingMs()
     {
         return settlingMs;
     }
+
 }

@@ -36,6 +36,7 @@ public abstract class PseudoLockBase implements PseudoLock
     private final int                       timeoutMs;
     private final int                       pollingMs;
     private final int                       settlingMs;
+    private final String                    lockKeySeparator;
 
     // all guarded by sync
     private long      lastUpdateMs = 0;
@@ -47,10 +48,11 @@ public abstract class PseudoLockBase implements PseudoLock
 
     private static final Random             random = new SecureRandom();
 
-    private static final String     SEPARATOR = "_";
     private static final int        DEFAULT_SETTLING_MS = 5000;
 
     private static final int        MISSING_KEY_FACTOR = 10;
+
+    /*package private*/ static final String     DEFAULT_LOCK_KEY_SEPARATOR = "_";
 
     /**
      * @param lockPrefix key prefix
@@ -70,12 +72,28 @@ public abstract class PseudoLockBase implements PseudoLock
      */
     public PseudoLockBase(String lockPrefix, int timeoutMs, int pollingMs, int settlingMs)
     {
+        this(lockPrefix, timeoutMs, pollingMs, settlingMs, DEFAULT_LOCK_KEY_SEPARATOR);
+    }
+
+    /**
+     * @param lockPrefix key prefix
+     * @param timeoutMs max age for locks
+     * @param pollingMs how often to poll S3
+     * @param settlingMs how long to wait for S3 to reach consistency
+     * @param lockKeySeparator separator to use for the lock key
+     */
+    public PseudoLockBase(String lockPrefix, int timeoutMs, int pollingMs, int settlingMs, String lockKeySeparator)
+    {
         this.settlingMs = settlingMs;
-        Preconditions.checkArgument(!lockPrefix.contains(SEPARATOR), "lockPrefix cannot contain " + SEPARATOR);
+        Preconditions.checkArgument(lockKeySeparator != null && !lockKeySeparator.isEmpty(),
+                "lockKeySeparator cannot be null or empty");
+        Preconditions.checkArgument(!lockPrefix.contains(lockKeySeparator),
+                "lockPrefix cannot contain " + lockKeySeparator);
 
         this.pollingMs = pollingMs;
         this.lockPrefix = lockPrefix;
         this.timeoutMs = timeoutMs;
+        this.lockKeySeparator = lockKeySeparator;
     }
 
     /**
@@ -97,7 +115,7 @@ public abstract class PseudoLockBase implements PseudoLock
 
         lockStartMs = System.currentTimeMillis();
 
-        key = lockPrefix + SEPARATOR + newRandomSequence();
+        key = lockPrefix + lockKeySeparator + newRandomSequence();
 
         long        startMs = System.currentTimeMillis();
         boolean     hasMaxWait = (unit != null);
@@ -207,9 +225,9 @@ public abstract class PseudoLockBase implements PseudoLock
         return newKeys;
     }
 
-    private static long getEpochStampForKey(String key)
+    private long getEpochStampForKey(String key)
     {
-        String[]        parts = key.split(SEPARATOR);
+        String[]        parts = key.split(lockKeySeparator);
         long            millisecondStamp = 0;
         try
         {
@@ -224,6 +242,6 @@ public abstract class PseudoLockBase implements PseudoLock
 
     private String newRandomSequence()
     {
-        return "" + System.currentTimeMillis() + SEPARATOR + Math.abs(random.nextLong());
+        return "" + System.currentTimeMillis() + lockKeySeparator + Math.abs(random.nextLong());
     }
 }

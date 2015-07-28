@@ -165,7 +165,8 @@ public class S3ConfigProvider implements ConfigProvider
             arguments.getLockArguments().getPrefix(),
             arguments.getLockArguments().getTimeoutMs(),
             arguments.getLockArguments().getPollingMs(),
-            arguments.getLockArguments().getSettlingMs()
+            arguments.getLockArguments().getSettlingMs(),
+            arguments.getLockArguments().getLockKeySeparator()
         );
     }
 

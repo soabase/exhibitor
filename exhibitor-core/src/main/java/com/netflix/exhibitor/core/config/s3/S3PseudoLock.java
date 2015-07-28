@@ -63,6 +63,23 @@ public class S3PseudoLock extends PseudoLockBase
         this.bucket = bucket;
     }
 
+
+    /**
+     * @param client the S3 client
+     * @param bucket the S3 bucket
+     * @param lockPrefix key prefix
+     * @param timeoutMs max age for locks
+     * @param pollingMs how often to poll S3
+     * @param settlingMs how long to wait for S3 to reach consistency
+     * @param lockKeySeparator the separator to use for the lock key
+     */
+    public S3PseudoLock(S3Client client, String bucket, String lockPrefix, int timeoutMs, int pollingMs, int settlingMs, String lockKeySeparator)
+    {
+        super(lockPrefix, timeoutMs, pollingMs, settlingMs, lockKeySeparator);
+        this.client = client;
+        this.bucket = bucket;
+    }
+
     @Override
     protected void createFile(String key, byte[] contents) throws Exception
     {

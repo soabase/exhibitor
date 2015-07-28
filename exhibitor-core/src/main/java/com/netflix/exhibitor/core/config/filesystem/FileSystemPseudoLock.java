@@ -43,6 +43,12 @@ public class FileSystemPseudoLock extends PseudoLockBase
         this.directory = directory;
     }
 
+    public FileSystemPseudoLock(File directory, String prefix, int timeoutMs, int pollingMs, int settlingMs, String lockKeySeparator)
+    {
+        super(prefix, timeoutMs, pollingMs, settlingMs, lockKeySeparator);
+        this.directory = directory;
+    }
+
     @Override
     protected void createFile(String key, byte[] contents) throws Exception
     {
