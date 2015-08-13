@@ -1,3 +1,8 @@
+1.5.6 - XXXXXXXXXXXXX
+=====================
+
+* Pull 263: Making the lock key separator in PseudoLockBase configurable
+
 1.5.5 - March 4, 2015
 =====================
 
