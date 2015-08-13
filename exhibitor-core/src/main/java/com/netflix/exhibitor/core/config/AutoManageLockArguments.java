@@ -23,6 +23,7 @@ public class AutoManageLockArguments
     private final String prefix;
     private final int timeoutMs;
     private final int pollingMs;
+    private final String lockKeySeparator;
 
     public AutoManageLockArguments(String prefix)
     {
@@ -32,9 +33,15 @@ public class AutoManageLockArguments
 
     public AutoManageLockArguments(String prefix, int timeoutMs, int pollingMs)
     {
+        this(prefix, timeoutMs, pollingMs, PseudoLockBase.DEFAULT_LOCK_KEY_SEPARATOR);
+    }
+
+    public AutoManageLockArguments(String prefix, int timeoutMs, int pollingMs, String lockKeySeparator)
+    {
         this.prefix = prefix;
         this.timeoutMs = timeoutMs;
         this.pollingMs = pollingMs;
+        this.lockKeySeparator = lockKeySeparator;
     }
 
     public String getPrefix()
@@ -50,5 +57,10 @@ public class AutoManageLockArguments
     public int getPollingMs()
     {
         return pollingMs;
+    }
+
+    public String getLockKeySeparator()
+    {
+        return lockKeySeparator;
     }
 }

@@ -150,4 +150,15 @@ public class TestS3PseudoLock
         Assert.assertTrue(lock.lock(mockLog, 5, TimeUnit.SECONDS));
         lock.unlock();
     }
+
+    @Test
+    public void         testWithDifferentLockKeySeparator() throws Exception
+    {
+        MockS3Client        client = new MockS3Client();
+        ActivityLog         mockLog = Mockito.mock(ActivityLog.class);
+
+        S3PseudoLock        lock = new S3PseudoLock(client, "foo", "bar", 10000, 1, 0, "#");
+        Assert.assertTrue(lock.lock(mockLog, 5, TimeUnit.SECONDS));
+        lock.unlock();
+    }
 }
