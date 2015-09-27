@@ -308,15 +308,7 @@ public class ConfigResource
                 {
                     return 0;
                 }
-                try
-                {
-                    return Integer.parseInt(node.getTextValue());
-                }
-                catch ( NumberFormatException e )
-                {
-                    // ignore
-                }
-                return 0;
+                return node.getValueAsInt();
             }
         };
     }
