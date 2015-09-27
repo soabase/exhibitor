@@ -2,6 +2,7 @@
 =====================
 
 * Pull 263: Making the lock key separator in PseudoLockBase configurable
+* Pull 268: Fix JSON config integer parsing (issue #184)
 
 1.5.5 - March 4, 2015
 =====================
