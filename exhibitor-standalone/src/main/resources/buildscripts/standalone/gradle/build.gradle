@@ -13,7 +13,7 @@ apply plugin: 'com.github.johnrengelman.shadow'
 
 group = 'exhibitor'
 archivesBaseName = 'exhibitor'
-version = '1.5.4'
+version = '1.5.6'
 
 repositories {
     jcenter()
@@ -24,7 +24,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.netflix.exhibitor:exhibitor-standalone:1.5.4'
+    compile 'com.netflix.exhibitor:exhibitor-standalone:1.5.6'
 }
 
 jar {
