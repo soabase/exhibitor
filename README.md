@@ -1,3 +1,7 @@
+# IMPORTANT NOTE
+
+Exhibitor is now on its own! Stay tuned for more details.
+
 ## DESCRIPTION
 Exhibitor is a supervisor system for ZooKeeper.
 
