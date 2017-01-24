@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/soabase/exhibitor.svg?branch=master)](https://travis-ci.org/soabase/exhibitor)
+
 # IMPORTANT NOTE
 
 Exhibitor is now on its own! PLEASE READ THIS NOTE: https://groups.google.com/forum/#!topic/exhibitor-users/PVkcd88mk8c
