@@ -12,6 +12,7 @@ cache:
 
 jdk:
   - openjdk7
+  - openjdk8
 
 os:
   - linux
