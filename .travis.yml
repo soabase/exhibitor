@@ -16,3 +16,10 @@ jdk:
 
 os:
   - linux
+
+notifications:
+  email: false
+  
+branches:
+  only:
+    - master
