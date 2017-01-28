@@ -39,18 +39,18 @@ public class ActivityQueue implements Closeable
     private static class ActivityHolder implements Delayed
     {
         private final Activity      activity;
-        private final long          endMs;
+        private final long          endNs;
 
         private ActivityHolder(Activity activity, long delayMs)
         {
             this.activity = activity;
-            endMs = System.currentTimeMillis() + delayMs;
+            endNs = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(delayMs);
         }
 
         @Override
         public long getDelay(TimeUnit unit)
         {
-            return unit.convert(endMs - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+            return unit.convert(endNs - System.nanoTime(), TimeUnit.NANOSECONDS);
         }
 
         @Override
@@ -62,7 +62,7 @@ public class ActivityQueue implements Closeable
                 return 0;
             }
 
-            long    diff = getDelay(TimeUnit.MILLISECONDS) - rhs.getDelay(TimeUnit.MILLISECONDS);
+            long    diff = getDelay(TimeUnit.NANOSECONDS) - rhs.getDelay(TimeUnit.NANOSECONDS);
             return (diff == 0) ? 0 : ((diff < 0) ? -1 : 1);
         }
 
@@ -86,7 +86,7 @@ public class ActivityQueue implements Closeable
         public int hashCode()
         {
             int result = activity.hashCode();
-            result = 31 * result + (int)(endMs ^ (endMs >>> 32));
+            result = 31 * result + (int)(endNs ^ (endNs >>> 32));
             return result;
         }
     }
