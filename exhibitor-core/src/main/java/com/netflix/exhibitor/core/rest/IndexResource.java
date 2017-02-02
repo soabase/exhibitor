@@ -70,7 +70,7 @@ public class IndexResource
     private final UIContext context;
 
     private static final int        MAX_PATH = 50;
-    private static final String     DATE_FORMAT_STR = "MM/dd/yyyy-HH:ss";
+    private static final String     DATE_FORMAT_STR = "MM/dd/yyyy-HH:mm:ss";
 
     public IndexResource(@Context ContextResolver<UIContext> resolver)
     {
