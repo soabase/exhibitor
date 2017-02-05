@@ -1,0 +1,566 @@
+<html>
+<head>
+<title>TestNG:  exhibitor-core</title>
+<link href="../testng.css" rel="stylesheet" type="text/css" />
+<link href="../my-testng.css" rel="stylesheet" type="text/css" />
+
+<style type="text/css">
+.log { display: none;} 
+.stack-trace { display: none;} 
+</style>
+<script type="text/javascript">
+<!--
+function flip(e) {
+  current = e.style.display;
+  if (current == 'block') {
+    e.style.display = 'none';
+    return 0;
+  }
+  else {
+    e.style.display = 'block';
+    return 1;
+  }
+}
+
+function toggleBox(szDivId, elem, msg1, msg2)
+{
+  var res = -1;  if (document.getElementById) {
+    res = flip(document.getElementById(szDivId));
+  }
+  else if (document.all) {
+    // this is the way old msie versions work
+    res = flip(document.all[szDivId]);
+  }
+  if(elem) {
+    if(res == 0) elem.innerHTML = msg1; else elem.innerHTML = msg2;
+  }
+
+}
+
+function toggleAllBoxes() {
+  if (document.getElementsByTagName) {
+    d = document.getElementsByTagName('div');
+    for (i = 0; i < d.length; i++) {
+      if (d[i].className == 'log') {
+        flip(d[i]);
+      }
+    }
+  }
+}
+
+// -->
+</script>
+
+</head>
+<body>
+<h2 align='center'>exhibitor-core</h2><table border='1' align="center">
+<tr>
+<td>Tests passed/Failed/Skipped:</td><td>47/6/0</td>
+</tr><tr>
+<td>Started on:</td><td>Sun Feb 05 16:00:34 EST 2017</td>
+</tr>
+<tr><td>Total time:</td><td>44 seconds (44284 ms)</td>
+</tr><tr>
+<td>Included groups:</td><td></td>
+</tr><tr>
+<td>Excluded groups:</td><td></td>
+</tr>
+</table><p/>
+<small><i>(Hover the method name to see the test class name)</i></small><p/>
+<table width='100%' border='1' class='invocation-failed'>
+<tr><td colspan='4' align='center'><b>FAILED TESTS</b></td></tr>
+<tr><td><b>Test method</b></td>
+<td width="30%"><b>Exception</b></td>
+<td width="10%"><b>Time (seconds)</b></td>
+<td><b>Instance</b></td>
+</tr>
+<tr>
+<td title='com.netflix.exhibitor.core.backup.s3.TestS3BackupBigFile.testDownload()'><b>testDownload</b><br>Test class: com.netflix.exhibitor.core.backup.s3.TestS3BackupBigFile</td>
+<td><div><pre>java.lang.NumberFormatException: null
+	at java.lang.Integer.parseInt(Integer.java:454)
+	at java.lang.Integer.parseInt(Integer.java:527)
+	at com.netflix.exhibitor.core.s3.PropertyBasedS3ClientConfig.&lt;init&gt;(PropertyBasedS3ClientConfig.java:48)
+	at com.netflix.exhibitor.core.backup.s3.TestS3BackupProviderBase.testDownload(TestS3BackupProviderBase.java:76)
+... Removed 24 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace280790780", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
+<div class='stack-trace' id='stack-trace280790780'><pre>java.lang.NumberFormatException: null
+	at java.lang.Integer.parseInt(Integer.java:454)
+	at java.lang.Integer.parseInt(Integer.java:527)
+	at com.netflix.exhibitor.core.s3.PropertyBasedS3ClientConfig.&lt;init&gt;(PropertyBasedS3ClientConfig.java:48)
+	at com.netflix.exhibitor.core.backup.s3.TestS3BackupProviderBase.testDownload(TestS3BackupProviderBase.java:76)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:80)
+	at org.testng.internal.Invoker.invokeMethod(Invoker.java:673)
+	at org.testng.internal.Invoker.invokeTestMethod(Invoker.java:842)
+	at org.testng.internal.Invoker.invokeTestMethods(Invoker.java:1166)
+	at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:125)
+	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:109)
+	at org.testng.TestRunner.runWorkers(TestRunner.java:1178)
+	at org.testng.TestRunner.privateRun(TestRunner.java:757)
+	at org.testng.TestRunner.run(TestRunner.java:608)
+	at org.testng.SuiteRunner.runTest(SuiteRunner.java:334)
+	at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:329)
+	at org.testng.SuiteRunner.privateRun(SuiteRunner.java:291)
+	at org.testng.SuiteRunner.run(SuiteRunner.java:240)
+	at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:52)
+	at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:86)
+	at org.testng.TestNG.runSuitesSequentially(TestNG.java:1158)
+	at org.testng.TestNG.runSuitesLocally(TestNG.java:1083)
+	at org.testng.TestNG.run(TestNG.java:999)
+	at org.testng.IDEARemoteTestNG.run(IDEARemoteTestNG.java:72)
+	at org.testng.TestNGForkedStarter.main(TestNGForkedStarter.java:30)
+</pre></div></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.backup.s3.TestS3BackupBigFile@3192caa9</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.backup.s3.TestS3BackupSmallFile.testDownload()'><b>testDownload</b><br>Test class: com.netflix.exhibitor.core.backup.s3.TestS3BackupSmallFile</td>
+<td><div><pre>java.lang.NumberFormatException: null
+	at java.lang.Integer.parseInt(Integer.java:454)
+	at java.lang.Integer.parseInt(Integer.java:527)
+	at com.netflix.exhibitor.core.s3.PropertyBasedS3ClientConfig.&lt;init&gt;(PropertyBasedS3ClientConfig.java:48)
+	at com.netflix.exhibitor.core.backup.s3.TestS3BackupProviderBase.testDownload(TestS3BackupProviderBase.java:76)
+... Removed 24 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace1778793825", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
+<div class='stack-trace' id='stack-trace1778793825'><pre>java.lang.NumberFormatException: null
+	at java.lang.Integer.parseInt(Integer.java:454)
+	at java.lang.Integer.parseInt(Integer.java:527)
+	at com.netflix.exhibitor.core.s3.PropertyBasedS3ClientConfig.&lt;init&gt;(PropertyBasedS3ClientConfig.java:48)
+	at com.netflix.exhibitor.core.backup.s3.TestS3BackupProviderBase.testDownload(TestS3BackupProviderBase.java:76)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:80)
+	at org.testng.internal.Invoker.invokeMethod(Invoker.java:673)
+	at org.testng.internal.Invoker.invokeTestMethod(Invoker.java:842)
+	at org.testng.internal.Invoker.invokeTestMethods(Invoker.java:1166)
+	at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:125)
+	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:109)
+	at org.testng.TestRunner.runWorkers(TestRunner.java:1178)
+	at org.testng.TestRunner.privateRun(TestRunner.java:757)
+	at org.testng.TestRunner.run(TestRunner.java:608)
+	at org.testng.SuiteRunner.runTest(SuiteRunner.java:334)
+	at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:329)
+	at org.testng.SuiteRunner.privateRun(SuiteRunner.java:291)
+	at org.testng.SuiteRunner.run(SuiteRunner.java:240)
+	at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:52)
+	at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:86)
+	at org.testng.TestNG.runSuitesSequentially(TestNG.java:1158)
+	at org.testng.TestNG.runSuitesLocally(TestNG.java:1083)
+	at org.testng.TestNG.run(TestNG.java:999)
+	at org.testng.IDEARemoteTestNG.run(IDEARemoteTestNG.java:72)
+	at org.testng.TestNGForkedStarter.main(TestNGForkedStarter.java:30)
+</pre></div></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.backup.s3.TestS3BackupSmallFile@1c3736ac</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.backup.s3.TestS3BackupBigFile.testGetAvailableBackupKeys()'><b>testGetAvailableBackupKeys</b><br>Test class: com.netflix.exhibitor.core.backup.s3.TestS3BackupBigFile</td>
+<td><div><pre>java.lang.NumberFormatException: null
+	at java.lang.Integer.parseInt(Integer.java:454)
+	at java.lang.Integer.parseInt(Integer.java:527)
+	at com.netflix.exhibitor.core.s3.PropertyBasedS3ClientConfig.&lt;init&gt;(PropertyBasedS3ClientConfig.java:48)
+	at com.netflix.exhibitor.core.backup.s3.TestS3BackupProviderBase.testGetAvailableBackupKeys(TestS3BackupProviderBase.java:115)
+... Removed 24 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace1443946916", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
+<div class='stack-trace' id='stack-trace1443946916'><pre>java.lang.NumberFormatException: null
+	at java.lang.Integer.parseInt(Integer.java:454)
+	at java.lang.Integer.parseInt(Integer.java:527)
+	at com.netflix.exhibitor.core.s3.PropertyBasedS3ClientConfig.&lt;init&gt;(PropertyBasedS3ClientConfig.java:48)
+	at com.netflix.exhibitor.core.backup.s3.TestS3BackupProviderBase.testGetAvailableBackupKeys(TestS3BackupProviderBase.java:115)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:80)
+	at org.testng.internal.Invoker.invokeMethod(Invoker.java:673)
+	at org.testng.internal.Invoker.invokeTestMethod(Invoker.java:842)
+	at org.testng.internal.Invoker.invokeTestMethods(Invoker.java:1166)
+	at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:125)
+	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:109)
+	at org.testng.TestRunner.runWorkers(TestRunner.java:1178)
+	at org.testng.TestRunner.privateRun(TestRunner.java:757)
+	at org.testng.TestRunner.run(TestRunner.java:608)
+	at org.testng.SuiteRunner.runTest(SuiteRunner.java:334)
+	at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:329)
+	at org.testng.SuiteRunner.privateRun(SuiteRunner.java:291)
+	at org.testng.SuiteRunner.run(SuiteRunner.java:240)
+	at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:52)
+	at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:86)
+	at org.testng.TestNG.runSuitesSequentially(TestNG.java:1158)
+	at org.testng.TestNG.runSuitesLocally(TestNG.java:1083)
+	at org.testng.TestNG.run(TestNG.java:999)
+	at org.testng.IDEARemoteTestNG.run(IDEARemoteTestNG.java:72)
+	at org.testng.TestNGForkedStarter.main(TestNGForkedStarter.java:30)
+</pre></div></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.backup.s3.TestS3BackupBigFile@3192caa9</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.backup.s3.TestS3BackupSmallFile.testGetAvailableBackupKeys()'><b>testGetAvailableBackupKeys</b><br>Test class: com.netflix.exhibitor.core.backup.s3.TestS3BackupSmallFile</td>
+<td><div><pre>java.lang.NumberFormatException: null
+	at java.lang.Integer.parseInt(Integer.java:454)
+	at java.lang.Integer.parseInt(Integer.java:527)
+	at com.netflix.exhibitor.core.s3.PropertyBasedS3ClientConfig.&lt;init&gt;(PropertyBasedS3ClientConfig.java:48)
+	at com.netflix.exhibitor.core.backup.s3.TestS3BackupProviderBase.testGetAvailableBackupKeys(TestS3BackupProviderBase.java:115)
+... Removed 24 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace651164990", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
+<div class='stack-trace' id='stack-trace651164990'><pre>java.lang.NumberFormatException: null
+	at java.lang.Integer.parseInt(Integer.java:454)
+	at java.lang.Integer.parseInt(Integer.java:527)
+	at com.netflix.exhibitor.core.s3.PropertyBasedS3ClientConfig.&lt;init&gt;(PropertyBasedS3ClientConfig.java:48)
+	at com.netflix.exhibitor.core.backup.s3.TestS3BackupProviderBase.testGetAvailableBackupKeys(TestS3BackupProviderBase.java:115)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:80)
+	at org.testng.internal.Invoker.invokeMethod(Invoker.java:673)
+	at org.testng.internal.Invoker.invokeTestMethod(Invoker.java:842)
+	at org.testng.internal.Invoker.invokeTestMethods(Invoker.java:1166)
+	at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:125)
+	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:109)
+	at org.testng.TestRunner.runWorkers(TestRunner.java:1178)
+	at org.testng.TestRunner.privateRun(TestRunner.java:757)
+	at org.testng.TestRunner.run(TestRunner.java:608)
+	at org.testng.SuiteRunner.runTest(SuiteRunner.java:334)
+	at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:329)
+	at org.testng.SuiteRunner.privateRun(SuiteRunner.java:291)
+	at org.testng.SuiteRunner.run(SuiteRunner.java:240)
+	at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:52)
+	at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:86)
+	at org.testng.TestNG.runSuitesSequentially(TestNG.java:1158)
+	at org.testng.TestNG.runSuitesLocally(TestNG.java:1083)
+	at org.testng.TestNG.run(TestNG.java:999)
+	at org.testng.IDEARemoteTestNG.run(IDEARemoteTestNG.java:72)
+	at org.testng.TestNGForkedStarter.main(TestNGForkedStarter.java:30)
+</pre></div></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.backup.s3.TestS3BackupSmallFile@1c3736ac</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.backup.s3.TestS3BackupBigFile.testUpload()'><b>testUpload</b><br>Test class: com.netflix.exhibitor.core.backup.s3.TestS3BackupBigFile</td>
+<td><div><pre>java.lang.NumberFormatException: null
+	at java.lang.Integer.parseInt(Integer.java:454)
+	at java.lang.Integer.parseInt(Integer.java:527)
+	at com.netflix.exhibitor.core.s3.PropertyBasedS3ClientConfig.&lt;init&gt;(PropertyBasedS3ClientConfig.java:48)
+	at com.netflix.exhibitor.core.backup.s3.TestS3BackupProviderBase.getUploadedBytes(TestS3BackupProviderBase.java:135)
+	at com.netflix.exhibitor.core.backup.s3.TestS3BackupProviderBase.testUpload(TestS3BackupProviderBase.java:54)
+... Removed 24 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace1131264883", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
+<div class='stack-trace' id='stack-trace1131264883'><pre>java.lang.NumberFormatException: null
+	at java.lang.Integer.parseInt(Integer.java:454)
+	at java.lang.Integer.parseInt(Integer.java:527)
+	at com.netflix.exhibitor.core.s3.PropertyBasedS3ClientConfig.&lt;init&gt;(PropertyBasedS3ClientConfig.java:48)
+	at com.netflix.exhibitor.core.backup.s3.TestS3BackupProviderBase.getUploadedBytes(TestS3BackupProviderBase.java:135)
+	at com.netflix.exhibitor.core.backup.s3.TestS3BackupProviderBase.testUpload(TestS3BackupProviderBase.java:54)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:80)
+	at org.testng.internal.Invoker.invokeMethod(Invoker.java:673)
+	at org.testng.internal.Invoker.invokeTestMethod(Invoker.java:842)
+	at org.testng.internal.Invoker.invokeTestMethods(Invoker.java:1166)
+	at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:125)
+	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:109)
+	at org.testng.TestRunner.runWorkers(TestRunner.java:1178)
+	at org.testng.TestRunner.privateRun(TestRunner.java:757)
+	at org.testng.TestRunner.run(TestRunner.java:608)
+	at org.testng.SuiteRunner.runTest(SuiteRunner.java:334)
+	at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:329)
+	at org.testng.SuiteRunner.privateRun(SuiteRunner.java:291)
+	at org.testng.SuiteRunner.run(SuiteRunner.java:240)
+	at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:52)
+	at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:86)
+	at org.testng.TestNG.runSuitesSequentially(TestNG.java:1158)
+	at org.testng.TestNG.runSuitesLocally(TestNG.java:1083)
+	at org.testng.TestNG.run(TestNG.java:999)
+	at org.testng.IDEARemoteTestNG.run(IDEARemoteTestNG.java:72)
+	at org.testng.TestNGForkedStarter.main(TestNGForkedStarter.java:30)
+</pre></div></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.backup.s3.TestS3BackupBigFile@3192caa9</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.backup.s3.TestS3BackupSmallFile.testUpload()'><b>testUpload</b><br>Test class: com.netflix.exhibitor.core.backup.s3.TestS3BackupSmallFile</td>
+<td><div><pre>java.lang.NumberFormatException: null
+	at java.lang.Integer.parseInt(Integer.java:454)
+	at java.lang.Integer.parseInt(Integer.java:527)
+	at com.netflix.exhibitor.core.s3.PropertyBasedS3ClientConfig.&lt;init&gt;(PropertyBasedS3ClientConfig.java:48)
+	at com.netflix.exhibitor.core.backup.s3.TestS3BackupProviderBase.getUploadedBytes(TestS3BackupProviderBase.java:135)
+	at com.netflix.exhibitor.core.backup.s3.TestS3BackupProviderBase.testUpload(TestS3BackupProviderBase.java:54)
+... Removed 24 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace1075603616", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
+<div class='stack-trace' id='stack-trace1075603616'><pre>java.lang.NumberFormatException: null
+	at java.lang.Integer.parseInt(Integer.java:454)
+	at java.lang.Integer.parseInt(Integer.java:527)
+	at com.netflix.exhibitor.core.s3.PropertyBasedS3ClientConfig.&lt;init&gt;(PropertyBasedS3ClientConfig.java:48)
+	at com.netflix.exhibitor.core.backup.s3.TestS3BackupProviderBase.getUploadedBytes(TestS3BackupProviderBase.java:135)
+	at com.netflix.exhibitor.core.backup.s3.TestS3BackupProviderBase.testUpload(TestS3BackupProviderBase.java:54)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:80)
+	at org.testng.internal.Invoker.invokeMethod(Invoker.java:673)
+	at org.testng.internal.Invoker.invokeTestMethod(Invoker.java:842)
+	at org.testng.internal.Invoker.invokeTestMethods(Invoker.java:1166)
+	at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:125)
+	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:109)
+	at org.testng.TestRunner.runWorkers(TestRunner.java:1178)
+	at org.testng.TestRunner.privateRun(TestRunner.java:757)
+	at org.testng.TestRunner.run(TestRunner.java:608)
+	at org.testng.SuiteRunner.runTest(SuiteRunner.java:334)
+	at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:329)
+	at org.testng.SuiteRunner.privateRun(SuiteRunner.java:291)
+	at org.testng.SuiteRunner.run(SuiteRunner.java:240)
+	at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:52)
+	at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:86)
+	at org.testng.TestNG.runSuitesSequentially(TestNG.java:1158)
+	at org.testng.TestNG.runSuitesLocally(TestNG.java:1083)
+	at org.testng.TestNG.run(TestNG.java:999)
+	at org.testng.IDEARemoteTestNG.run(IDEARemoteTestNG.java:72)
+	at org.testng.TestNGForkedStarter.main(TestNGForkedStarter.java:30)
+</pre></div></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.backup.s3.TestS3BackupSmallFile@1c3736ac</td></tr>
+</table><p>
+<table width='100%' border='1' class='invocation-passed'>
+<tr><td colspan='4' align='center'><b>PASSED TESTS</b></td></tr>
+<tr><td><b>Test method</b></td>
+<td width="30%"><b>Exception</b></td>
+<td width="10%"><b>Time (seconds)</b></td>
+<td><b>Instance</b></td>
+</tr>
+<tr>
+<td title='com.netflix.exhibitor.core.activity.TestActivityQueue.test()'><b>test</b><br>Test class: com.netflix.exhibitor.core.activity.TestActivityQueue</td>
+<td></td>
+<td>10</td>
+<td>com.netflix.exhibitor.core.activity.TestActivityQueue@48a3abff</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.automanage.TestFlexibleAutoInstanceManagement.testAddition()'><b>testAddition</b><br>Test class: com.netflix.exhibitor.core.automanage.TestFlexibleAutoInstanceManagement</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.automanage.TestFlexibleAutoInstanceManagement@54781c3d</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.automanage.TestFlexibleAutoInstanceManagement.testAdditionWithConfigContention()'><b>testAdditionWithConfigContention</b><br>Test class: com.netflix.exhibitor.core.automanage.TestFlexibleAutoInstanceManagement</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.automanage.TestFlexibleAutoInstanceManagement@54781c3d</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.automanage.TestFlexibleAutoInstanceManagement.testAdditionWithRemoval()'><b>testAdditionWithRemoval</b><br>Test class: com.netflix.exhibitor.core.automanage.TestFlexibleAutoInstanceManagement</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.automanage.TestFlexibleAutoInstanceManagement@54781c3d</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.config.TestRollingConfigChange.testAllDownInstances()'><b>testAllDownInstances</b><br>Test class: com.netflix.exhibitor.core.config.TestRollingConfigChange</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.config.TestRollingConfigChange@2dcecdd7</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.activity.TestActivityQueue.testBasic()'><b>testBasic</b><br>Test class: com.netflix.exhibitor.core.activity.TestActivityQueue</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.activity.TestActivityQueue@48a3abff</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.analyze.TestPathAnalyzer.testBasic()'><b>testBasic</b><br>Test class: com.netflix.exhibitor.core.analyze.TestPathAnalyzer</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.analyze.TestPathAnalyzer@7171179a</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.config.TestRestartSignificantConfig.testBasic()'><b>testBasic</b><br>Test class: com.netflix.exhibitor.core.config.TestRestartSignificantConfig</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.config.TestRestartSignificantConfig@6ce664ac</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.config.TestRollingChangeStaging.testBasic()'><b>testBasic</b><br>Test class: com.netflix.exhibitor.core.config.TestRollingChangeStaging</td>
+<td></td>
+<td>1</td>
+<td>com.netflix.exhibitor.core.config.TestRollingChangeStaging@9db900f</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.config.zookeeper.TestZookeeperConfigProvider.testBasic()'><b>testBasic</b><br>Test class: com.netflix.exhibitor.core.config.zookeeper.TestZookeeperConfigProvider</td>
+<td></td>
+<td>3</td>
+<td>com.netflix.exhibitor.core.config.zookeeper.TestZookeeperConfigProvider@2de6c526</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.controlpanel.TestFileBasedPreferences.testBasic()'><b>testBasic</b><br>Test class: com.netflix.exhibitor.core.controlpanel.TestFileBasedPreferences</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.controlpanel.TestFileBasedPreferences@9995955</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.s3.TestRefCountedClient.testBasic()'><b>testBasic</b><br>Test class: com.netflix.exhibitor.core.s3.TestRefCountedClient</td>
+<td></td>
+<td>7</td>
+<td>com.netflix.exhibitor.core.s3.TestRefCountedClient@32b7e05f</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.automanage.TestFixedAutoInstanceManagement.testBecomesObserver()'><b>testBecomesObserver</b><br>Test class: com.netflix.exhibitor.core.automanage.TestFixedAutoInstanceManagement</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.automanage.TestFixedAutoInstanceManagement@37c4b9a5</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.automanage.TestFlexibleAutoInstanceManagement.testBecomesObserver()'><b>testBecomesObserver</b><br>Test class: com.netflix.exhibitor.core.automanage.TestFlexibleAutoInstanceManagement</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.automanage.TestFlexibleAutoInstanceManagement@54781c3d</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.config.s3.TestS3PseudoLock.testBlocking()'><b>testBlocking</b><br>Test class: com.netflix.exhibitor.core.config.s3.TestS3PseudoLock</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.config.s3.TestS3PseudoLock@21301fa</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.config.TestRollingConfigChange.testChange()'><b>testChange</b><br>Test class: com.netflix.exhibitor.core.config.TestRollingConfigChange</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.config.TestRollingConfigChange@2dcecdd7</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.config.zookeeper.TestZookeeperConfigProvider.testConcurrentModification()'><b>testConcurrentModification</b><br>Test class: com.netflix.exhibitor.core.config.zookeeper.TestZookeeperConfigProvider</td>
+<td></td>
+<td>2</td>
+<td>com.netflix.exhibitor.core.config.zookeeper.TestZookeeperConfigProvider@2de6c526</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.automanage.TestRemoteInstanceRequestClient.testConnectionTimeout()'><b>testConnectionTimeout</b><br>Test class: com.netflix.exhibitor.core.automanage.TestRemoteInstanceRequestClient</td>
+<td></td>
+<td>3</td>
+<td>com.netflix.exhibitor.core.automanage.TestRemoteInstanceRequestClient@1986141e</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.activity.TestActivityQueue.testDelay()'><b>testDelay</b><br>Test class: com.netflix.exhibitor.core.activity.TestActivityQueue</td>
+<td></td>
+<td>2</td>
+<td>com.netflix.exhibitor.core.activity.TestActivityQueue@48a3abff</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.config.TestRollingConfigChange.testDownLastInstance()'><b>testDownLastInstance</b><br>Test class: com.netflix.exhibitor.core.config.TestRollingConfigChange</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.config.TestRollingConfigChange@2dcecdd7</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.config.TestRollingConfigChange.testDownMiddleInstance()'><b>testDownMiddleInstance</b><br>Test class: com.netflix.exhibitor.core.config.TestRollingConfigChange</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.config.TestRollingConfigChange@2dcecdd7</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.state.TestServerList.testEdges()'><b>testEdges</b><br>Test class: com.netflix.exhibitor.core.state.TestServerList</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.state.TestServerList@32d8b42e</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.config.TestRollingConfigChange.testFailedQuorum()'><b>testFailedQuorum</b><br>Test class: com.netflix.exhibitor.core.config.TestRollingConfigChange</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.config.TestRollingConfigChange@2dcecdd7</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.config.s3.TestS3PseudoLock.testGCOldLockFiles()'><b>testGCOldLockFiles</b><br>Test class: com.netflix.exhibitor.core.config.s3.TestS3PseudoLock</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.config.s3.TestS3PseudoLock@21301fa</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.automanage.TestFlexibleAutoInstanceManagement.testInitialAddition()'><b>testInitialAddition</b><br>Test class: com.netflix.exhibitor.core.automanage.TestFlexibleAutoInstanceManagement</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.automanage.TestFlexibleAutoInstanceManagement@54781c3d</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.config.TestRollingConfigChange.testLongQuorumSuccess()'><b>testLongQuorumSuccess</b><br>Test class: com.netflix.exhibitor.core.config.TestRollingConfigChange</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.config.TestRollingConfigChange@2dcecdd7</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.automanage.TestRemoteInstanceRequestClient.testMissingServer()'><b>testMissingServer</b><br>Test class: com.netflix.exhibitor.core.automanage.TestRemoteInstanceRequestClient</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.automanage.TestRemoteInstanceRequestClient@1986141e</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.config.s3.TestS3PseudoLock.testMulti()'><b>testMulti</b><br>Test class: com.netflix.exhibitor.core.config.s3.TestS3PseudoLock</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.config.s3.TestS3PseudoLock@21301fa</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.config.TestRollingChangeStaging.testMultiple()'><b>testMultiple</b><br>Test class: com.netflix.exhibitor.core.config.TestRollingChangeStaging</td>
+<td></td>
+<td>1</td>
+<td>com.netflix.exhibitor.core.config.TestRollingChangeStaging@9db900f</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.automanage.TestFlexibleAutoInstanceManagement.testNoChange()'><b>testNoChange</b><br>Test class: com.netflix.exhibitor.core.automanage.TestFlexibleAutoInstanceManagement</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.automanage.TestFlexibleAutoInstanceManagement@54781c3d</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.automanage.TestFixedAutoInstanceManagement.testNoRoom()'><b>testNoRoom</b><br>Test class: com.netflix.exhibitor.core.automanage.TestFixedAutoInstanceManagement</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.automanage.TestFixedAutoInstanceManagement@37c4b9a5</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.automanage.TestFlexibleAutoInstanceManagement.testNoServers()'><b>testNoServers</b><br>Test class: com.netflix.exhibitor.core.automanage.TestFlexibleAutoInstanceManagement</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.automanage.TestFlexibleAutoInstanceManagement@54781c3d</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.automanage.TestFlexibleAutoInstanceManagement.testRemoval()'><b>testRemoval</b><br>Test class: com.netflix.exhibitor.core.automanage.TestFlexibleAutoInstanceManagement</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.automanage.TestFlexibleAutoInstanceManagement@54781c3d</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.activity.TestActivityQueue.testRepeating()'><b>testRepeating</b><br>Test class: com.netflix.exhibitor.core.activity.TestActivityQueue</td>
+<td></td>
+<td>1</td>
+<td>com.netflix.exhibitor.core.activity.TestActivityQueue@48a3abff</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.activity.TestActivityQueue.testReplace()'><b>testReplace</b><br>Test class: com.netflix.exhibitor.core.activity.TestActivityQueue</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.activity.TestActivityQueue@48a3abff</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.automanage.TestFixedAutoInstanceManagement.testReplacement()'><b>testReplacement</b><br>Test class: com.netflix.exhibitor.core.automanage.TestFixedAutoInstanceManagement</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.automanage.TestFixedAutoInstanceManagement@37c4b9a5</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.activity.TestActivityQueue.testSequential()'><b>testSequential</b><br>Test class: com.netflix.exhibitor.core.activity.TestActivityQueue</td>
+<td></td>
+<td>1</td>
+<td>com.netflix.exhibitor.core.activity.TestActivityQueue@48a3abff</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.state.TestMonitorRunningInstance.testServerListHasChanged()'><b>testServerListHasChanged</b><br>Test class: com.netflix.exhibitor.core.state.TestMonitorRunningInstance</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.state.TestMonitorRunningInstance@6e059e40</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.servo.TestGetMonitorData.testSimple()'><b>testSimple</b><br>Test class: com.netflix.exhibitor.core.servo.TestGetMonitorData</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.servo.TestGetMonitorData@45eb96fc</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.state.TestServerList.testSimple()'><b>testSimple</b><br>Test class: com.netflix.exhibitor.core.state.TestServerList</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.state.TestServerList@32d8b42e</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.automanage.TestFixedAutoInstanceManagement.testSimpleAddition()'><b>testSimpleAddition</b><br>Test class: com.netflix.exhibitor.core.automanage.TestFixedAutoInstanceManagement</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.automanage.TestFixedAutoInstanceManagement@37c4b9a5</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.config.s3.TestS3PseudoLock.testSingle()'><b>testSingle</b><br>Test class: com.netflix.exhibitor.core.config.s3.TestS3PseudoLock</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.config.s3.TestS3PseudoLock@21301fa</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.TestServerSpec.testSpecString()'><b>testSpecString</b><br>Test class: com.netflix.exhibitor.core.TestServerSpec</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.TestServerSpec@6056677a</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.state.TestMonitorRunningInstance.testTempDownInstance()'><b>testTempDownInstance</b><br>Test class: com.netflix.exhibitor.core.state.TestMonitorRunningInstance</td>
+<td></td>
+<td>3</td>
+<td>com.netflix.exhibitor.core.state.TestMonitorRunningInstance@6e059e40</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.automanage.TestFlexibleAutoInstanceManagement.testUnstable()'><b>testUnstable</b><br>Test class: com.netflix.exhibitor.core.automanage.TestFlexibleAutoInstanceManagement</td>
+<td></td>
+<td>3</td>
+<td>com.netflix.exhibitor.core.automanage.TestFlexibleAutoInstanceManagement@54781c3d</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.config.s3.TestS3PseudoLock.testWithDifferentLockKeySeparator()'><b>testWithDifferentLockKeySeparator</b><br>Test class: com.netflix.exhibitor.core.config.s3.TestS3PseudoLock</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.config.s3.TestS3PseudoLock@21301fa</td></tr>
+<tr>
+<td title='com.netflix.exhibitor.core.config.TestZooCfgOrdering.testZooCfgOrdering()'><b>testZooCfgOrdering</b><br>Test class: com.netflix.exhibitor.core.config.TestZooCfgOrdering</td>
+<td></td>
+<td>0</td>
+<td>com.netflix.exhibitor.core.config.TestZooCfgOrdering@642bf5bf</td></tr>
+</table><p>
+</body>
+</html>

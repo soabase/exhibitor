@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="Failed suite [Default Suite]">
+  <test name="exhibitor-core(failed)" preserve-order="false">
+    <classes>
+      <class name="com.netflix.exhibitor.core.backup.s3.TestS3BackupSmallFile">
+        <methods>
+          <include name="testGetAvailableBackupKeys"/>
+          <include name="testDownload"/>
+          <include name="testUpload"/>
+        </methods>
+      </class>
+      <class name="com.netflix.exhibitor.core.backup.s3.TestS3BackupBigFile">
+        <methods>
+          <include name="testGetAvailableBackupKeys"/>
+          <include name="testDownload"/>
+          <include name="testUpload"/>
+          <include name="teardown"/>
+        </methods>
+      </class>
+      <class name="com.netflix.exhibitor.core.config.zookeeper.TestZookeeperConfigProvider">
+        <methods>
+          <include name="setup"/>
+          <include name="tearDown"/>
+        </methods>
+      </class>
+    </classes>
+  </test>
+</suite>
