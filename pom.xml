@@ -47,6 +47,31 @@
         <jsr166-version>1.7.0</jsr166-version>
     </properties>
 
+    <scm>
+        <url>https://github.com/soabase/exhibitor</url>
+        <connection>scm:git:https://github.com/soabase/exhibitor.git</connection>
+        <developerConnection>scm:git:git@github.com:soabase/exhibitor.git</developerConnection>
+        <tag>exhibitor-1.1.0</tag>
+    </scm>
+
+    <issueManagement>
+        <system>Github</system>
+        <url>https://github.com/soabase/exhibitor/issues</url>
+    </issueManagement>
+
+    <distributionManagement>
+        <repository>
+            <id>sonatype-nexus-staging</id>
+            <name>Sonatype Nexus Staging</name>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+        </repository>
+        <snapshotRepository>
+            <id>sonatype-nexus-snapshots</id>
+            <name>Sonatype Nexus Snapshots</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
