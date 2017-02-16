@@ -17,6 +17,7 @@
 package com.netflix.exhibitor.core.s3;
 
 import com.amazonaws.ClientConfiguration;
+import com.netflix.exhibitor.core.config.DefaultProperties;
 import org.apache.curator.utils.CloseableUtils;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -45,7 +46,7 @@ public class PropertyBasedS3ClientConfig implements S3ClientConfig
     public PropertyBasedS3ClientConfig(Properties properties)
     {
         proxyHost = properties.getProperty(PROPERTY_S3_PROXY_HOST);
-        proxyPort = Integer.parseInt(properties.getProperty(PROPERTY_S3_PROXY_PORT));
+        proxyPort = DefaultProperties.asInt(properties.getProperty(PROPERTY_S3_PROXY_PORT));
         proxyUsername = properties.getProperty(PROPERTY_S3_PROXY_USERNAME);
         proxyPassword = properties.getProperty(PROPERTY_S3_PROXY_PASSWORD);
     }

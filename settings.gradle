@@ -1,2 +1,0 @@
-rootProject.name='exhibitor'
-include 'exhibitor-core','exhibitor-standalone'
