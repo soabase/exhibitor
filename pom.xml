@@ -39,7 +39,7 @@
         <servo-version>0.5.2</servo-version>
         <guava-version>16.0.1</guava-version>
         <jax-rs-version>1.1.1</jax-rs-version>
-        <jackson-version>1.8.3</jackson-version>
+        <jackson-version>1.9.2</jackson-version>
         <lucene-version>3.6.0</lucene-version>
         <aws-version>1.10.24</aws-version>
         <mockito-version>1.8.5</mockito-version>
