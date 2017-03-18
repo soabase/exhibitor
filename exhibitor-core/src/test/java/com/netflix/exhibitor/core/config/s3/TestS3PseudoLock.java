@@ -19,9 +19,6 @@ package com.netflix.exhibitor.core.config.s3;
 import com.google.common.collect.Lists;
 import com.netflix.exhibitor.core.activity.ActivityLog;
 import com.netflix.exhibitor.core.backup.s3.MockS3Client;
-import org.mockito.Mockito;
-import org.testng.Assert;
-import org.testng.annotations.Test;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -31,6 +28,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.mockito.Mockito;
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
 public class TestS3PseudoLock
 {
@@ -57,7 +57,7 @@ public class TestS3PseudoLock
         Assert.assertNotNull(cleaned);
     }
 
-    @Test
+    @Test(enabled = false) // Too flaky to be useful right now. See https://github.com/soabase/exhibitor/issues/329.
     public void         testBlocking() throws Exception
     {
         final int       QTY = 5;
