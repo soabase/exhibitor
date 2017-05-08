@@ -51,7 +51,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 @SuppressWarnings("UnusedDeclaration")
-@Path("exhibitor/v1/cluster")
+@Path("v1/cluster")
 public class ClusterResource
 {
     private final UIContext context;

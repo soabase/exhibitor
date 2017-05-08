@@ -64,7 +64,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-@Path("exhibitor/v1/index")
+@Path("v1/index")
 public class IndexResource
 {
     private final UIContext context;

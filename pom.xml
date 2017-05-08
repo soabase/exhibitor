@@ -17,7 +17,7 @@
         <project.build.resourceEncoding>UTF-8</project.build.resourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <jdk-version>1.6</jdk-version>
+        <jdk-version>1.8</jdk-version>
 
         <maven-compiler-plugin-version>3.5.1</maven-compiler-plugin-version>
         <maven-shade-plugin-version>2.4.3</maven-shade-plugin-version>
@@ -33,7 +33,7 @@
         <curator-version>2.7.1</curator-version>
         <test-ng-version>6.1.1</test-ng-version>
         <jersey-version>1.18.3</jersey-version>
-        <jetty-version>6.1.22</jetty-version>
+        <jetty-version>9.4.3.v20170317</jetty-version>
         <commons-cli-version>1.2</commons-cli-version>
         <servlet-version>2.5</servlet-version>
         <servo-version>0.5.2</servo-version>
@@ -117,8 +117,8 @@
             </dependency>
 
             <dependency>
-                <groupId>org.mortbay.jetty</groupId>
-                <artifactId>jetty</artifactId>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-webapp</artifactId>
                 <version>${jetty-version}</version>
             </dependency>
 
@@ -272,6 +272,7 @@
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>${maven-resources-plugin-version}</version>
                 </plugin>
+
             </plugins>
         </pluginManagement>
 

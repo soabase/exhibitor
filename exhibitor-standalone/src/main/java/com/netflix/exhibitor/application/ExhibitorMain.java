@@ -20,8 +20,6 @@ package com.netflix.exhibitor.application;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
-import com.netflix.exhibitor.servlet.ExhibitorServletFilter;
-import com.sun.jersey.spi.container.servlet.ServletContainer;
 import com.netflix.exhibitor.core.Exhibitor;
 import com.netflix.exhibitor.core.ExhibitorArguments;
 import com.netflix.exhibitor.core.RemoteConnectionConfiguration;
@@ -36,24 +34,31 @@ import com.sun.jersey.api.client.filter.ClientFilter;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.api.client.filter.HTTPDigestAuthFilter;
 import com.sun.jersey.api.core.DefaultResourceConfig;
-import org.apache.curator.utils.CloseableUtils;
-import org.mortbay.jetty.Handler;
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.handler.ContextHandler;
-import org.mortbay.jetty.security.HashUserRealm;
-import org.mortbay.jetty.security.SecurityHandler;
-import org.mortbay.jetty.servlet.Context;
-import org.mortbay.jetty.servlet.ServletHolder;
-import org.mortbay.jetty.webapp.WebAppContext;
-import org.mortbay.jetty.webapp.WebXmlConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.sun.jersey.spi.container.servlet.ServletContainer;
 import java.io.Closeable;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.servlet.ServletRequest;
+import org.apache.curator.utils.CloseableUtils;
+import org.eclipse.jetty.security.HashLoginService;
+import org.eclipse.jetty.security.SecurityHandler;
+import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.UserIdentity;
+import org.eclipse.jetty.server.handler.ContextHandler;
+import org.eclipse.jetty.server.handler.DefaultHandler;
+import org.eclipse.jetty.server.handler.HandlerList;
+import org.eclipse.jetty.server.handler.ResourceHandler;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.webapp.WebXmlConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ExhibitorMain implements Closeable
 {
@@ -67,14 +72,11 @@ public class ExhibitorMain implements Closeable
     public static void main(String[] args) throws Exception
     {
         ExhibitorCreator creator;
-        try
-        {
+        try {
             creator = new ExhibitorCreator(args);
         }
-        catch ( ExhibitorCreatorExit exit )
-        {
-            if ( exit.getError() != null )
-            {
+        catch (ExhibitorCreatorExit exit) {
+            if (exit.getError() != null) {
                 System.err.println(exit.getError());
             }
 
@@ -84,37 +86,33 @@ public class ExhibitorMain implements Closeable
 
         SecurityArguments securityArguments = new SecurityArguments(creator.getSecurityFile(), creator.getRealmSpec(), creator.getRemoteAuthSpec());
         ExhibitorMain exhibitorMain = new ExhibitorMain
-        (
-            creator.getBackupProvider(),
-            creator.getConfigProvider(),
-            creator.getBuilder(),
-            creator.getHttpPort(),
-            creator.getSecurityHandler(),
-            securityArguments
-        );
+            (
+                creator.getBackupProvider(),
+                creator.getConfigProvider(),
+                creator.getBuilder(),
+                creator.getHttpPort(),
+                securityArguments
+            );
         setShutdown(exhibitorMain);
 
         exhibitorMain.start();
-        try
-        {
+        try {
             exhibitorMain.join();
         }
-        finally
-        {
+        finally {
             exhibitorMain.close();
 
-            for ( Closeable closeable : creator.getCloseables() )
-            {
+            for (Closeable closeable : creator.getCloseables()) {
                 CloseableUtils.closeQuietly(closeable);
             }
         }
     }
 
-    public ExhibitorMain(BackupProvider backupProvider, ConfigProvider configProvider, ExhibitorArguments.Builder builder, int httpPort, SecurityHandler security, SecurityArguments securityArguments) throws Exception
+    public ExhibitorMain(BackupProvider backupProvider, ConfigProvider configProvider, ExhibitorArguments.Builder builder, int httpPort, SecurityArguments securityArguments) throws Exception
     {
-        HashUserRealm realm = makeRealm(securityArguments);
-        if ( securityArguments.getRemoteAuthSpec() != null )
-        {
+        HashLoginService loginService = makeLoginService(securityArguments);
+
+        if (securityArguments.getRemoteAuthSpec() != null) {
             addRemoteAuth(builder, securityArguments.getRemoteAuthSpec());
         }
 
@@ -122,19 +120,34 @@ public class ExhibitorMain implements Closeable
         exhibitor = new Exhibitor(configProvider, null, backupProvider, builder.build());
         exhibitor.start();
 
-        DefaultResourceConfig   application = JerseySupport.newApplicationConfig(new UIContext(exhibitor));
-        ServletContainer        container = new ServletContainer(application);
         server = new Server(httpPort);
-        Context root = new Context(server, "/", Context.SESSIONS);
-        root.addFilter(ExhibitorServletFilter.class, "/", Handler.ALL);
-        root.addServlet(new ServletHolder(container), "/*");
-        if ( security != null )
-        {
-            root.setSecurityHandler(security);
+
+        // This is some magic to get path of root directory of the JAR
+        // see https://github.com/jetty-project/embedded-jetty-uber-jar/blob/master/src/main/java/jetty/uber/ServerMain.java
+        URL webRootLocation = ExhibitorMain.class.getClassLoader().getResource("index.html");
+        if (webRootLocation == null) {
+            throw new IllegalStateException("Unable to find resource directory");
         }
-        else if ( securityArguments.getSecurityFile() != null )
-        {
-            addSecurityFile(realm, securityArguments.getSecurityFile(), root);
+
+        URI webRootUri = URI.create(webRootLocation.toURI().toASCIIString().replaceFirst("/index.html$", "/"));
+        ServletContextHandler context = new ServletContextHandler();
+        context.setContextPath("/");
+
+        DefaultResourceConfig application = JerseySupport.newApplicationConfig(new UIContext(exhibitor));
+        ServletHolder jerseyServlet = new ServletHolder(new ServletContainer(application));
+        context.addServlet(jerseyServlet, "/exhibitor/*");
+
+        ResourceHandler resourceHandler = new ResourceHandler();
+        resourceHandler.setDirectoriesListed(false);
+        resourceHandler.setWelcomeFiles(new String[] {"index.html"});
+        resourceHandler.setResourceBase(webRootUri.toString());
+
+        HandlerList handlers = new HandlerList();
+        handlers.setHandlers(new Handler[] {resourceHandler, context, new DefaultHandler()});
+        server.setHandler(handlers);
+
+        if (securityArguments.getSecurityFile() != null) {
+            addSecurityFile(loginService, securityArguments.getSecurityFile(), context);
         }
     }
 
@@ -149,16 +162,13 @@ public class ExhibitorMain implements Closeable
         String password = Preconditions.checkNotNull(users.get(userName), "Realm user not found: " + userName);
 
         ClientFilter filter;
-        if ( type.equals("basic") )
-        {
+        if (type.equals("basic")) {
             filter = new HTTPBasicAuthFilter(userName, password);
         }
-        else if ( type.equals("digest") )
-        {
+        else if (type.equals("digest")) {
             filter = new HTTPDigestAuthFilter(userName, password);
         }
-        else
-        {
+        else {
             throw new IllegalStateException("Unknown remote client authorization type: " + type);
         }
 
@@ -172,15 +182,12 @@ public class ExhibitorMain implements Closeable
 
     public void join()
     {
-        try
-        {
-            while ( !shutdownSignaled.get() && !Thread.currentThread().isInterrupted() )
-            {
+        try {
+            while (!shutdownSignaled.get() && !Thread.currentThread().isInterrupted()) {
                 Thread.sleep(5000);
             }
         }
-        catch ( InterruptedException e )
-        {
+        catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
     }
@@ -188,17 +195,14 @@ public class ExhibitorMain implements Closeable
     @Override
     public void close() throws IOException
     {
-        if ( isClosed.compareAndSet(false, true) )
-        {
+        if (isClosed.compareAndSet(false, true)) {
             log.info("Shutting down");
 
             CloseableUtils.closeQuietly(exhibitor);
-            try
-            {
+            try {
                 server.stop();
             }
-            catch ( Exception e )
-            {
+            catch (Exception e) {
                 log.error("Error shutting down Jetty", e);
             }
             server.destroy();
@@ -208,12 +212,12 @@ public class ExhibitorMain implements Closeable
     private static void setShutdown(final ExhibitorMain exhibitorMain)
     {
         Runtime.getRuntime().addShutdownHook
-        (
-            new Thread
             (
-                makeShutdownProc(exhibitorMain)
-            )
-        );
+                new Thread
+                    (
+                        makeShutdownProc(exhibitorMain)
+                    )
+            );
     }
 
     private static Runnable makeShutdownProc(final ExhibitorMain exhibitorMain)
@@ -228,7 +232,7 @@ public class ExhibitorMain implements Closeable
         };
     }
 
-    private void addSecurityFile(HashUserRealm realm, String securityFile, Context root) throws Exception
+    private void addSecurityFile(HashLoginService realm, String securityFile, ServletContextHandler root) throws Exception
     {
         // create a temp Jetty context to parse the security portion of the web.xml file
 
@@ -242,8 +246,9 @@ public class ExhibitorMain implements Closeable
         final URL url = new URL("file", null, securityFile);
         final WebXmlConfiguration webXmlConfiguration = new WebXmlConfiguration();
         WebAppContext context = new WebAppContext();
+        context.setDescriptor(url.getPath());
         context.setServer(server);
-        webXmlConfiguration.setWebAppContext(context);
+
         ContextHandler contextHandler = new ContextHandler("/")
         {
             @Override
@@ -251,48 +256,42 @@ public class ExhibitorMain implements Closeable
             {
                 super.startContext();
                 setServer(server);
-                webXmlConfiguration.configure(url.toString());
+                webXmlConfiguration.configure(context);
             }
         };
         contextHandler.start();
-        try
-        {
-            SecurityHandler securityHandler = webXmlConfiguration.getWebAppContext().getSecurityHandler();
+        try {
+            SecurityHandler securityHandler = context.getSecurityHandler();
 
-            if ( realm != null )
-            {
-                securityHandler.setUserRealm(realm);
+            if (realm != null) {
+                securityHandler.setLoginService(realm);
             }
 
             root.setSecurityHandler(securityHandler);
         }
-        finally
-        {
+        finally {
             contextHandler.stop();
         }
     }
 
-    private HashUserRealm makeRealm(SecurityArguments securityArguments) throws Exception
+    private HashLoginService makeLoginService(SecurityArguments securityArguments) throws Exception
     {
-        if ( securityArguments.getRealmSpec() == null )
-        {
+        if (securityArguments.getRealmSpec() == null) {
             return null;
         }
 
         String[] parts = securityArguments.getRealmSpec().split(":");
-        if ( parts.length != 2 )
-        {
+        if (parts.length != 2) {
             throw new Exception("Bad realm spec: " + securityArguments.getRealmSpec());
         }
 
-        return new HashUserRealm(parts[0].trim(), parts[1].trim())
+        return new HashLoginService(parts[0].trim(), parts[1].trim())
         {
             @Override
-            public Object put(Object name, Object credentials)
+            public UserIdentity login(final String username, final Object credentials, final ServletRequest request)
             {
-                users.put(String.valueOf(name), String.valueOf(credentials));
-
-                return super.put(name, credentials);
+                users.put(String.valueOf(username), String.valueOf(credentials));
+                return super.login(username, credentials, request);
             }
         };
     }

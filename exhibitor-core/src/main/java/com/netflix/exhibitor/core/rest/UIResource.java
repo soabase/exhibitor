@@ -48,7 +48,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@Path("exhibitor/v1/ui")
+@Path("v1/ui")
 public class UIResource
 {
     private final UIContext context;

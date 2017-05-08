@@ -54,7 +54,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@Path("exhibitor/v1/explorer")
+@Path("v1/explorer")
 public class ExplorerResource
 {
     private final UIContext         context;

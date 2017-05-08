@@ -50,7 +50,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-@Path("exhibitor/v1/config")
+@Path("v1/config")
 public class ConfigResource
 {
     private final UIContext context;

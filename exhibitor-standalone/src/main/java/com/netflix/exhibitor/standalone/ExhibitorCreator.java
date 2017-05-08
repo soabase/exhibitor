@@ -16,7 +16,6 @@
 
 package com.netflix.exhibitor.standalone;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.netflix.exhibitor.core.ExhibitorArguments;
@@ -40,7 +39,60 @@ import com.netflix.exhibitor.core.s3.PropertyBasedS3ClientConfig;
 import com.netflix.exhibitor.core.s3.PropertyBasedS3Credential;
 import com.netflix.exhibitor.core.s3.S3ClientFactoryImpl;
 import com.netflix.exhibitor.core.servo.ServoRegistration;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.ACL_ID;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.ACL_PERMISSIONS;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.ACL_SCHEME;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.CONFIGCHECKMS;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.CONFIG_TYPE;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.DEFAULT_FILESYSTEMCONFIG_LOCK_PREFIX;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.DEFAULT_FILESYSTEMCONFIG_NAME;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.DEFAULT_PREFIX;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.DEFAULT_ZOOKEEPER_CONFIG_EXHIBITOR_URI_PATH;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.DEFAULT_ZOOKEEPER_CONFIG_POLLING;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.DEFAULT_ZOOKEEPER_CONFIG_RETRY;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.EXTRA_HEADING_TEXT;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.FILESYSTEMBACKUP;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.FILESYSTEM_CONFIG_DIRECTORY;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.FILESYSTEM_CONFIG_LOCK_PREFIX;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.FILESYSTEM_CONFIG_NAME;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.HELP;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.HOSTNAME;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.HTTP_PORT;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.INITIAL_CONFIG_FILE;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.JQUERY_STYLE;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.LOGLINES;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.NODE_MUTATIONS;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.NONE_CONFIG_DIRECTORY;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.PREFERENCES_PATH;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.REALM;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.REMOTE_CLIENT_AUTHORIZATION;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.S3_BACKUP;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.S3_CONFIG;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.S3_CONFIG_PREFIX;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.S3_CREDENTIALS;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.S3_PROXY;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.S3_REGION;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.SECURITY_FILE;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.SERVO_INTEGRATION;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.SHORT_CONFIG_TYPE;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.TIMEOUT;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.ZOOKEEPER_CONFIG_BASE_PATH;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.ZOOKEEPER_CONFIG_EXHIBITOR_PORT;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.ZOOKEEPER_CONFIG_EXHIBITOR_URI_PATH;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.ZOOKEEPER_CONFIG_INITIAL_CONNECT_STRING;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.ZOOKEEPER_CONFIG_POLLING;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.ZOOKEEPER_CONFIG_RETRY;
 import com.netflix.servo.jmx.JmxMonitorRegistry;
+import java.io.BufferedInputStream;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.ParseException;
@@ -58,33 +110,14 @@ import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.common.PathUtils;
 import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Id;
-import org.mortbay.jetty.security.BasicAuthenticator;
-import org.mortbay.jetty.security.Constraint;
-import org.mortbay.jetty.security.ConstraintMapping;
-import org.mortbay.jetty.security.Credential;
-import org.mortbay.jetty.security.HashUserRealm;
-import org.mortbay.jetty.security.SecurityHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.io.BufferedInputStream;
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import static com.netflix.exhibitor.standalone.ExhibitorCLI.*;
 
 public class ExhibitorCreator
 {
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final ExhibitorArguments.Builder builder;
-    private final SecurityHandler securityHandler;
     private final BackupProvider backupProvider;
     private final ConfigProvider configProvider;
     private final int httpPort;
@@ -180,18 +213,6 @@ public class ExhibitorCreator
         realmSpec = commandLine.getOptionValue(REALM);
         remoteAuthSpec = commandLine.getOptionValue(REMOTE_CLIENT_AUTHORIZATION);
 
-        String realm = commandLine.getOptionValue(BASIC_AUTH_REALM);
-        String user = commandLine.getOptionValue(CONSOLE_USER);
-        String password = commandLine.getOptionValue(CONSOLE_PASSWORD);
-        String curatorUser = commandLine.getOptionValue(CURATOR_USER);
-        String curatorPassword = commandLine.getOptionValue(CURATOR_PASSWORD);
-        SecurityHandler handler = null;
-        if ( notNullOrEmpty(realm) && notNullOrEmpty(user) && notNullOrEmpty(password) && notNullOrEmpty(curatorUser) && notNullOrEmpty(curatorPassword) )
-        {
-            log.warn(Joiner.on(", ").join(BASIC_AUTH_REALM, CONSOLE_USER, CONSOLE_PASSWORD, CURATOR_USER, CURATOR_PASSWORD) + " - have been deprecated. Use TBD instead");
-            handler = makeSecurityHandler(realm, user, password, curatorUser, curatorPassword);
-        }
-
         String      aclId = commandLine.getOptionValue(ACL_ID);
         String      aclScheme = commandLine.getOptionValue(ACL_SCHEME);
         String      aclPerms = commandLine.getOptionValue(ACL_PERMISSIONS);
@@ -227,7 +248,6 @@ public class ExhibitorCreator
             .preferencesPath(preferencesPath)
         ;
 
-        this.securityHandler = handler;
         this.backupProvider = backupProvider;
         this.configProvider = configProvider;
         this.httpPort = httpPort;
@@ -246,11 +266,6 @@ public class ExhibitorCreator
     public ConfigProvider getConfigProvider()
     {
         return configProvider;
-    }
-
-    public SecurityHandler getSecurityHandler()
-    {
-        return securityHandler;
     }
 
     public BackupProvider getBackupProvider()
@@ -602,39 +617,5 @@ public class ExhibitorCreator
     private boolean notNullOrEmpty(String arg)
     {
         return arg != null && (! "".equals(arg));
-    }
-
-    private SecurityHandler makeSecurityHandler(String realm, String consoleUser, String consolePassword, String curatorUser, String curatorPassword)
-    {
-        HashUserRealm userRealm = new HashUserRealm(realm);
-        userRealm.put(consoleUser, Credential.getCredential(consolePassword));
-        userRealm.addUserToRole(consoleUser,"console");
-        userRealm.put(curatorUser, Credential.getCredential(curatorPassword));
-        userRealm.addUserToRole(curatorUser, "curator");
-
-        Constraint console = new Constraint();
-        console.setName("consoleauth");
-        console.setRoles(new String[]{"console"});
-        console.setAuthenticate(true);
-
-        Constraint curator = new Constraint();
-        curator.setName("curatorauth");
-        curator.setRoles(new String[]{"curator", "console"});
-        curator.setAuthenticate(true);
-
-        ConstraintMapping consoleMapping = new ConstraintMapping();
-        consoleMapping.setConstraint(console);
-        consoleMapping.setPathSpec("/*");
-
-        ConstraintMapping curatorMapping = new ConstraintMapping();
-        curatorMapping.setConstraint(curator);
-        curatorMapping.setPathSpec("/exhibitor/v1/cluster/list");
-
-        SecurityHandler handler = new SecurityHandler();
-        handler.setUserRealm(userRealm);
-        handler.setConstraintMappings(new ConstraintMapping[]{consoleMapping,curatorMapping});
-        handler.setAuthenticator(new BasicAuthenticator());
-
-        return handler;
     }
 }

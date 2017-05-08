@@ -100,12 +100,6 @@ public class ExhibitorCLI
     public static final String REALM = "realm";
     public static final String REMOTE_CLIENT_AUTHORIZATION = "remoteauth";
 
-    public static final String BASIC_AUTH_REALM = "basicauthrealm";
-    public static final String CONSOLE_USER = "consoleuser";
-    public static final String CURATOR_USER = "curatoruser";
-    public static final String CONSOLE_PASSWORD = "consolepassword";
-    public static final String CURATOR_PASSWORD = "curatorpassword";
-
     public static final String DEFAULT_FILESYSTEMCONFIG_NAME = "exhibitor.properties";
     public static final String DEFAULT_PREFIX = "exhibitor-";
     public static final String DEFAULT_FILESYSTEMCONFIG_LOCK_PREFIX = "exhibitor-lock-";
@@ -116,13 +110,6 @@ public class ExhibitorCLI
     public ExhibitorCLI()
     {
         hostname = Exhibitor.getHostname();
-
-        Options deprecatedAuthOptions = new Options();
-        deprecatedAuthOptions.addOption(null, BASIC_AUTH_REALM, true, "Basic Auth Realm to Protect the Exhibitor UI (DEPRECATED - use --" + SECURITY_FILE + "/--" + REALM + " instead)");
-        deprecatedAuthOptions.addOption(null, CONSOLE_USER, true, "Basic Auth Username to Protect the Exhibitor UI (DEPRECATED - use --" + SECURITY_FILE + "/--" + REALM + " instead)");
-        deprecatedAuthOptions.addOption(null, CONSOLE_PASSWORD, true, "Basic Auth Password to Protect the Exhibitor UI (DEPRECATED - use --" + SECURITY_FILE + "/--" + REALM + " instead)");
-        deprecatedAuthOptions.addOption(null, CURATOR_USER, true, "Basic Auth Password to Protect the cluster list api (DEPRECATED - use --" + SECURITY_FILE + "/--" + REALM + " instead)");
-        deprecatedAuthOptions.addOption(null, CURATOR_PASSWORD, true, "Basic Auth Password to Protect cluster list api (DEPRECATED - use --" + SECURITY_FILE + "/--" + REALM + " instead)");
 
         Options authOptions = new Options();
         authOptions.addOption(null, SECURITY_FILE, true, "Path to a web.xml file with security information (all other tags are ignored). See http://docs.oracle.com/javaee/6/tutorial/doc/gkbaa.html.");
@@ -186,7 +173,6 @@ public class ExhibitorCLI
         addAll("Configuration Options for Type \"none\"", noneConfigOptions);
         addAll("Backup Options", backupOptions);
         addAll("Authorization Options", authOptions);
-        addAll("Deprecated Authorization Options", deprecatedAuthOptions);
         addAll("ACL Options", aclOptions);
         addAll(null, generalOptions);
     }
