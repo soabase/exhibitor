@@ -8,7 +8,7 @@
 
 ## Maven Settings
 
-Your Maven settings (~/.m2/settings.xml) file should entries for the Sonatype servers:
+Your Maven settings (~/.m2/settings.xml) file should have entries for the Sonatype servers:
 
 ```xml
 <settings>
@@ -47,7 +47,7 @@ The release is done from your local machine. The process is similar to releasing
   - Select Staging Repositories under the Build Promotion section on the left hand side
   - Select the repository from the main window
   - Select the content tab at the bottom of the screen and navigate through the artifact tree and double check things
-  - Close the Nexus staging repo by clicking on the curator repo and clicking the "Close" button.
+  - Close the Nexus staging repo by clicking on the soasbase-exhibitor repo and clicking the "Close" button.
   - Release it by clicking the "Release" button (note: you need to wait a few minutes for "close" to complete"
 3. The release is now complete. Send an email to the Exhibitor user list, etc.
 
