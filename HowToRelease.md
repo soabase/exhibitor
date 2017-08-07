@@ -38,8 +38,8 @@ Note: you can store encrypted passwords in your settings.xml if you want. Read t
 The release is done from your local machine. The process is similar to releasing an Apache open source project.
 
 1. The Maven commands to create the release (note there is considerable time between each):
-  - `mvn release:prepare`
-  - `mvn release:perform`
+  - `mvn -P oss release:prepare`
+  - `mvn -P oss release:perform`
   - `git push --tags`
 2. Promote the release in the Sonatype Nexus repository:
   - Go to: https://oss.sonatype.org and login
