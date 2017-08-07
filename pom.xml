@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.soabase.exhibitor</groupId>
@@ -49,11 +50,48 @@
         <embedded-consul-version>0.3.1</embedded-consul-version>
     </properties>
 
+    <name>Exhibitor</name>
+    <description>A supervisor system for ZooKeeper.</description>
+    <url>https://github.com/soabase/exhibitor/</url>
+
+    <organization>
+        <name>Soabase</name>
+        <url>https://github.com/soabase</url>
+    </organization>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Jordan Zimmerman</name>
+            <email>jordan@jordanzimmerman.com</email>
+            <timezone>-5</timezone>
+            <url>https://github.com/randgalt/</url>
+            <roles>
+                <role>Author</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>Xiaochuan Yu</name>
+            <email>xcyu.se@gmail.com</email>
+            <timezone>-5</timezone>
+            <url>https://github.com/xiaochuanyu/</url>
+            <roles>
+                <role>Developer</role>
+            </roles>
+        </developer>
+    </developers>
+
     <scm>
         <url>https://github.com/soabase/exhibitor</url>
         <connection>scm:git:https://github.com/soabase/exhibitor.git</connection>
         <developerConnection>scm:git:git@github.com:soabase/exhibitor.git</developerConnection>
-        <tag>exhibitor-1.1.0</tag>
     </scm>
 
     <issueManagement>
