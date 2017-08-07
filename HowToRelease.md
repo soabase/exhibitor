@@ -42,12 +42,11 @@ The release is done from your local machine. The process is similar to releasing
   - `mvn release:perform`
   - `git push --tags`
 2. Promote the release in the Sonatype Nexus repository:
-  - Go to: https://oss.sonatype.org
-  - Login
+  - Go to: https://oss.sonatype.org and login
   - Select Staging Repositories under the Build Promotion section on the left hand side
-  - Select the repository from the main window
-  - Select the content tab at the bottom of the screen and navigate through the artifact tree and double check things
-  - Close the Nexus staging repo by clicking on the soasbase-exhibitor repo and clicking the "Close" button.
+  - Select the repository from the main window, it should start with `iosoabase`
+  - Select the Content tab at the bottom of the screen and navigate through the artifact tree and double check things
+  - Close the Nexus staging repo by clicking on the soasbase-exhibitor repo and clicking the "Close" button
   - Release it by clicking the "Release" button (note: you need to wait a few minutes for "close" to complete
 3. The release is now complete. Send an email to the Exhibitor user list, etc.
 
