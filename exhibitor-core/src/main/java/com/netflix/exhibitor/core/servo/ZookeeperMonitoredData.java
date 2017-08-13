@@ -100,14 +100,13 @@ public class ZookeeperMonitoredData
         fieldMap = builder.build();
     }
 
-    public void         updateValues(Map<String, Integer> newValues)
-    {
-        for ( Map.Entry<String, Integer> entry : newValues.entrySet() )
-        {
-            AtomicInteger       value = fieldMap.get(entry.getKey());
-            if ( value != null )
-            {
-                value.set(entry.getValue());
+    public void updateValues(Map<String, Integer> newValues) {
+        for (Map.Entry<String, AtomicInteger> entry : fieldMap.entrySet()) {
+            Integer value = newValues.get(entry.getKey());
+            if (value != null) {
+                fieldMap.get(entry.getKey()).set(value);
+            } else {
+                fieldMap.get(entry.getKey()).set(0);
             }
         }
     }

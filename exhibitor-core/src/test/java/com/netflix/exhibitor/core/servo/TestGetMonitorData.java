@@ -60,7 +60,7 @@ public class TestGetMonitorData
         Assert.assertEquals(zookeeperMonitoredData.zk_packets_received.get(), 1);
         Assert.assertEquals(zookeeperMonitoredData.zk_approximate_data_size.get(), 34);
         Assert.assertEquals(zookeeperMonitoredData.zk_max_file_descriptor_count.get(), 10240);
-        Assert.assertEquals(zookeeperMonitoredData.zk_packets_sent.get(), 10101); // assert that it hasn't changed
+        Assert.assertEquals(zookeeperMonitoredData.zk_packets_sent.get(), 0); // assert that it hasn't changed
     }
 /*
 
