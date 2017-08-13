@@ -32,7 +32,6 @@ import com.netflix.exhibitor.core.config.IntConfigs;
 import com.netflix.exhibitor.core.config.StringConfigs;
 import com.netflix.exhibitor.core.controlpanel.ControlPanelTypes;
 import com.netflix.exhibitor.core.index.ZooKeeperLogFiles;
-import org.apache.curator.utils.CloseableUtils;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
@@ -44,9 +43,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.GZIPInputStream;
+import org.apache.curator.utils.CloseableUtils;
+import org.apache.log4j.Logger;
 
 public class BackupManager implements Closeable
 {
+    private static Logger log = Logger.getLogger(BackupManager.class);
     private final Exhibitor exhibitor;
     private final Optional<BackupProvider> backupProvider;
     private final RepeatingActivity repeatingActivity;
@@ -179,6 +181,31 @@ public class BackupManager implements Closeable
     public List<BackupConfigSpec> getConfigSpecs()
     {
         return backupProvider.get().getConfigs();
+    }
+
+    /**
+     * Restore all known logs
+     */
+    public void restoreAll() throws Exception {
+
+        ZooKeeperLogFiles logFiles = new ZooKeeperLogFiles(exhibitor);
+        log.info("Restoring log files from backup.");
+        if (!logFiles.isValid()) {
+            log.error("Backup path invalid. Skipping restore.");
+            return;
+        }
+        if (logFiles.getPaths().isEmpty()) {
+            log.info("Backup path(s) empty. Skipping restore.");
+            return;
+        }
+        File dataDir = ZooKeeperLogFiles.getDataDir(exhibitor);
+        for (BackupMetaData data : getAvailableBackups()) {
+            String fileName = data.getName();
+            log.info(String.format("Restoring file: %s", fileName));
+            File file = new File(dataDir, fileName);
+            restore(data, file);
+        }
+        log.info("Restoring logs from backup done.");
     }
 
     /**
