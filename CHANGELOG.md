@@ -3,6 +3,7 @@ Next Release
 * Pull 349: added command line option to specify address for HTTP server to listen on
 * Pull 350: restore all backups upon starting
 * Pull 301: fixed a bug in servo where Zookeeper metrics were not reset to 0
+* Pull 351: support relative path to ZooKeeper
 
 1.6.0 - August 7, 2017
 ========================
