@@ -142,7 +142,7 @@ class Details
 
         if ( (files == null) || (files.length == 0) )
         {
-            throw new IOException("Could not find " + regex + " jar");
+            throw new IOException("Could not find " + regex + " jar in directory " + dir.getAbsolutePath());
         }
 
         Iterable<String> transformed = Iterables.transform
