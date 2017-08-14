@@ -86,17 +86,26 @@ public class ExhibitorMain implements Closeable
 
         SecurityArguments securityArguments = new SecurityArguments(creator.getSecurityFile(), creator.getRealmSpec(), creator.getRemoteAuthSpec());
         ExhibitorMain exhibitorMain = new ExhibitorMain
-            (
-                creator.getBackupProvider(),
-                creator.getConfigProvider(),
-                creator.getBuilder(),
-                creator.getHttpPort(),
-                securityArguments
-            );
+        (
+            creator.getBackupProvider(),
+            creator.getConfigProvider(),
+            creator.getBuilder(),
+            creator.getHttpPort(),
+            creator.getListenAddress(),
+            securityArguments
+        );
         setShutdown(exhibitorMain);
 
-        exhibitorMain.start();
-        try {
+        try {exhibitorMain.start();
+        }
+        catch (Exception ex) {
+            ex.printStackTrace(System.err);
+            System.err.println(String.format("Failed to start HTTP server on address %s, port %d. Exiting", creator.getListenAddress(), creator.getHttpPort()));
+            Runtime.getRuntime().exit(1);
+        }
+
+        try
+        {
             exhibitorMain.join();
         }
         finally {
@@ -108,7 +117,7 @@ public class ExhibitorMain implements Closeable
         }
     }
 
-    public ExhibitorMain(BackupProvider backupProvider, ConfigProvider configProvider, ExhibitorArguments.Builder builder, int httpPort, SecurityArguments securityArguments) throws Exception
+    public ExhibitorMain(BackupProvider backupProvider, ConfigProvider configProvider, ExhibitorArguments.Builder builder, int httpPort, String listenAddress, SecurityArguments securityArguments) throws Exception
     {
         HashLoginService loginService = makeLoginService(securityArguments);
 
@@ -120,7 +129,12 @@ public class ExhibitorMain implements Closeable
         exhibitor = new Exhibitor(configProvider, null, backupProvider, builder.build());
         exhibitor.start();
 
-        server = new Server(httpPort);
+        server = new Server();
+        SocketConnector http = new SocketConnector();
+        http.setHost(listenAddress);
+        http.setPort(httpPort);
+        server.addConnector(http);
+
 
         // This is some magic to get path of root directory of the JAR
         // see https://github.com/jetty-project/embedded-jetty-uber-jar/blob/master/src/main/java/jetty/uber/ServerMain.java
@@ -259,7 +273,6 @@ public class ExhibitorMain implements Closeable
                 webXmlConfiguration.configure(context);
             }
         };
-        contextHandler.start();
         try {
             SecurityHandler securityHandler = context.getSecurityHandler();
 
@@ -268,6 +281,7 @@ public class ExhibitorMain implements Closeable
             }
 
             root.setSecurityHandler(securityHandler);
+            contextHandler.start();
         }
         finally {
             contextHandler.stop();

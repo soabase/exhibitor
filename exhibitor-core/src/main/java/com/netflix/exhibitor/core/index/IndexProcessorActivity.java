@@ -41,7 +41,7 @@ public class IndexProcessorActivity implements Activity
     {
         String path = exhibitor.getConfigManager().getConfig().getString(StringConfigs.LOG_INDEX_DIRECTORY);
 
-        if ( path == null )
+        if ( (path == null) || (path.trim().length() == 0) )
         {
             exhibitor.getLog().add(ActivityLog.Type.ERROR, "No index directory set in config");
         }

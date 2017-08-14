@@ -96,7 +96,7 @@ public class StandardProcessOperations implements ProcessOperations
         Details         details = new Details(exhibitor);
         File            binDirectory = new File(details.zooKeeperDirectory, "bin");
         File            zkServerScript = new File(binDirectory, "zkServer.sh");
-        return new ProcessBuilder(zkServerScript.getPath(), operation).directory(binDirectory.getParentFile());
+        return new ProcessBuilder(zkServerScript.getAbsolutePath(), operation).directory(binDirectory.getParentFile());
     }
 
     @Override

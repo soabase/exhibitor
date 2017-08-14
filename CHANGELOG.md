@@ -1,3 +1,17 @@
+Next Release
+========================
+* Pull 349: added command line option to specify address for HTTP server to listen on
+* Pull 350: restore all backups upon starting
+* Pull 301: fixed a bug in servo where Zookeeper metrics were not reset to 0
+* Pull 351: support relative path to ZooKeeper
+
+1.6.0 - August 7, 2017
+========================
+* First release since migration out from Netflix to Soabase, new group ID `io.soabase.exhibitor`
+* Pull 305: Add support for Consul shared configuration
+* Pull 325: Ported to maven
+* Upgraded AWS SDK version to `1.11.128` (from `1.10.24`)
+
 1.5.6 - December 4, 2015
 ========================
 

@@ -4,7 +4,7 @@
 
     <groupId>io.soabase.exhibitor</groupId>
     <artifactId>exhibitor</artifactId>
-    <version>1.1.0-SNAPSHOT</version>
+    <version>1.6.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -41,18 +41,58 @@
         <jax-rs-version>1.1.1</jax-rs-version>
         <jackson-version>1.9.2</jackson-version>
         <lucene-version>3.6.0</lucene-version>
-        <aws-version>1.10.24</aws-version>
+        <aws-version>1.11.128</aws-version>
         <mockito-version>1.8.5</mockito-version>
         <zookeeper-version>3.4.5</zookeeper-version>
         <jsr166-version>1.7.0</jsr166-version>
+        <consul-version>0.14.0</consul-version>
+        <embedded-consul-version>0.3.1</embedded-consul-version>
     </properties>
+
+    <name>Exhibitor</name>
+    <description>A supervisor system for ZooKeeper.</description>
+    <url>https://github.com/soabase/exhibitor/</url>
+
+    <organization>
+        <name>Soabase</name>
+        <url>https://github.com/soabase</url>
+    </organization>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Jordan Zimmerman</name>
+            <email>jordan@jordanzimmerman.com</email>
+            <timezone>-5</timezone>
+            <url>https://github.com/randgalt/</url>
+            <roles>
+                <role>Author</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>Xiaochuan Yu</name>
+            <email>xcyu.se@gmail.com</email>
+            <timezone>-5</timezone>
+            <url>https://github.com/xiaochuanyu/</url>
+            <roles>
+                <role>Developer</role>
+            </roles>
+        </developer>
+    </developers>
 
     <scm>
         <url>https://github.com/soabase/exhibitor</url>
         <connection>scm:git:https://github.com/soabase/exhibitor.git</connection>
         <developerConnection>scm:git:git@github.com:soabase/exhibitor.git</developerConnection>
-        <tag>exhibitor-1.1.0</tag>
-    </scm>
+      <tag>HEAD</tag>
+  </scm>
 
     <issueManagement>
         <system>Github</system>
@@ -199,6 +239,18 @@
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
                 <version>${mockito-version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.orbitz.consul</groupId>
+                <artifactId>consul-client</artifactId>
+                <version>${consul-version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.pszymczyk.consul</groupId>
+                <artifactId>embedded-consul</artifactId>
+                <version>${embedded-consul-version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -18,6 +18,7 @@ package com.netflix.exhibitor.standalone;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.common.net.HostAndPort;
 import com.netflix.exhibitor.core.ExhibitorArguments;
 import com.netflix.exhibitor.core.backup.BackupProvider;
 import com.netflix.exhibitor.core.backup.filesystem.FileSystemBackupProvider;
@@ -29,6 +30,7 @@ import com.netflix.exhibitor.core.config.IntConfigs;
 import com.netflix.exhibitor.core.config.JQueryStyle;
 import com.netflix.exhibitor.core.config.PropertyBasedInstanceConfig;
 import com.netflix.exhibitor.core.config.StringConfigs;
+import com.netflix.exhibitor.core.config.consul.ConsulConfigProvider;
 import com.netflix.exhibitor.core.config.filesystem.FileSystemConfigProvider;
 import com.netflix.exhibitor.core.config.none.NoneConfigProvider;
 import com.netflix.exhibitor.core.config.s3.S3ConfigArguments;
@@ -93,6 +95,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import com.orbitz.consul.Consul;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.ParseException;
@@ -113,6 +116,8 @@ import org.apache.zookeeper.data.Id;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.*;
+
 public class ExhibitorCreator
 {
     private final Logger log = LoggerFactory.getLogger(getClass());
@@ -121,6 +126,7 @@ public class ExhibitorCreator
     private final BackupProvider backupProvider;
     private final ConfigProvider configProvider;
     private final int httpPort;
+    private final String listenAddress;
     private final List<Closeable> closeables = Lists.newArrayList();
     private final String securityFile;
     private final String realmSpec;
@@ -179,6 +185,7 @@ public class ExhibitorCreator
         int configCheckMs = Integer.parseInt(commandLine.getOptionValue(CONFIGCHECKMS, "30000"));
         String useHostname = commandLine.getOptionValue(HOSTNAME, cli.getHostname());
         int httpPort = Integer.parseInt(commandLine.getOptionValue(HTTP_PORT, "8080"));
+        String listenAddress = commandLine.getOptionValue(LISTEN_ADDRESS, "0.0.0.0");
         String extraHeadingText = commandLine.getOptionValue(EXTRA_HEADING_TEXT, null);
         boolean allowNodeMutations = "true".equalsIgnoreCase(commandLine.getOptionValue(NODE_MUTATIONS, "true"));
 
@@ -251,6 +258,7 @@ public class ExhibitorCreator
         this.backupProvider = backupProvider;
         this.configProvider = configProvider;
         this.httpPort = httpPort;
+        this.listenAddress = listenAddress;
     }
 
     public ExhibitorArguments.Builder getBuilder()
@@ -261,6 +269,11 @@ public class ExhibitorCreator
     public int getHttpPort()
     {
         return httpPort;
+    }
+
+    public String getListenAddress()
+    {
+        return listenAddress;
     }
 
     public ConfigProvider getConfigProvider()
@@ -309,6 +322,10 @@ public class ExhibitorCreator
         else if ( configType.equals("zookeeper") )
         {
             configProvider = getZookeeperProvider(commandLine, useHostname, defaultProperties);
+        }
+        else if ( configType.equals("consul") )
+        {
+            configProvider = getConsulProvider(cli, commandLine, defaultProperties);
         }
         else if ( configType.equals("none") )
         {
@@ -541,6 +558,54 @@ public class ExhibitorCreator
     {
         String  prefix = cli.getOptions().hasOption(S3_CONFIG_PREFIX) ? commandLine.getOptionValue(S3_CONFIG_PREFIX) : DEFAULT_PREFIX;
         return new S3ConfigProvider(new S3ClientFactoryImpl(), awsCredentials, awsClientConfig, getS3Arguments(cli, commandLine.getOptionValue(S3_CONFIG), prefix), hostname, defaultProperties, s3Region);
+    }
+
+    private ConfigProvider getConsulProvider(ExhibitorCLI cli, CommandLine commandLine, Properties defaultProperties) throws Exception {
+        String host = commandLine.getOptionValue(CONSUL_CONFIG_HOST, "localhost");
+        Integer port = Integer.valueOf(commandLine.getOptionValue(CONSUL_CONFIG_PORT, "8500"));
+        String prefix = commandLine.getOptionValue(CONSUL_CONFIG_KEY_PREFIX, "exhibitor/");
+
+        Boolean sslEnabled = Boolean.valueOf(commandLine.getOptionValue(CONSUL_CONFIG_SSL, "false"));
+        String protocol = sslEnabled ? "https" : "http";
+        String url = String.format("%s://%s:%d", protocol, host, port);
+
+        Consul.Builder builder = Consul.builder().withUrl(url);
+        if (sslEnabled) {
+            if (!Boolean.valueOf(commandLine.getOptionValue(CONSUL_CONFIG_SSL_VERIFY_HOSTNAME, "true"))) {
+                builder.withHostnameVerifier(new NullHostnameVerifier());
+            }
+
+            String sslProtocol = commandLine.getOptionValue(CONSUL_CONFIG_SSL_PROTOCOL, "TLSv1.2");
+            String caCertPath = commandLine.getOptionValue(CONSUL_CONFIG_SSL_CA_CERT);
+            log.debug("SSL enabled for consul connections; protocol = %s, cacert = %s",
+                    sslProtocol, caCertPath);
+
+            // Load cacert file
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            X509Certificate cacert = (X509Certificate) cf.generateCertificate(new FileInputStream(caCertPath));
+
+            KeyStore trustStore = KeyStore.getInstance("JKS");
+            trustStore.load(null);
+            trustStore.setCertificateEntry("caCert", cacert);
+
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+            tmf.init(trustStore);
+
+            SSLContext sslContext = SSLContext.getInstance(sslProtocol);
+            sslContext.init(null, tmf.getTrustManagers(), null);
+
+            builder.withSslContext(sslContext);
+        }
+        else {
+            log.debug("SSL is disabled for consul connections");
+        }
+
+        if (commandLine.hasOption(CONSUL_CONFIG_ACL_TOKEN)) {
+            builder.withAclToken(commandLine.getOptionValue(CONSUL_CONFIG_ACL_TOKEN));
+        }
+
+        Consul consul = builder.build();
+        return new ConsulConfigProvider(consul, prefix, defaultProperties);
     }
 
     private void checkMutuallyExclusive(ExhibitorCLI cli, CommandLine commandLine, String option1, String option2) throws ExhibitorCreatorExit
