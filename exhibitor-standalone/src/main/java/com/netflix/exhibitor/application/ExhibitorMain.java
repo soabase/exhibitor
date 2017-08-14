@@ -48,6 +48,7 @@ import org.eclipse.jetty.security.HashLoginService;
 import org.eclipse.jetty.security.SecurityHandler;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.UserIdentity;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.DefaultHandler;
@@ -130,7 +131,7 @@ public class ExhibitorMain implements Closeable
         exhibitor.start();
 
         server = new Server();
-        SocketConnector http = new SocketConnector();
+        ServerConnector http = new ServerConnector(server);
         http.setHost(listenAddress);
         http.setPort(httpPort);
         server.addConnector(http);

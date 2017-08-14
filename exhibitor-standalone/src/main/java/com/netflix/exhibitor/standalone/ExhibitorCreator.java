@@ -18,7 +18,6 @@ package com.netflix.exhibitor.standalone;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.common.net.HostAndPort;
 import com.netflix.exhibitor.core.ExhibitorArguments;
 import com.netflix.exhibitor.core.backup.BackupProvider;
 import com.netflix.exhibitor.core.backup.filesystem.FileSystemBackupProvider;
@@ -46,6 +45,14 @@ import static com.netflix.exhibitor.standalone.ExhibitorCLI.ACL_PERMISSIONS;
 import static com.netflix.exhibitor.standalone.ExhibitorCLI.ACL_SCHEME;
 import static com.netflix.exhibitor.standalone.ExhibitorCLI.CONFIGCHECKMS;
 import static com.netflix.exhibitor.standalone.ExhibitorCLI.CONFIG_TYPE;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.CONSUL_CONFIG_ACL_TOKEN;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.CONSUL_CONFIG_HOST;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.CONSUL_CONFIG_KEY_PREFIX;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.CONSUL_CONFIG_PORT;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.CONSUL_CONFIG_SSL;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.CONSUL_CONFIG_SSL_CA_CERT;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.CONSUL_CONFIG_SSL_PROTOCOL;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.CONSUL_CONFIG_SSL_VERIFY_HOSTNAME;
 import static com.netflix.exhibitor.standalone.ExhibitorCLI.DEFAULT_FILESYSTEMCONFIG_LOCK_PREFIX;
 import static com.netflix.exhibitor.standalone.ExhibitorCLI.DEFAULT_FILESYSTEMCONFIG_NAME;
 import static com.netflix.exhibitor.standalone.ExhibitorCLI.DEFAULT_PREFIX;
@@ -62,6 +69,7 @@ import static com.netflix.exhibitor.standalone.ExhibitorCLI.HOSTNAME;
 import static com.netflix.exhibitor.standalone.ExhibitorCLI.HTTP_PORT;
 import static com.netflix.exhibitor.standalone.ExhibitorCLI.INITIAL_CONFIG_FILE;
 import static com.netflix.exhibitor.standalone.ExhibitorCLI.JQUERY_STYLE;
+import static com.netflix.exhibitor.standalone.ExhibitorCLI.LISTEN_ADDRESS;
 import static com.netflix.exhibitor.standalone.ExhibitorCLI.LOGLINES;
 import static com.netflix.exhibitor.standalone.ExhibitorCLI.NODE_MUTATIONS;
 import static com.netflix.exhibitor.standalone.ExhibitorCLI.NONE_CONFIG_DIRECTORY;
@@ -85,17 +93,22 @@ import static com.netflix.exhibitor.standalone.ExhibitorCLI.ZOOKEEPER_CONFIG_INI
 import static com.netflix.exhibitor.standalone.ExhibitorCLI.ZOOKEEPER_CONFIG_POLLING;
 import static com.netflix.exhibitor.standalone.ExhibitorCLI.ZOOKEEPER_CONFIG_RETRY;
 import com.netflix.servo.jmx.JmxMonitorRegistry;
+import com.orbitz.consul.Consul;
 import java.io.BufferedInputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.KeyStore;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import com.orbitz.consul.Consul;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.ParseException;
@@ -115,8 +128,6 @@ import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Id;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static com.netflix.exhibitor.standalone.ExhibitorCLI.*;
 
 public class ExhibitorCreator
 {
