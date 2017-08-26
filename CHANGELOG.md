@@ -1,4 +1,4 @@
-Next Release
+1.7.0 - August 26, 2017
 ========================
 * Pull 349: added command line option to specify address for HTTP server to listen on
 * Pull 350: restore all backups upon starting
