@@ -5,7 +5,8 @@
 Exhibitor is now on its own! PLEASE READ THIS NOTE: https://groups.google.com/forum/#!topic/exhibitor-users/PVkcd88mk8c
 
 ## DESCRIPTION
-Exhibitor is a supervisor system for ZooKeeper.
+Exhibitor is a supervisor system for Apache ZooKeeper (http://zookeeper.apache.org/).
+
 
 ## DETAILS
 
