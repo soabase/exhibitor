@@ -55,7 +55,7 @@ public class BackupManager implements Closeable
     private final AtomicLong lastRollCheck = new AtomicLong(0);
 
     /**
-     * @param exhibitor main instance
+     * @param exhibitor      main instance
      * @param backupProvider provider
      */
     public BackupManager(final Exhibitor exhibitor, BackupProvider backupProvider)
@@ -79,17 +79,17 @@ public class BackupManager implements Closeable
         };
 
         repeatingActivity = new OnOffRepeatingActivity
-        (
-            new OnOffRepeatingActivity.Factory()
-            {
-                @Override
-                public RepeatingActivity newRepeatingActivity(long timePeriodMs)
+            (
+                new OnOffRepeatingActivity.Factory()
                 {
-                    return new RepeatingActivityImpl(exhibitor.getLog(), exhibitor.getActivityQueue(), QueueGroups.IO, activity, getBackupPeriodMs());
-                }
-            },
-            getBackupPeriodMs()
-        );
+                    @Override
+                    public RepeatingActivity newRepeatingActivity(long timePeriodMs)
+                    {
+                        return new RepeatingActivityImpl(exhibitor.getLog(), exhibitor.getActivityQueue(), QueueGroups.IO, activity, getBackupPeriodMs());
+                    }
+                },
+                getBackupPeriodMs()
+            );
     }
 
     private int getBackupPeriodMs()
@@ -103,8 +103,7 @@ public class BackupManager implements Closeable
      */
     public void start()
     {
-        if ( isActive() )
-        {
+        if (isActive()) {
             repeatingActivity.start();
             exhibitor.getConfigManager().addConfigListener
                 (
@@ -123,8 +122,7 @@ public class BackupManager implements Closeable
     @Override
     public void close() throws IOException
     {
-        if ( isActive() )
-        {
+        if (isActive()) {
             repeatingActivity.close();
         }
     }
@@ -147,7 +145,7 @@ public class BackupManager implements Closeable
      */
     public List<BackupMetaData> getAvailableBackups() throws Exception
     {
-        Map<String, String>       config = getBackupConfig();
+        Map<String, String> config = getBackupConfig();
         return backupProvider.get().getAvailableBackups(exhibitor, config);
     }
 
@@ -186,7 +184,13 @@ public class BackupManager implements Closeable
     /**
      * Restore all known logs
      */
-    public void restoreAll() throws Exception {
+    public void restoreAll() throws Exception
+    {
+
+        if (!backupProvider.isPresent()) {
+            log.info("No backup provider configured. Skipping restore.");
+            return;
+        }
 
         ZooKeeperLogFiles logFiles = new ZooKeeperLogFiles(exhibitor);
         log.info("Restoring log files from backup.");
@@ -211,17 +215,16 @@ public class BackupManager implements Closeable
     /**
      * Restore the given key to the given file
      *
-     * @param backup the backup to pull down
+     * @param backup          the backup to pull down
      * @param destinationFile the file
      * @throws Exception errors
      */
     public void restore(BackupMetaData backup, File destinationFile) throws Exception
     {
-        File                    tempFile = File.createTempFile("exhibitor-backup", ".tmp");
-        OutputStream            out = new FileOutputStream(tempFile);
+        File tempFile = File.createTempFile("exhibitor-backup", ".tmp");
+        OutputStream out = new FileOutputStream(tempFile);
         InputStream in = null;
-        try
-        {
+        try {
             backupProvider.get().downloadBackup(exhibitor, backup, out, getBackupConfig());
             CloseableUtils.closeQuietly(out);
             out = null;
@@ -231,12 +234,10 @@ public class BackupManager implements Closeable
 
             ByteStreams.copy(in, out);
         }
-        finally
-        {
+        finally {
             CloseableUtils.closeQuietly(in);
             CloseableUtils.closeQuietly(out);
-            if ( !tempFile.delete() )
-            {
+            if (!tempFile.delete()) {
                 exhibitor.getLog().add(ActivityLog.Type.ERROR, "Could not delete temp file (for restore): " + tempFile);
             }
         }
@@ -244,59 +245,48 @@ public class BackupManager implements Closeable
 
     private void doBackup() throws Exception
     {
-        if ( !exhibitor.getControlPanelValues().isSet(ControlPanelTypes.BACKUPS) )
-        {
+        if (!exhibitor.getControlPanelValues().isSet(ControlPanelTypes.BACKUPS)) {
             return;
         }
 
         ZooKeeperLogFiles zooKeeperLogFiles = new ZooKeeperLogFiles(exhibitor);
-        if ( !zooKeeperLogFiles.isValid() )
-        {
+        if (!zooKeeperLogFiles.isValid()) {
             return;
         }
 
         Map<String, String> config = getBackupConfig();
 
-        BackupProvider      provider = backupProvider.get();
-        if ( !provider.isValidConfig(exhibitor, config) )
-        {
+        BackupProvider provider = backupProvider.get();
+        if (!provider.isValidConfig(exhibitor, config)) {
             return;
         }
 
-        for ( File f : zooKeeperLogFiles.getPaths() )
-        {
-            TempCompressedFile      tempCompressedFile = new TempCompressedFile(f);
-            try
-            {
+        for (File f : zooKeeperLogFiles.getPaths()) {
+            TempCompressedFile tempCompressedFile = new TempCompressedFile(f);
+            try {
                 tempCompressedFile.compress();
 
-                BackupMetaData          metaData = new BackupMetaData(f.getName(), f.lastModified());
+                BackupMetaData metaData = new BackupMetaData(f.getName(), f.lastModified());
                 BackupProvider.UploadResult result = provider.uploadBackup(exhibitor, metaData, tempCompressedFile.getTempFile(), config);
-                switch ( result )
-                {
-                    case SUCCEEDED:
-                    {
+                switch (result) {
+                    case SUCCEEDED: {
                         exhibitor.getLog().add(ActivityLog.Type.DEBUG, "Backing up: " + f);
                         break;
                     }
 
-                    case DUPLICATE:
-                    {
+                    case DUPLICATE: {
                         // ignore
                         break;
                     }
 
-                    case REPLACED_OLD_VERSION:
-                    {
+                    case REPLACED_OLD_VERSION: {
                         exhibitor.getLog().add(ActivityLog.Type.DEBUG, "Updated back up for: " + f);
                         break;
                     }
                 }
             }
-            finally
-            {
-                if ( !tempCompressedFile.getTempFile().delete() )
-                {
+            finally {
+                if (!tempCompressedFile.getTempFile().delete()) {
                     exhibitor.getLog().add(ActivityLog.Type.ERROR, "Could not delete temp file: " + tempCompressedFile.getTempFile());
                 }
             }
@@ -307,27 +297,24 @@ public class BackupManager implements Closeable
 
     private Map<String, String> getBackupConfig()
     {
-        String              backupExtra = exhibitor.getConfigManager().getConfig().getString(StringConfigs.BACKUP_EXTRA);
+        String backupExtra = exhibitor.getConfigManager().getConfig().getString(StringConfigs.BACKUP_EXTRA);
         EncodedConfigParser encodedConfigParser = new EncodedConfigParser(backupExtra);
         return encodedConfigParser.getSortedMap();
     }
 
     private void doRoll(Map<String, String> config) throws Exception
     {
-        long        elapsed = System.currentTimeMillis() - lastRollCheck.get();
-        if ( elapsed < (exhibitor.getConfigManager().getConfig().getInt(IntConfigs.BACKUP_MAX_STORE_MS) / 3) )
-        {
+        long elapsed = System.currentTimeMillis() - lastRollCheck.get();
+        if (elapsed < (exhibitor.getConfigManager().getConfig().getInt(IntConfigs.BACKUP_MAX_STORE_MS) / 3)) {
             return;
         }
 
         exhibitor.getLog().add(ActivityLog.Type.DEBUG, "Checking for elapsed backups");
 
-        List<BackupMetaData>        availableBackups = backupProvider.get().getAvailableBackups(exhibitor, config);
-        for ( BackupMetaData backup : availableBackups )
-        {
-            long        age = System.currentTimeMillis() - backup.getModifiedDate();
-            if ( age > exhibitor.getConfigManager().getConfig().getInt(IntConfigs.BACKUP_MAX_STORE_MS) )
-            {
+        List<BackupMetaData> availableBackups = backupProvider.get().getAvailableBackups(exhibitor, config);
+        for (BackupMetaData backup : availableBackups) {
+            long age = System.currentTimeMillis() - backup.getModifiedDate();
+            if (age > exhibitor.getConfigManager().getConfig().getInt(IntConfigs.BACKUP_MAX_STORE_MS)) {
                 exhibitor.getLog().add(ActivityLog.Type.DEBUG, "Cleaning backup: " + backup);
                 backupProvider.get().deleteBackup(exhibitor, backup, config);
             }
