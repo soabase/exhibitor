@@ -4,7 +4,7 @@
 
     <groupId>io.soabase.exhibitor</groupId>
     <artifactId>exhibitor</artifactId>
-    <version>1.7.1</version>
+    <version>1.7.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -91,7 +91,7 @@
         <url>https://github.com/soabase/exhibitor</url>
         <connection>scm:git:https://github.com/soabase/exhibitor.git</connection>
         <developerConnection>scm:git:git@github.com:soabase/exhibitor.git</developerConnection>
-      <tag>exhibitor-1.7.1</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <issueManagement>
